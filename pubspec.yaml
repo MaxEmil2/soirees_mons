@@ -1,0 +1,58 @@
+name: soirees_mons
+description: Application de gestion d'événements pour Soirées Mons
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  firebase_storage: ^11.5.6
+
+  # Authentication
+  google_sign_in: ^6.1.6
+  sign_in_with_apple: ^5.0.0
+
+  # Stripe
+  flutter_stripe: ^10.1.1
+
+  # QR Code
+  qr_flutter: ^4.1.0
+  qr_code_scanner: ^1.0.1
+
+  # UI
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+
+  # State Management
+  provider: ^6.1.1
+
+  # Utilities
+  intl: ^0.18.1
+  image_picker: ^1.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Regular.ttf
+        - asset: assets/fonts/Montserrat-Bold.ttf
+          weight: 700
