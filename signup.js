@@ -24,7 +24,7 @@ import {
 
 // Configuration Firebase - Soirées Mons
 const firebaseConfig = {
-    apiKey: "AIzaSyAVGs4DsO6igrgY1EH1Z-cYLe_QMTnPxRg",
+    apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
     authDomain: "soirees-mons-6ce3e.firebaseapp.com",
     projectId: "soirees-mons-6ce3e",
     storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
