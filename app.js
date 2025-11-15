@@ -17,15 +17,15 @@ import {
 // CONFIGURATION FIREBASE
 // ========================================
 
-// ⚠️ IMPORTANT: Remplacez ces valeurs par votre configuration Firebase
-// Trouvable dans: Console Firebase > Paramètres du projet > Applications web
+// Configuration Firebase - Soirées Mons
 const firebaseConfig = {
-    apiKey: "VOTRE_API_KEY",
-    authDomain: "votre-project.firebaseapp.com",
-    projectId: "votre-project-id",
-    storageBucket: "votre-project.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef123456"
+    apiKey: "AIzaSyAVGs4DsO6igrgY1EH1Z-cYLe_QMTnPxRg",
+    authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+    projectId: "soirees-mons-6ce3e",
+    storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+    messagingSenderId: "3405335068",
+    appId: "1:3405335068:web:394c536d95a33069d66dd9",
+    measurementId: "G-526CPT4LQ8"
 };
 
 // Initialiser Firebase
