@@ -118,6 +118,18 @@ body {
     display: block;
 }
 
+/* Message de succès */
+.success-message {
+    display: none;
+    background: #52c41a;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    animation: slideDown 0.3s ease-out;
+}
+
 /* ========================================
    FORMULAIRE
    ======================================== */

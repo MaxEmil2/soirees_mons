@@ -4,25 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Soirées Mons</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                sans-serif;
             background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
             color: white;
             min-height: 100vh;
             padding: 40px 20px;
         }
 
-        .container {
-            max-width: 800px;
+        .dashboard-container {
+            max-width: 1000px;
             margin: 0 auto;
         }
 
@@ -32,6 +24,14 @@
             padding: 40px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
             border: 1px solid #2d2d44;
+            margin-bottom: 24px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 0;
+            font-size: 18px;
+            color: #b8b8d1;
         }
 
         h1 {
@@ -41,6 +41,12 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #6c63ff;
+            margin-bottom: 16px;
         }
 
         .user-info {
@@ -60,35 +66,118 @@
             color: white;
         }
 
-        .logout-btn {
+        .user-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 16px 0;
+            border: 3px solid #6c63ff;
+            display: none;
+        }
+
+        .profile-section {
+            margin-top: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #b8b8d1;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a2e;
+            border: 2px solid #2d2d44;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6c63ff;
+        }
+
+        .btn {
             background: #6c63ff;
             color: white;
-            padding: 14px 32px;
+            padding: 12px 24px;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 24px;
+            margin-right: 12px;
         }
 
-        .logout-btn:hover {
+        .btn:hover {
             background: #5850db;
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
         }
 
-        .loading {
-            text-align: center;
-            padding: 60px 0;
-            font-size: 18px;
+        .btn-secondary {
+            background: #ff4d4f;
+        }
+
+        .btn-secondary:hover {
+            background: #e03e3e;
+        }
+
+        .btn-verify {
+            background: #52c41a;
+            font-size: 14px;
+            padding: 8px 16px;
+            display: none;
+        }
+
+        .btn-verify:hover {
+            background: #3da110;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #2d2d44;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
             color: #b8b8d1;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: white;
+        }
+
+        .tab.active {
+            color: #6c63ff;
+            border-bottom-color: #6c63ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <div class="dashboard-card">
             <div id="loading" class="loading">
                 Chargement...
@@ -100,108 +189,119 @@
                     Vous êtes maintenant connecté avec succès.
                 </p>
 
+                <!-- Photo de profil -->
+                <img id="user-photo" class="user-photo" alt="Photo de profil">
+
+                <!-- Informations utilisateur -->
                 <div class="user-info">
-                    <h3 style="margin-bottom: 12px; color: #6c63ff;">Informations utilisateur</h3>
-                    <p><strong>Email:</strong> <span id="user-email"></span></p>
+                    <h2>Informations utilisateur</h2>
+                    <p><strong>Email:</strong> <span id="user-email"></span>
+                        <span id="user-email-verified"></span>
+                        <button class="btn btn-verify" id="verify-email-btn">Vérifier mon email</button>
+                    </p>
                     <p><strong>UID:</strong> <span id="user-uid"></span></p>
                     <p><strong>Provider:</strong> <span id="user-provider"></span></p>
                     <p><strong>Date de création:</strong> <span id="user-created"></span></p>
                 </div>
 
-                <button class="logout-btn" id="logout-btn">Se déconnecter</button>
+                <!-- Onglets -->
+                <div class="tabs">
+                    <div class="tab active" data-tab="info">Informations</div>
+                    <div class="tab" data-tab="email">Modifier l'email</div>
+                    <div class="tab" data-tab="password">Modifier le mot de passe</div>
+                    <div class="tab" data-tab="profile">Modifier le profil</div>
+                </div>
+
+                <!-- Contenu des onglets -->
+
+                <!-- Onglet Info -->
+                <div class="tab-content active" id="tab-info">
+                    <p style="color: #b8b8d1;">
+                        Utilisez les onglets ci-dessus pour modifier vos informations personnelles.
+                    </p>
+                    <button class="btn btn-secondary" id="logout-btn" style="margin-top: 24px;">
+                        Se déconnecter
+                    </button>
+                </div>
+
+                <!-- Onglet Modifier l'email -->
+                <div class="tab-content" id="tab-email">
+                    <h2>Modifier l'email</h2>
+                    <form id="update-email-form">
+                        <div class="form-group">
+                            <label for="new-email">Nouvel email</label>
+                            <input type="email" id="new-email" placeholder="nouveau@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email-password">Mot de passe actuel (pour confirmer)</label>
+                            <input type="password" id="email-password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn" id="update-email-btn">Modifier l'email</button>
+                    </form>
+                </div>
+
+                <!-- Onglet Modifier le mot de passe -->
+                <div class="tab-content" id="tab-password">
+                    <h2>Modifier le mot de passe</h2>
+                    <form id="update-password-form">
+                        <div class="form-group">
+                            <label for="current-password">Mot de passe actuel</label>
+                            <input type="password" id="current-password" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Nouveau mot de passe</label>
+                            <input type="password" id="new-password" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-new-password">Confirmer le nouveau mot de passe</label>
+                            <input type="password" id="confirm-new-password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn" id="update-password-btn">Modifier le mot de passe</button>
+                    </form>
+                </div>
+
+                <!-- Onglet Modifier le profil -->
+                <div class="tab-content" id="tab-profile">
+                    <h2>Modifier le profil</h2>
+                    <form id="update-photo-form">
+                        <div class="form-group">
+                            <label for="display-name">Nom d'affichage</label>
+                            <input type="text" id="display-name" placeholder="Votre nom">
+                        </div>
+                        <div class="form-group">
+                            <label for="photo-url">URL de la photo de profil</label>
+                            <input type="url" id="photo-url" placeholder="https://exemple.com/photo.jpg">
+                            <small style="color: #b8b8d1; font-size: 12px;">
+                                Utilisez un lien vers une image hébergée (ex: Imgur, Gravatar, etc.)
+                            </small>
+                        </div>
+                        <button type="submit" class="btn" id="update-photo-btn">Mettre à jour le profil</button>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
 
-    <script type="module">
-        // Import Firebase Authentication
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import {
-            getAuth,
-            onAuthStateChanged,
-            signOut
-        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    <!-- JavaScript pour gérer les onglets -->
+    <script>
+        // Gestion des onglets
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
 
-        // Configuration Firebase - Soirées Mons
-        const firebaseConfig = {
-            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
-            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
-            projectId: "soirees-mons-6ce3e",
-            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
-            messagingSenderId: "3405335068",
-            appId: "1:3405335068:web:394c536d95a33069d66dd9",
-            measurementId: "G-526CPT4LQ8"
-        };
+                // Désactiver tous les onglets
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-        // Initialiser Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // Éléments DOM
-        const loading = document.getElementById('loading');
-        const dashboardContent = document.getElementById('dashboard-content');
-        const userEmail = document.getElementById('user-email');
-        const userUid = document.getElementById('user-uid');
-        const userProvider = document.getElementById('user-provider');
-        const userCreated = document.getElementById('user-created');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        // Vérifier si l'utilisateur est connecté
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // L'utilisateur est connecté - afficher les infos
-                console.log('✅ Utilisateur connecté:', user);
-
-                // Remplir les informations
-                userEmail.textContent = user.email || 'Non disponible';
-                userUid.textContent = user.uid;
-
-                // Déterminer le provider
-                const providerData = user.providerData[0];
-                let provider = 'Email/Password';
-                if (providerData) {
-                    if (providerData.providerId === 'google.com') {
-                        provider = 'Google';
-                    } else if (providerData.providerId === 'apple.com') {
-                        provider = 'Apple';
-                    }
-                }
-                userProvider.textContent = provider;
-
-                // Date de création
-                const createdDate = new Date(user.metadata.creationTime);
-                userCreated.textContent = createdDate.toLocaleDateString('fr-FR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                // Afficher le contenu
-                loading.style.display = 'none';
-                dashboardContent.style.display = 'block';
-
-            } else {
-                // L'utilisateur n'est pas connecté - rediriger vers la page de connexion
-                console.log('❌ Aucun utilisateur connecté');
-                window.location.href = 'index.html';
-            }
+                // Activer l'onglet cliqué
+                tab.classList.add('active');
+                document.getElementById('tab-' + tabName).classList.add('active');
+            });
         });
-
-        // Gérer la déconnexion
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                console.log('✅ Déconnexion réussie');
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('❌ Erreur lors de la déconnexion:', error);
-                alert('Erreur lors de la déconnexion: ' + error.message);
-            }
-        });
-
-        console.log('🔥 Dashboard Firebase initialisé');
     </script>
+
+    <!-- Import Firebase Dashboard logic -->
+    <script type="module" src="dashboard.js"></script>
 </body>
 </html>

@@ -9,7 +9,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithPopup,
     GoogleAuthProvider,
-    onAuthStateChanged
+    onAuthStateChanged,
+    sendEmailVerification
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import {
     getFirestore,
@@ -164,11 +165,32 @@ async function saveUserToFirestore(user, provider) {
 }
 
 /**
+ * Envoie un email de vérification à l'utilisateur
+ * @param {object} user - L'utilisateur Firebase
+ */
+async function sendVerificationEmail(user) {
+    try {
+        await sendEmailVerification(user);
+        console.log('✅ Email de vérification envoyé à:', user.email);
+        return true;
+    } catch (error) {
+        console.error('❌ Erreur envoi email de vérification:', error);
+        return false;
+    }
+}
+
+/**
  * Redirige vers le dashboard après inscription réussie
  * @param {object} user - L'utilisateur connecté
+ * @param {boolean} emailSent - Si l'email de vérification a été envoyé
  */
-function redirectToDashboard(user) {
+function redirectToDashboard(user, emailSent = false) {
     console.log('✅ Inscription réussie:', user.email);
+
+    // Afficher message si email envoyé
+    if (emailSent) {
+        alert('✅ Inscription réussie ! Un email de vérification vous a été envoyé. Vérifiez votre boîte de réception.');
+    }
 
     // Redirection vers le dashboard
     window.location.href = 'dashboard.html';
@@ -211,11 +233,14 @@ signupForm.addEventListener('submit', async (e) => {
         // Créer le compte utilisateur avec Firebase
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
+        // Envoyer l'email de vérification
+        const emailSent = await sendVerificationEmail(userCredential.user);
+
         // Enregistrer l'utilisateur dans Firestore
         await saveUserToFirestore(userCredential.user, 'email');
 
         // Inscription réussie - redirection
-        redirectToDashboard(userCredential.user);
+        redirectToDashboard(userCredential.user, emailSent);
 
     } catch (error) {
         console.error('❌ Erreur d\'inscription:', error);
