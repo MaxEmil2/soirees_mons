@@ -168,6 +168,8 @@ loginForm.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error('❌ Erreur de connexion:', error);
+        console.error('📌 Code d\'erreur:', error.code);
+        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur à l'utilisateur
         showError(getErrorMessage(error.code));
@@ -195,6 +197,8 @@ googleLoginBtn.addEventListener('click', async () => {
 
     } catch (error) {
         console.error('❌ Erreur connexion Google:', error);
+        console.error('📌 Code d\'erreur:', error.code);
+        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur
         showError(getErrorMessage(error.code));

@@ -219,6 +219,8 @@ signupForm.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error('❌ Erreur d\'inscription:', error);
+        console.error('📌 Code d\'erreur:', error.code);
+        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur à l'utilisateur
         showError(getErrorMessage(error.code));
@@ -249,6 +251,8 @@ googleSignupBtn.addEventListener('click', async () => {
 
     } catch (error) {
         console.error('❌ Erreur inscription Google:', error);
+        console.error('📌 Code d\'erreur:', error.code);
+        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur
         showError(getErrorMessage(error.code));
