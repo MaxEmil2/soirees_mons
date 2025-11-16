@@ -180,37 +180,43 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         // Remplir les informations
-        userEmail.textContent = user.email || 'Non disponible';
-        userUid.textContent = user.uid;
+        if (userEmail) userEmail.textContent = user.email || 'Non disponible';
+        if (userUid) userUid.textContent = user.uid;
 
-        // Vérification d'email
-        userEmailVerified.textContent = user.emailVerified ? '✅ Vérifié' : '❌ Non vérifié';
-        userEmailVerified.style.color = user.emailVerified ? '#52c41a' : '#ff4d4f';
+        // Vérification d'email (ancien dashboard uniquement)
+        if (userEmailVerified) {
+            userEmailVerified.textContent = user.emailVerified ? '✅ Vérifié' : '❌ Non vérifié';
+            userEmailVerified.style.color = user.emailVerified ? '#52c41a' : '#ff4d4f';
+        }
 
         // Afficher/masquer le bouton de vérification d'email
         if (!user.emailVerified && verifyEmailBtn) {
             verifyEmailBtn.style.display = 'inline-block';
         }
 
-        // Déterminer le provider
-        const providerData = user.providerData[0];
-        let provider = 'Email/Password';
-        if (providerData) {
-            if (providerData.providerId === 'google.com') {
-                provider = 'Google';
+        // Déterminer le provider (ancien dashboard uniquement)
+        if (userProvider) {
+            const providerData = user.providerData[0];
+            let provider = 'Email/Password';
+            if (providerData) {
+                if (providerData.providerId === 'google.com') {
+                    provider = 'Google';
+                }
             }
+            userProvider.textContent = provider;
         }
-        userProvider.textContent = provider;
 
-        // Date de création
-        const createdDate = new Date(user.metadata.creationTime);
-        userCreated.textContent = createdDate.toLocaleDateString('fr-FR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        // Date de création (ancien dashboard uniquement)
+        if (userCreated) {
+            const createdDate = new Date(user.metadata.creationTime);
+            userCreated.textContent = createdDate.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
 
         // Photo de profil
         if (user.photoURL) {

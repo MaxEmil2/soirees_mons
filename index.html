@@ -1615,12 +1615,15 @@
                 linkElement.style.display = 'none';
             }
 
-            // Bouton préventes
-            const presalesBtn = document.getElementById('modal-presales');
+            // Bulle préventes
+            const presalesBubble = document.getElementById('modal-presales-bubble');
+            const presalesStatus = document.getElementById('modal-presales-status');
             if (event.presales) {
-                presalesBtn.style.display = 'inline-block';
+                presalesStatus.textContent = 'Oui';
+                presalesBubble.style.display = 'flex';
             } else {
-                presalesBtn.style.display = 'none';
+                presalesStatus.textContent = 'Non';
+                presalesBubble.style.display = 'flex';
             }
 
             // Afficher le modal
