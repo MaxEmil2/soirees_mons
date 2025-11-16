@@ -421,3 +421,227 @@ if (updatePhotoForm) {
 }
 
 console.log('🔥 Dashboard Firebase initialisé');
+
+// Imports Firebase supplémentaires pour les soirées likées
+import {
+    collection,
+    query,
+    where,
+    getDocs
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+import {
+    getStorage,
+    ref,
+    uploadBytes,
+    getDownloadURL
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+
+const storage = getStorage(app);
+
+// Éléments DOM
+const loading = document.getElementById('loading');
+const dashboardContent = document.getElementById('dashboard-content');
+const userUid = document.getElementById('user-uid');
+const userPseudo = document.getElementById('user-pseudo');
+const userEmail = document.getElementById('user-email');
+const profilePhoto = document.getElementById('profile-photo');
+const photoContainer = document.getElementById('photo-container');
+const photoInput = document.getElementById('photo-input');
+const adminBtn = document.getElementById('admin-btn');
+const logoutBtn = document.getElementById('logout-btn');
+
+// Soirées likées
+const likedEventsLoading = document.getElementById('liked-events-loading');
+const likedEventsGrid = document.getElementById('liked-events-grid');
+const noLikedEvents = document.getElementById('no-liked-events');
+
+// Modals
+const editPseudoModal = document.getElementById('edit-pseudo-modal');
+const editPasswordModal = document.getElementById('edit-password-modal');
+const editPseudoBtn = document.getElementById('edit-pseudo');
+const editPasswordBtn = document.getElementById('edit-password');
+
+// Charger les soirées likées
+async function loadLikedEvents(userId) {
+    try {
+        const likesQuery = query(
+            collection(db, 'likes'),
+            where('userId', '==', userId)
+        );
+
+        const likesSnapshot = await getDocs(likesQuery);
+
+        if (likesSnapshot.empty) {
+            likedEventsLoading.style.display = 'none';
+            noLikedEvents.style.display = 'block';
+            return;
+        }
+
+        const eventIds = [];
+        likesSnapshot.forEach(doc => {
+            eventIds.push(doc.data().eventId);
+        });
+
+        likedEventsLoading.style.display = 'none';
+        likedEventsGrid.style.display = 'grid';
+
+        for (const eventId of eventIds) {
+            const eventDoc = await getDoc(doc(db, 'events', eventId));
+            if (eventDoc.exists()) {
+                const event = eventDoc.data();
+                const card = createLikedEventCard(event, eventId);
+                likedEventsGrid.appendChild(card);
+            }
+        }
+    } catch (error) {
+        console.error('Erreur chargement soirées likées:', error);
+        likedEventsLoading.innerHTML = '<p style="color: #ff4d4f;">Erreur de chargement</p>';
+    }
+}
+
+// Créer une carte de soirée likée
+function createLikedEventCard(event, eventId) {
+    const card = document.createElement('div');
+    card.className = 'liked-event-card';
+
+    const eventDate = new Date(event.date);
+    const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    card.innerHTML = `
+        <img src="${event.imageURL}" alt="${event.name}" class="liked-event-image">
+        <div class="liked-event-info">
+            <div class="liked-event-name">${event.name}</div>
+            <div class="liked-event-date">📅 ${formattedDate}</div>
+        </div>
+    `;
+
+    card.addEventListener('click', () => {
+        window.location.href = 'index.html#event-' + eventId;
+    });
+
+    return card;
+}
+
+// Écouter l'état de connexion
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    loading.style.display = 'none';
+    dashboardContent.style.display = 'block';
+
+    userUid.textContent = user.uid;
+    userEmail.textContent = user.email;
+    userPseudo.textContent = user.displayName || 'Aucun pseudo';
+
+    if (user.photoURL) {
+        profilePhoto.innerHTML = `<img src="${user.photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
+    }
+
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists() && userDoc.data().isAdmin) {
+        adminBtn.style.display = 'inline-block';
+    }
+
+    loadLikedEvents(user.uid);
+});
+
+// Upload photo de profil
+photoContainer.addEventListener('click', () => {
+    photoInput.click();
+});
+
+photoInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
+        await uploadBytes(storageRef, file);
+        const photoURL = await getDownloadURL(storageRef);
+        
+        await updateProfile(auth.currentUser, { photoURL });
+        profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        alert('✅ Photo de profil mise à jour !');
+    } catch (error) {
+        console.error('Erreur upload photo:', error);
+        alert('❌ Erreur lors du téléchargement de la photo');
+    }
+});
+
+// Modal édition pseudo
+editPseudoBtn.addEventListener('click', () => {
+    editPseudoModal.style.display = 'flex';
+    document.getElementById('new-pseudo').value = auth.currentUser.displayName || '';
+});
+
+document.getElementById('edit-pseudo-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newPseudo = document.getElementById('new-pseudo').value.trim();
+
+    try {
+        await updateProfile(auth.currentUser, { displayName: newPseudo });
+        userPseudo.textContent = newPseudo;
+        closeEditPseudoModal();
+        alert('✅ Pseudo mis à jour !');
+    } catch (error) {
+        console.error('Erreur mise à jour pseudo:', error);
+        alert('❌ Erreur lors de la mise à jour');
+    }
+});
+
+// Modal édition mot de passe  
+editPasswordBtn.addEventListener('click', () => {
+    editPasswordModal.style.display = 'flex';
+});
+
+document.getElementById('edit-password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+
+    if (newPassword !== confirmPassword) {
+        alert('❌ Les mots de passe ne correspondent pas');
+        return;
+    }
+
+    try {
+        const credential = EmailAuthProvider.credential(
+            auth.currentUser.email,
+            currentPassword
+        );
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        await updatePassword(auth.currentUser, newPassword);
+        
+        closeEditPasswordModal();
+        alert('✅ Mot de passe mis à jour !');
+        document.getElementById('edit-password-form').reset();
+    } catch (error) {
+        console.error('Erreur mise à jour mot de passe:', error);
+        alert('❌ Mot de passe actuel incorrect ou erreur');
+    }
+});
+
+// Déconnexion
+logoutBtn.addEventListener('click', async () => {
+    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+        try {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Erreur déconnexion:', error);
+            alert('Erreur lors de la déconnexion');
+        }
+    }
+});
+
+console.log('✅ Dashboard initialisé');
