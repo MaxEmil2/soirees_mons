@@ -12,7 +12,7 @@
         <div class="nav-container">
             <!-- Logo à gauche -->
             <div class="logo">
-                <img src="assets/logo.png" alt="Soirées Mons" class="navbar-logo">
+                <img src="assets/logo.svg" alt="Soirées Mons" class="navbar-logo">
             </div>
 
             <!-- Menu au centre -->
@@ -332,7 +332,7 @@
     <!-- LOGO SECTION -->
     <section class="logo-section">
         <div class="container">
-            <img src="assets/logo.png" alt="Soirées Mons" class="main-logo">
+            <img src="assets/logo.svg" alt="Soirées Mons" class="main-logo">
         </div>
     </section>
 
@@ -346,7 +346,7 @@
 
             <!-- Centre: Logo -->
             <div class="footer-center">
-                <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
+                <img src="assets/logo.svg" alt="Soirées Mons Logo" class="footer-logo">
             </div>
 
             <!-- Droite: Réseaux sociaux -->
@@ -1441,15 +1441,23 @@
                 // Masquer le loader
                 eventsLoading.style.display = 'none';
 
-                // Filtrer les événements approuvés uniquement
+                // Filtrer les événements approuvés uniquement ET charger les likes
                 const approvedEvents = [];
-                querySnapshot.forEach((doc) => {
+                for (const doc of querySnapshot.docs) {
                     const event = doc.data();
                     // Afficher uniquement les événements approuvés ou sans status (anciennes soirées)
                     if (event.status === 'approved' || !event.status) {
-                        approvedEvents.push({ id: doc.id, ...event });
+                        const eventId = doc.id;
+                        // Compter les likes
+                        const likesCount = await getTotalLikes(eventId);
+
+                        approvedEvents.push({
+                            id: eventId,
+                            ...event,
+                            likesCount: likesCount || 0
+                        });
                     }
-                });
+                }
 
                 if (approvedEvents.length === 0) {
                     // Aucun événement approuvé
@@ -1458,18 +1466,63 @@
                     return;
                 }
 
-                // Afficher les événements approuvés
-                for (const eventData of approvedEvents) {
-                    const eventId = eventData.id;
+                // Trier par nombre de likes (décroissant)
+                approvedEvents.sort((a, b) => b.likesCount - a.likesCount);
 
-                    // Stocker l'événement globalement
-                    window.eventsData[eventId] = eventData;
+                // Grouper par mois
+                const eventsByMonth = {};
+                const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                                   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-                    const eventCard = await createEventCard(eventData, eventId);
-                    eventsGrid.appendChild(eventCard);
+                approvedEvents.forEach(eventData => {
+                    const eventDate = new Date(eventData.date);
+                    const monthKey = eventDate.getFullYear() + '-' + String(eventDate.getMonth()).padStart(2, '0');
+                    const monthLabel = monthNames[eventDate.getMonth()];
+
+                    if (!eventsByMonth[monthKey]) {
+                        eventsByMonth[monthKey] = {
+                            label: monthLabel,
+                            year: eventDate.getFullYear(),
+                            month: eventDate.getMonth(),
+                            events: []
+                        };
+                    }
+
+                    eventsByMonth[monthKey].events.push(eventData);
+                });
+
+                // Trier les mois par ordre chronologique
+                const sortedMonthKeys = Object.keys(eventsByMonth).sort();
+
+                // Vider le conteneur
+                eventsGrid.innerHTML = '';
+
+                // Afficher les événements par mois
+                for (const monthKey of sortedMonthKeys) {
+                    const monthData = eventsByMonth[monthKey];
+
+                    // Créer la section du mois
+                    const monthSection = document.createElement('div');
+                    monthSection.className = 'month-section';
+                    monthSection.innerHTML = '<h3 class="month-title">' + monthData.label + ' ' + monthData.year + '</h3><div class="events-grid-month"></div>';
+
+                    const monthGrid = monthSection.querySelector('.events-grid-month');
+
+                    // Ajouter les événements du mois (déjà triés par likes)
+                    for (const eventData of monthData.events) {
+                        const eventId = eventData.id;
+
+                        // Stocker l'événement globalement
+                        window.eventsData[eventId] = eventData;
+
+                        const eventCard = await createEventCard(eventData, eventId);
+                        monthGrid.appendChild(eventCard);
+                    }
+
+                    eventsGrid.appendChild(monthSection);
                 }
 
-                console.log(`✅ ${querySnapshot.size} événement(s) chargé(s)`);
+                console.log('✅ ' + approvedEvents.length + ' événement(s) chargé(s) et groupé(s) par mois');
 
             } catch (error) {
                 console.error('❌ Erreur chargement événements:', error);

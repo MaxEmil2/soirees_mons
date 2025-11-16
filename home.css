@@ -148,6 +148,28 @@ body {
 }
 
 .events-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+}
+
+.month-section {
+    width: 100%;
+}
+
+.month-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.events-grid-month {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
@@ -318,8 +340,12 @@ body {
    ======================================== */
 
 @media (max-width: 992px) {
-    .events-grid {
+    .events-grid-month {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .month-title {
+        font-size: 28px;
     }
 
     .nav-menu {
@@ -332,8 +358,12 @@ body {
    ======================================== */
 
 @media (max-width: 768px) {
-    .events-grid {
+    .events-grid-month {
         grid-template-columns: 1fr;
+    }
+
+    .month-title {
+        font-size: 24px;
     }
 
     .nav-container {
