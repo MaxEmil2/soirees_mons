@@ -5,6 +5,175 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soirées Mons - Événements & Soirées à Mons</title>
     <link rel="stylesheet" href="home.css">
+    <style>
+        /* Mobile navigation - Hidden on desktop */
+        .nav-mobile-right {
+            display: none;
+        }
+
+        /* Mobile menu overlay */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Mobile slide-out menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100%;
+            background: var(--bg-dark, #1a1a2e);
+            z-index: 999;
+            transition: right 0.3s ease;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-menu-header h3 {
+            color: white;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .mobile-menu-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-menu-content {
+            padding: 20px;
+        }
+
+        .mobile-menu-item {
+            display: block;
+            width: 100%;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(108, 99, 255, 0.1);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .mobile-menu-item:hover {
+            background: rgba(108, 99, 255, 0.2);
+            border-color: rgba(108, 99, 255, 0.5);
+            transform: translateX(-4px);
+        }
+
+        /* Hamburger menu button */
+        .hamburger-menu {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .hamburger-menu span {
+            width: 24px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .hamburger-menu:hover span {
+            background: #6c63ff;
+        }
+
+        /* Notification bell mobile */
+        .notification-bell-mobile {
+            position: relative;
+            cursor: pointer;
+            padding: 8px;
+            color: white;
+            transition: color 0.3s;
+        }
+
+        .notification-bell-mobile:hover {
+            color: #6c63ff;
+        }
+
+        .notification-badge-mobile {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #ff4d4f;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Responsive: Show mobile nav on tablet and mobile */
+        @media (max-width: 992px) {
+            /* Hide desktop nav elements */
+            .nav-menu,
+            .nav-auth {
+                display: none !important;
+            }
+
+            /* Show mobile nav */
+            .nav-mobile-right {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- BARRE DE NAVIGATION -->
@@ -57,8 +226,52 @@
                     <a href="dashboard.html" class="btn-login" id="btn-account">Mon compte</a>
                 </div>
             </div>
+
+            <!-- MOBILE/TABLET: Icônes à droite (cloche + hamburger) -->
+            <div class="nav-mobile-right">
+                <!-- Cloche notifications mobile -->
+                <div class="notification-bell-mobile" id="notification-bell-mobile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge-mobile" id="notification-badge-mobile" style="display: none;">0</span>
+                </div>
+
+                <!-- Menu hamburger -->
+                <button class="hamburger-menu" id="hamburger-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- MENU LATÉRAL MOBILE -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <nav class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
+        </div>
+        <div class="mobile-menu-content">
+            <!-- Affiché si NON connecté -->
+            <a href="signup.html" class="mobile-menu-item" id="mobile-menu-signup">
+                S'enregistrer
+            </a>
+
+            <!-- Affiché si connecté -->
+            <div id="mobile-menu-connected" style="display: none;">
+                <a href="dashboard.html" class="mobile-menu-item">
+                    Mon compte
+                </a>
+                <button class="mobile-menu-item" id="mobile-menu-add-event">
+                    ➕ Ajouter une soirée
+                </button>
+            </div>
+        </div>
+    </nav>
 
     <!-- SECTION ÉVÉNEMENTS -->
     <section id="evenements" class="events-section">
@@ -166,7 +379,7 @@
                     <!-- Boutons d'action -->
                     <div class="modal-actions">
                         <a id="modal-link" href="#" target="_blank" class="modal-btn modal-btn-primary">Lien de la soirée</a>
-                        <button id="modal-presales-button" class="modal-btn presales-button">
+                        <button id="modal-presales-button" class="modal-btn modal-btn-primary">
                             🎟️ Voir les préventes
                         </button>
                     </div>
@@ -637,22 +850,6 @@
 
         .modal-btn-secondary:hover {
             background: #3a3a54;
-        }
-
-        .presales-button.active {
-            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
-            color: white;
-        }
-
-        .presales-button.active:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
-        }
-
-        .presales-button.disabled {
-            background: #2d2d44;
-            color: #8888a0;
-            cursor: not-allowed;
         }
 
         @media (max-width: 768px) {
@@ -1689,10 +1886,11 @@
             const presalesButton = document.getElementById('modal-presales-button');
             if (event.presales) {
                 presalesButton.textContent = '🎟️ Voir les préventes';
-                presalesButton.className = 'presales-button active';
+                presalesButton.className = 'modal-btn modal-btn-primary';
             } else {
                 presalesButton.textContent = '🚫 Pas de préventes';
-                presalesButton.className = 'presales-button disabled';
+                presalesButton.className = 'modal-btn modal-btn-secondary';
+                presalesButton.style.cursor = 'not-allowed';
             }
 
             // Afficher le modal
@@ -1961,6 +2159,85 @@
         }
 
         console.log('❤️ Likes UI initialisé');
+    </script>
+
+    <!-- Script Menu Mobile -->
+    <script>
+        // Hamburger menu toggle
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        const mobileMenuAddEvent = document.getElementById('mobile-menu-add-event');
+
+        // Open mobile menu
+        hamburgerMenu.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Close mobile menu
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+
+        // Mobile menu "Ajouter une soirée" button
+        mobileMenuAddEvent.addEventListener('click', () => {
+            closeMobileMenu();
+            // Trigger the same function as desktop "Ajouter une soirée" button
+            document.getElementById('btn-add-event').click();
+        });
+
+        // Notification bell mobile - open same dropdown as desktop
+        const notificationBellMobile = document.getElementById('notification-bell-mobile');
+        const notificationBadgeMobile = document.getElementById('notification-badge-mobile');
+
+        notificationBellMobile.addEventListener('click', () => {
+            // Trigger desktop notification bell
+            document.getElementById('notification-bell').click();
+        });
+
+        // Sync auth state between desktop and mobile
+        const authObserver = setInterval(() => {
+            const navAuthConnected = document.getElementById('nav-auth-connected');
+            const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+            const mobileMenuConnected = document.getElementById('mobile-menu-connected');
+
+            if (navAuthConnected) {
+                const isConnected = navAuthConnected.style.display !== 'none';
+
+                if (isConnected) {
+                    mobileMenuSignup.style.display = 'none';
+                    mobileMenuConnected.style.display = 'block';
+                } else {
+                    mobileMenuSignup.style.display = 'block';
+                    mobileMenuConnected.style.display = 'none';
+                }
+            }
+        }, 500);
+
+        // Sync notification badge between desktop and mobile
+        const badgeObserver = setInterval(() => {
+            const desktopBadge = document.getElementById('notification-badge');
+            const mobileBadge = document.getElementById('notification-badge-mobile');
+
+            if (desktopBadge && mobileBadge) {
+                if (desktopBadge.style.display !== 'none') {
+                    mobileBadge.textContent = desktopBadge.textContent;
+                    mobileBadge.style.display = 'inline-block';
+                } else {
+                    mobileBadge.style.display = 'none';
+                }
+            }
+        }, 500);
+
+        console.log('📱 Menu mobile initialisé');
     </script>
 </body>
 </html>
