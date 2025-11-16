@@ -3,98 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Soirées Mons</title>
+    <title>Mon Compte - Soirées Mons</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        :root {
+            --primary-color: #6c63ff;
+            --primary-hover: #5850db;
+            --bg-dark: #0f0f1e;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --text-white: #ffffff;
+            --text-gray: #b8b8d1;
+            --border-color: #2d2d44;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-secondary) 100%);
+            color: var(--text-white);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             min-height: 100vh;
             padding: 40px 20px;
         }
 
         .dashboard-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-        }
-
-        .dashboard-card {
-            background: #16213e;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-            border: 1px solid #2d2d44;
-            margin-bottom: 24px;
         }
 
         .loading {
             text-align: center;
-            padding: 60px 0;
-            font-size: 18px;
-            color: #b8b8d1;
+            padding: 100px 0;
+            font-size: 20px;
+            color: var(--text-gray);
         }
 
-        h1 {
-            font-size: 32px;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+        /* Header avec bouton retour */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        h2 {
-            font-size: 24px;
-            color: #6c63ff;
-            margin-bottom: 16px;
+        .btn-home {
+            padding: 12px 24px;
+            background: rgba(108, 99, 255, 0.1);
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
         }
 
-        .user-info {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 24px;
-            margin: 24px 0;
-            border: 1px solid #2d2d44;
+        .btn-home:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
         }
 
-        .user-info p {
-            margin: 8px 0;
-            color: #b8b8d1;
+        /* Carte profil */
+        .profile-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
         }
 
-        .user-info strong {
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* Photo de profil */
+        .profile-photo-section {
+            text-align: center;
+        }
+
+        .profile-photo-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 16px;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .profile-photo-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.5);
+        }
+
+        .profile-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
             color: white;
         }
 
-        .user-photo {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 16px 0;
-            border: 3px solid #6c63ff;
-            display: none;
+        .photo-upload-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        .profile-section {
+        .profile-photo-container:hover .photo-upload-overlay {
+            opacity: 1;
+        }
+
+        .photo-upload-text {
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+
+        /* Informations utilisateur */
+        .user-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-item {
+            background: rgba(108, 99, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .info-item:hover {
+            background: rgba(108, 99, 255, 0.1);
+            border-color: var(--primary-color);
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: var(--text-white);
+            font-weight: 600;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .edit-icon {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            color: var(--primary-color);
+            transition: all 0.3s;
+            font-size: 20px;
+        }
+
+        .edit-icon:hover {
+            background: rgba(108, 99, 255, 0.2);
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
             margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a54;
+        }
+
+        /* Section Soirées Likées */
+        .liked-events-section {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .liked-events-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .liked-event-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .liked-event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.3);
+        }
+
+        .liked-event-image {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+        }
+
+        .liked-event-info {
+            padding: 16px;
+        }
+
+        .liked-event-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .liked-event-date {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-gray);
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+        }
+
+        /* Modal pour édition */
+        .edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .edit-modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            padding: 32px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
-            color: #b8b8d1;
+            color: var(--text-gray);
             margin-bottom: 8px;
             font-size: 14px;
+            font-weight: 500;
         }
 
         .form-group input {
             width: 100%;
             padding: 12px 16px;
-            background: #1a1a2e;
-            border: 2px solid #2d2d44;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
             border-radius: 12px;
             color: white;
             font-size: 16px;
@@ -102,214 +383,210 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #6c63ff;
+            border-color: var(--primary-color);
         }
 
-        .btn {
-            background: #6c63ff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-right: 12px;
-        }
-
-        .btn:hover {
-            background: #5850db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
-        }
-
-        .btn-secondary {
-            background: #ff4d4f;
-        }
-
-        .btn-secondary:hover {
-            background: #e03e3e;
-        }
-
-        .btn-verify {
-            background: #52c41a;
-            font-size: 14px;
-            padding: 8px 16px;
-            display: none;
-        }
-
-        .btn-verify:hover {
-            background: #3da110;
-        }
-
-        .tabs {
+        .modal-buttons {
             display: flex;
-            gap: 16px;
-            margin-bottom: 24px;
-            border-bottom: 2px solid #2d2d44;
+            gap: 12px;
+            margin-top: 24px;
         }
 
-        .tab {
-            padding: 12px 24px;
-            cursor: pointer;
-            color: #b8b8d1;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .profile-photo-container {
+                width: 150px;
+                height: 150px;
+            }
+
+            .liked-events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .page-title {
+                font-size: 28px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 16px;
+            }
         }
 
-        .tab:hover {
-            color: white;
-        }
-
-        .tab.active {
-            color: #6c63ff;
-            border-bottom-color: #6c63ff;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
+        @media (max-width: 992px) and (min-width: 769px) {
+            .liked-events-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <div class="dashboard-card">
-            <div id="loading" class="loading">
-                Chargement...
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            Chargement de votre profil...
+        </div>
+
+        <!-- Contenu principal -->
+        <div id="dashboard-content" style="display: none;">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <h1 class="page-title">Mon Compte</h1>
+                <a href="index.html" class="btn-home">🏠 Retour à l'accueil</a>
             </div>
 
-            <div id="dashboard-content" style="display: none;">
-                <h1>🎉 Bienvenue sur votre Dashboard!</h1>
-                <p style="color: #b8b8d1; margin-bottom: 24px;">
-                    Vous êtes maintenant connecté avec succès.
-                </p>
+            <!-- Carte Profil -->
+            <div class="profile-card">
+                <div class="profile-grid">
+                    <!-- Photo de profil -->
+                    <div class="profile-photo-section">
+                        <div class="profile-photo-container" id="photo-container">
+                            <div class="profile-photo" id="profile-photo">
+                                👤
+                            </div>
+                            <div class="photo-upload-overlay">
+                                📸 Changer la photo
+                            </div>
+                        </div>
+                        <p class="photo-upload-text">Cliquez pour changer</p>
+                        <input type="file" id="photo-input" accept="image/*" style="display: none;">
+                    </div>
 
-                <!-- Photo de profil -->
-                <img id="user-photo" class="user-photo" alt="Photo de profil">
+                    <!-- Informations utilisateur -->
+                    <div class="user-info-section">
+                        <!-- UID (lecture seule) -->
+                        <div class="info-item">
+                            <div class="info-content">
+                                <div class="info-label">UID</div>
+                                <div class="info-value" id="user-uid">-</div>
+                            </div>
+                        </div>
 
-                <!-- Informations utilisateur -->
-                <div class="user-info">
-                    <h2>Informations utilisateur</h2>
-                    <p><strong>Email:</strong> <span id="user-email"></span>
-                        <span id="user-email-verified"></span>
-                        <button class="btn btn-verify" id="verify-email-btn">Vérifier mon email</button>
-                    </p>
-                    <p><strong>UID:</strong> <span id="user-uid"></span></p>
-                    <p><strong>Provider:</strong> <span id="user-provider"></span></p>
-                    <p><strong>Date de création:</strong> <span id="user-created"></span></p>
+                        <!-- Pseudo (éditable) -->
+                        <div class="info-item">
+                            <div class="info-content">
+                                <div class="info-label">Pseudo</div>
+                                <div class="info-value" id="user-pseudo">-</div>
+                            </div>
+                            <span class="edit-icon" id="edit-pseudo">✏️</span>
+                        </div>
+
+                        <!-- Email (non modifiable) -->
+                        <div class="info-item">
+                            <div class="info-content">
+                                <div class="info-label">Email</div>
+                                <div class="info-value" id="user-email">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Mot de passe (éditable) -->
+                        <div class="info-item">
+                            <div class="info-content">
+                                <div class="info-label">Mot de passe</div>
+                                <div class="info-value">••••••••</div>
+                            </div>
+                            <span class="edit-icon" id="edit-password">✏️</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Onglets -->
-                <div class="tabs">
-                    <div class="tab active" data-tab="info">Informations</div>
-                    <div class="tab" data-tab="email">Modifier l'email</div>
-                    <div class="tab" data-tab="password">Modifier le mot de passe</div>
-                    <div class="tab" data-tab="profile">Modifier le profil</div>
-                </div>
-
-                <!-- Contenu des onglets -->
-
-                <!-- Onglet Info -->
-                <div class="tab-content active" id="tab-info">
-                    <p style="color: #b8b8d1;">
-                        Utilisez les onglets ci-dessus pour modifier vos informations personnelles.
-                    </p>
-
-                    <!-- Bouton Panel Admin (visible uniquement si admin) -->
-                    <a href="admin-panel.html" class="btn" id="admin-panel-btn" style="display: none; margin-top: 24px; text-decoration: none;">
+                <!-- Boutons d'action -->
+                <div class="action-buttons">
+                    <a href="admin-panel.html" class="btn btn-admin" id="admin-btn" style="display: none;">
                         🔑 Panel Admin
                     </a>
-
-                    <!-- Bouton Mes Soirées -->
-                    <a href="mes-soirees.html" class="btn" style="margin-top: 24px; text-decoration: none; background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);">
+                    <a href="mes-soirees.html" class="btn btn-primary">
                         📋 Mes Soirées
                     </a>
-
-                    <button class="btn btn-secondary" id="logout-btn" style="margin-top: 24px;">
-                        Se déconnecter
+                    <button class="btn btn-secondary" id="logout-btn">
+                        🚪 Se déconnecter
                     </button>
                 </div>
+            </div>
 
-                <!-- Onglet Modifier l'email -->
-                <div class="tab-content" id="tab-email">
-                    <h2>Modifier l'email</h2>
-                    <form id="update-email-form">
-                        <div class="form-group">
-                            <label for="new-email">Nouvel email</label>
-                            <input type="email" id="new-email" placeholder="nouveau@email.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email-password">Mot de passe actuel (pour confirmer)</label>
-                            <input type="password" id="email-password" placeholder="••••••••" required>
-                        </div>
-                        <button type="submit" class="btn" id="update-email-btn">Modifier l'email</button>
-                    </form>
+            <!-- Section Soirées Likées -->
+            <div class="liked-events-section">
+                <h2 class="section-title">❤️ Soirées Likées</h2>
+                <div id="liked-events-loading" class="loading" style="padding: 40px 0;">
+                    Chargement de vos soirées likées...
                 </div>
-
-                <!-- Onglet Modifier le mot de passe -->
-                <div class="tab-content" id="tab-password">
-                    <h2>Modifier le mot de passe</h2>
-                    <form id="update-password-form">
-                        <div class="form-group">
-                            <label for="current-password">Mot de passe actuel</label>
-                            <input type="password" id="current-password" placeholder="••••••••" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="new-password">Nouveau mot de passe</label>
-                            <input type="password" id="new-password" placeholder="••••••••" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="confirm-new-password">Confirmer le nouveau mot de passe</label>
-                            <input type="password" id="confirm-new-password" placeholder="••••••••" required>
-                        </div>
-                        <button type="submit" class="btn" id="update-password-btn">Modifier le mot de passe</button>
-                    </form>
+                <div id="liked-events-grid" class="liked-events-grid" style="display: none;">
+                    <!-- Les soirées likées seront chargées ici -->
                 </div>
-
-                <!-- Onglet Modifier le profil -->
-                <div class="tab-content" id="tab-profile">
-                    <h2>Modifier le profil</h2>
-                    <form id="update-photo-form">
-                        <div class="form-group">
-                            <label for="display-name">Nom d'affichage</label>
-                            <input type="text" id="display-name" placeholder="Votre nom">
-                        </div>
-                        <div class="form-group">
-                            <label for="photo-url">URL de la photo de profil</label>
-                            <input type="url" id="photo-url" placeholder="https://exemple.com/photo.jpg">
-                            <small style="color: #b8b8d1; font-size: 12px;">
-                                Utilisez un lien vers une image hébergée (ex: Imgur, Gravatar, etc.)
-                            </small>
-                        </div>
-                        <button type="submit" class="btn" id="update-photo-btn">Mettre à jour le profil</button>
-                    </form>
+                <div id="no-liked-events" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">💔</div>
+                    <p>Vous n'avez pas encore liké de soirées.</p>
+                    <p>Découvrez nos événements et cliquez sur le cœur !</p>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- JavaScript pour gérer les onglets -->
+    <!-- Modal Édition Pseudo -->
+    <div id="edit-pseudo-modal" class="edit-modal">
+        <div class="edit-modal-content">
+            <h2 class="modal-title">Modifier le pseudo</h2>
+            <form id="edit-pseudo-form">
+                <div class="form-group">
+                    <label for="new-pseudo">Nouveau pseudo</label>
+                    <input type="text" id="new-pseudo" placeholder="Votre pseudo" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditPseudoModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Édition Mot de passe -->
+    <div id="edit-password-modal" class="edit-modal">
+        <div class="edit-modal-content">
+            <h2 class="modal-title">Modifier le mot de passe</h2>
+            <form id="edit-password-form">
+                <div class="form-group">
+                    <label for="current-password">Mot de passe actuel</label>
+                    <input type="password" id="current-password" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Nouveau mot de passe</label>
+                    <input type="password" id="new-password" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirmer le mot de passe</label>
+                    <input type="password" id="confirm-password" placeholder="••••••••" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditPasswordModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Gestion des onglets
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.getAttribute('data-tab');
+        // Fonctions globales pour fermer les modals
+        window.closeEditPseudoModal = function() {
+            document.getElementById('edit-pseudo-modal').style.display = 'none';
+        };
 
-                // Désactiver tous les onglets
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-                // Activer l'onglet cliqué
-                tab.classList.add('active');
-                document.getElementById('tab-' + tabName).classList.add('active');
-            });
-        });
+        window.closeEditPasswordModal = function() {
+            document.getElementById('edit-password-modal').style.display = 'none';
+        };
     </script>
 
     <!-- Import Firebase Dashboard logic -->
