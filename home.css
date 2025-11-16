@@ -71,6 +71,12 @@ body {
     background-clip: text;
 }
 
+.navbar-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
 .nav-menu {
     display: flex;
     gap: 32px;
@@ -226,6 +232,24 @@ body {
 }
 
 /* ========================================
+   LOGO SECTION
+   ======================================== */
+
+.logo-section {
+    background: var(--bg-dark);
+    padding: 60px 0;
+    text-align: center;
+}
+
+.main-logo {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    opacity: 0.9;
+}
+
+/* ========================================
    FOOTER
    ======================================== */
 
@@ -255,6 +279,12 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+.footer-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
 }
 
 .footer-right {
@@ -355,5 +385,17 @@ body {
 
     .logo h1 {
         font-size: 20px;
+    }
+
+    .navbar-logo {
+        height: 35px;
+    }
+
+    .main-logo {
+        max-width: 280px;
+    }
+
+    .footer-logo {
+        height: 45px;
     }
 }
