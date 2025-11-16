@@ -39,10 +39,22 @@ const auth = getAuth(app);
 import {
     getFirestore,
     doc,
-    getDoc
+    getDoc,
+    collection,
+    query,
+    where,
+    getDocs
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
+import {
+    getStorage,
+    ref,
+    uploadBytes,
+    getDownloadURL
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // ========================================
 // ÉLÉMENTS DOM - INFORMATIONS
@@ -422,34 +434,17 @@ if (updatePhotoForm) {
 
 console.log('🔥 Dashboard Firebase initialisé');
 
-// Imports Firebase supplémentaires pour les soirées likées
-import {
-    collection,
-    query,
-    where,
-    getDocs
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-import {
-    getStorage,
-    ref,
-    uploadBytes,
-    getDownloadURL
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+// ========================================
+// NOUVEAUX ÉLÉMENTS DOM POUR LE NOUVEAU DESIGN
+// ========================================
 
-const storage = getStorage(app);
-
-// Éléments DOM
-const loading = document.getElementById('loading');
-const dashboardContent = document.getElementById('dashboard-content');
-const userUid = document.getElementById('user-uid');
+// Nouveaux éléments pour le redesign
 const userPseudo = document.getElementById('user-pseudo');
-const userEmail = document.getElementById('user-email');
 const profilePhoto = document.getElementById('profile-photo');
 const photoContainer = document.getElementById('photo-container');
 const photoInput = document.getElementById('photo-input');
 const adminBtn = document.getElementById('admin-btn');
-const logoutBtn = document.getElementById('logout-btn');
 
 // Soirées likées
 const likedEventsLoading = document.getElementById('liked-events-loading');
@@ -461,6 +456,10 @@ const editPseudoModal = document.getElementById('edit-pseudo-modal');
 const editPasswordModal = document.getElementById('edit-password-modal');
 const editPseudoBtn = document.getElementById('edit-pseudo');
 const editPasswordBtn = document.getElementById('edit-password');
+
+// ========================================
+// FONCTIONS POUR LES SOIRÉES LIKÉES
+// ========================================
 
 // Charger les soirées likées
 async function loadLikedEvents(userId) {
@@ -479,8 +478,8 @@ async function loadLikedEvents(userId) {
         }
 
         const eventIds = [];
-        likesSnapshot.forEach(doc => {
-            eventIds.push(doc.data().eventId);
+        likesSnapshot.forEach(docSnap => {
+            eventIds.push(docSnap.data().eventId);
         });
 
         likedEventsLoading.style.display = 'none';
@@ -527,7 +526,11 @@ function createLikedEventCard(event, eventId) {
     return card;
 }
 
-// Écouter l'état de connexion
+// ========================================
+// GESTION DU NOUVEAU DASHBOARD
+// ========================================
+
+// Remplacer l'ancien onAuthStateChanged par le nouveau
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = 'login.html';
@@ -537,111 +540,117 @@ onAuthStateChanged(auth, async (user) => {
     loading.style.display = 'none';
     dashboardContent.style.display = 'block';
 
+    // Afficher les infos
     userUid.textContent = user.uid;
     userEmail.textContent = user.email;
-    userPseudo.textContent = user.displayName || 'Aucun pseudo';
+    if (userPseudo) {
+        userPseudo.textContent = user.displayName || 'Aucun pseudo';
+    }
 
-    if (user.photoURL) {
+    // Photo de profil
+    if (user.photoURL && profilePhoto) {
         profilePhoto.innerHTML = `<img src="${user.photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
     }
 
+    // Vérifier si admin
     const userDoc = await getDoc(doc(db, 'users', user.uid));
     if (userDoc.exists() && userDoc.data().isAdmin) {
-        adminBtn.style.display = 'inline-block';
+        if (adminBtn) adminBtn.style.display = 'inline-block';
+        if (adminPanelBtn) adminPanelBtn.style.display = 'inline-block';
     }
 
-    loadLikedEvents(user.uid);
+    // Charger les soirées likées
+    if (likedEventsLoading) {
+        loadLikedEvents(user.uid);
+    }
 });
 
 // Upload photo de profil
-photoContainer.addEventListener('click', () => {
-    photoInput.click();
-});
+if (photoContainer && photoInput) {
+    photoContainer.addEventListener('click', () => {
+        photoInput.click();
+    });
 
-photoInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    photoInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    try {
-        const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
-        await uploadBytes(storageRef, file);
-        const photoURL = await getDownloadURL(storageRef);
-        
-        await updateProfile(auth.currentUser, { photoURL });
-        profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
-        alert('✅ Photo de profil mise à jour !');
-    } catch (error) {
-        console.error('Erreur upload photo:', error);
-        alert('❌ Erreur lors du téléchargement de la photo');
-    }
-});
+        try {
+            const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
+            await uploadBytes(storageRef, file);
+            const photoURL = await getDownloadURL(storageRef);
+            
+            await updateProfile(auth.currentUser, { photoURL });
+            profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            alert('✅ Photo de profil mise à jour !');
+        } catch (error) {
+            console.error('Erreur upload photo:', error);
+            alert('❌ Erreur lors du téléchargement de la photo');
+        }
+    });
+}
 
 // Modal édition pseudo
-editPseudoBtn.addEventListener('click', () => {
-    editPseudoModal.style.display = 'flex';
-    document.getElementById('new-pseudo').value = auth.currentUser.displayName || '';
-});
+if (editPseudoBtn) {
+    editPseudoBtn.addEventListener('click', () => {
+        editPseudoModal.style.display = 'flex';
+        document.getElementById('new-pseudo').value = auth.currentUser.displayName || '';
+    });
+}
 
-document.getElementById('edit-pseudo-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const newPseudo = document.getElementById('new-pseudo').value.trim();
+if (document.getElementById('edit-pseudo-form')) {
+    document.getElementById('edit-pseudo-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPseudo = document.getElementById('new-pseudo').value.trim();
 
-    try {
-        await updateProfile(auth.currentUser, { displayName: newPseudo });
-        userPseudo.textContent = newPseudo;
-        closeEditPseudoModal();
-        alert('✅ Pseudo mis à jour !');
-    } catch (error) {
-        console.error('Erreur mise à jour pseudo:', error);
-        alert('❌ Erreur lors de la mise à jour');
-    }
-});
-
-// Modal édition mot de passe  
-editPasswordBtn.addEventListener('click', () => {
-    editPasswordModal.style.display = 'flex';
-});
-
-document.getElementById('edit-password-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const currentPassword = document.getElementById('current-password').value;
-    const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
-
-    if (newPassword !== confirmPassword) {
-        alert('❌ Les mots de passe ne correspondent pas');
-        return;
-    }
-
-    try {
-        const credential = EmailAuthProvider.credential(
-            auth.currentUser.email,
-            currentPassword
-        );
-        await reauthenticateWithCredential(auth.currentUser, credential);
-        await updatePassword(auth.currentUser, newPassword);
-        
-        closeEditPasswordModal();
-        alert('✅ Mot de passe mis à jour !');
-        document.getElementById('edit-password-form').reset();
-    } catch (error) {
-        console.error('Erreur mise à jour mot de passe:', error);
-        alert('❌ Mot de passe actuel incorrect ou erreur');
-    }
-});
-
-// Déconnexion
-logoutBtn.addEventListener('click', async () => {
-    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
         try {
-            await signOut(auth);
-            window.location.href = 'login.html';
+            await updateProfile(auth.currentUser, { displayName: newPseudo });
+            userPseudo.textContent = newPseudo;
+            editPseudoModal.style.display = 'none';
+            alert('✅ Pseudo mis à jour !');
         } catch (error) {
-            console.error('Erreur déconnexion:', error);
-            alert('Erreur lors de la déconnexion');
+            console.error('Erreur mise à jour pseudo:', error);
+            alert('❌ Erreur lors de la mise à jour');
         }
-    }
-});
+    });
+}
 
-console.log('✅ Dashboard initialisé');
+// Modal édition mot de passe
+if (editPasswordBtn) {
+    editPasswordBtn.addEventListener('click', () => {
+        editPasswordModal.style.display = 'flex';
+    });
+}
+
+if (document.getElementById('edit-password-form')) {
+    document.getElementById('edit-password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (newPassword !== confirmPassword) {
+            alert('❌ Les mots de passe ne correspondent pas');
+            return;
+        }
+
+        try {
+            const credential = EmailAuthProvider.credential(
+                auth.currentUser.email,
+                currentPassword
+            );
+            await reauthenticateWithCredential(auth.currentUser, credential);
+            await updatePassword(auth.currentUser, newPassword);
+            
+            editPasswordModal.style.display = 'none';
+            alert('✅ Mot de passe mis à jour !');
+            document.getElementById('edit-password-form').reset();
+        } catch (error) {
+            console.error('Erreur mise à jour mot de passe:', error);
+            alert('❌ Mot de passe actuel incorrect ou erreur');
+        }
+    });
+}
+
+console.log('✅ Dashboard avec soirées likées initialisé');
