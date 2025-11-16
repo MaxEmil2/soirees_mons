@@ -12,7 +12,7 @@
         <div class="nav-container">
             <!-- Logo à gauche -->
             <div class="logo">
-                <img src="assets/logo.svg" alt="Soirées Mons" class="navbar-logo">
+                <img src="assets/logo.png" alt="Soirées Mons" class="navbar-logo">
             </div>
 
             <!-- Menu au centre -->
@@ -329,13 +329,6 @@
         </svg>
     </div>
 
-    <!-- LOGO SECTION -->
-    <section class="logo-section">
-        <div class="container">
-            <img src="assets/logo.svg" alt="Soirées Mons" class="main-logo">
-        </div>
-    </section>
-
     <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-container">
@@ -346,7 +339,7 @@
 
             <!-- Centre: Logo -->
             <div class="footer-center">
-                <img src="assets/logo.svg" alt="Soirées Mons Logo" class="footer-logo">
+                <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
             </div>
 
             <!-- Droite: Réseaux sociaux -->
@@ -1149,12 +1142,12 @@
         }
 
         .liker-photo {
-            width: 28px;
-            height: 28px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
-            margin-left: -6px;
+            margin-left: -4px;
         }
 
         .liker-photo:first-child {
@@ -1357,8 +1350,8 @@
             }
 
             .liker-photo {
-                width: 28px;
-                height: 28px;
+                width: 22px;
+                height: 22px;
             }
 
             .likes-count {
@@ -1700,7 +1693,7 @@
 
     <!-- Script gestion des likes -->
     <script type="module">
-        import { loadEventLikes, hasUserLiked, likeEvent, getRecentPublicLikers, getTotalLikes } from './likes.js';
+        import { loadEventLikes, hasUserLiked, likeEvent, unlikeEvent, getRecentPublicLikers, getTotalLikes } from './likes.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
 

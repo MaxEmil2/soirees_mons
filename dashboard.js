@@ -40,6 +40,7 @@ import {
     getFirestore,
     doc,
     getDoc,
+    updateDoc,
     collection,
     query,
     where,
@@ -585,9 +586,31 @@ if (photoContainer && photoInput) {
             const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
             await uploadBytes(storageRef, file);
             const photoURL = await getDownloadURL(storageRef);
-            
+
+            // Mettre à jour le profil Firebase Auth
             await updateProfile(auth.currentUser, { photoURL });
             profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
+
+            // Mettre à jour tous les likes existants avec la nouvelle photo
+            const likesQuery = query(
+                collection(db, 'likes'),
+                where('userId', '==', auth.currentUser.uid)
+            );
+            const likesSnapshot = await getDocs(likesQuery);
+
+            // Mettre à jour chaque like avec la nouvelle photo
+            const updatePromises = [];
+            likesSnapshot.forEach((likeDoc) => {
+                updatePromises.push(
+                    updateDoc(doc(db, 'likes', likeDoc.id), {
+                        userPhotoURL: photoURL
+                    })
+                );
+            });
+
+            await Promise.all(updatePromises);
+            console.log(`✅ ${updatePromises.length} likes mis à jour avec la nouvelle photo`);
+
             alert('✅ Photo de profil mise à jour !');
         } catch (error) {
             console.error('Erreur upload photo:', error);
