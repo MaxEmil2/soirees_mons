@@ -26,7 +26,31 @@
                 <a href="signup.html" class="btn-signup" id="btn-signup">S'enregistrer</a>
 
                 <!-- Affiché si connecté -->
-                <a href="dashboard.html" class="btn-login" id="btn-account" style="display: none;">Mon compte</a>
+                <div class="nav-auth-connected" id="nav-auth-connected" style="display: none;">
+                    <!-- Cloche notifications -->
+                    <div class="notification-bell" id="notification-bell">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+
+                        <!-- Dropdown notifications -->
+                        <div class="notification-dropdown" id="notification-dropdown">
+                            <div class="notification-header">
+                                <h3>Notifications</h3>
+                                <button class="mark-all-read" id="mark-all-read">Tout marquer lu</button>
+                            </div>
+                            <div class="notification-list" id="notification-list">
+                                <!-- Les notifications seront chargées ici -->
+                                <div class="notification-empty">Aucune notification</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bouton Mon compte -->
+                    <a href="dashboard.html" class="btn-login" id="btn-account">Mon compte</a>
+                </div>
             </div>
         </div>
     </header>
@@ -50,6 +74,13 @@
             <div id="no-events" class="no-events" style="display: none;">
                 <p>🎉 Aucune soirée prévue pour le moment.</p>
                 <p>Revenez bientôt pour découvrir nos prochains événements!</p>
+            </div>
+
+            <!-- Bouton Ajouter une soirée -->
+            <div class="add-event-section">
+                <button class="btn-add-event" id="btn-add-event">
+                    ➕ Ajouter une soirée
+                </button>
             </div>
         </div>
     </section>
@@ -127,6 +158,121 @@
         </div>
     </div>
 
+    <!-- MODAL AJOUTER UNE SOIRÉE (UTILISATEUR) -->
+    <div id="add-event-modal" class="add-event-modal" style="display: none;">
+        <div class="add-event-modal-content">
+            <!-- Bouton fermer -->
+            <button class="modal-close" onclick="closeAddEventModal()">✕</button>
+
+            <h2 class="add-event-title">➕ Proposer une soirée</h2>
+
+            <form id="user-event-form" class="user-event-form">
+                <!-- Row 1: Name and Date -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-event-name">Nom de la soirée *</label>
+                        <input type="text" id="user-event-name" placeholder="Ex: Soirée House Music" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-event-date">Date *</label>
+                        <input type="datetime-local" id="user-event-date" required>
+                    </div>
+                </div>
+
+                <!-- Row 2: Location and Price -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-event-location">Lieu *</label>
+                        <input type="text" id="user-event-location" placeholder="Ex: Le Reflektor, Mons" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-event-price">Prix (€) *</label>
+                        <input type="number" id="user-event-price" placeholder="Ex: 15" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <!-- Row 3: Age and Link -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-event-age">Âge requis *</label>
+                        <input type="number" id="user-event-age" placeholder="Ex: 18" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-event-link">Lien de la soirée</label>
+                        <input type="url" id="user-event-link" placeholder="https://example.com/tickets">
+                    </div>
+                </div>
+
+                <!-- Row 4: Presales toggle -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Préventes</label>
+                        <div class="toggle-container">
+                            <div class="toggle-switch" id="user-presales-toggle">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <span class="toggle-label" id="user-presales-label">Désactivé</span>
+                        </div>
+                        <input type="hidden" id="user-event-presales" value="false">
+                        <!-- Nouveau: Texte + bouton Plus d'informations -->
+                        <div style="margin-top: 12px;">
+                            <small style="color: #b8b8d1;">Les préventes permettent d'acheter des billets à l'avance</small><br>
+                            <button type="button" class="btn-info-presales" id="btn-info-presales">ℹ️ Plus d'informations</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group full-width">
+                    <label for="user-event-description">Description</label>
+                    <textarea id="user-event-description" placeholder="Décrivez la soirée..."></textarea>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="form-group full-width">
+                    <label>Image de la soirée *</label>
+                    <div class="image-upload-area" id="user-image-upload-area">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">Cliquez pour uploader une image</div>
+                        <small style="color: #b8b8d1;">JPG, PNG ou WEBP - Max 5MB</small>
+                    </div>
+                    <input type="file" id="user-image-input" accept="image/*" required style="display: none;">
+                    <div class="image-preview" id="user-image-preview" style="display: none;">
+                        <img id="user-preview-img" src="" alt="Preview">
+                    </div>
+                </div>
+
+                <!-- Submit buttons -->
+                <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
+                    <button type="submit" class="modal-btn modal-btn-primary" id="user-submit-btn">Envoyer pour validation</button>
+                    <button type="button" class="modal-btn modal-btn-secondary" onclick="closeAddEventModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMATION ENVOI -->
+    <div id="confirmation-modal" class="confirmation-modal" style="display: none;">
+        <div class="confirmation-modal-content">
+            <div class="confirmation-icon">✅</div>
+            <h2>Soirée envoyée !</h2>
+            <p>Nous avons bien reçu votre soirée ! Un administrateur va analyser votre demande sous peu.</p>
+            <p>Vous recevrez une notification dès que votre soirée sera acceptée ou refusée.</p>
+            <p><strong>Merci pour votre contribution à la communauté !</strong></p>
+            <button class="modal-btn modal-btn-primary" onclick="closeConfirmationModal()">Compris !</button>
+        </div>
+    </div>
+
+    <!-- MODAL INFO PRÉVENTES (non configuré pour l'instant) -->
+    <div id="info-presales-modal" class="info-presales-modal" style="display: none;">
+        <div class="info-modal-content">
+            <button class="modal-close" onclick="closeInfoPresalesModal()">✕</button>
+            <h2>ℹ️ Informations sur les préventes</h2>
+            <p>Cette fonctionnalité sera configurée prochainement.</p>
+            <button class="modal-btn modal-btn-primary" onclick="closeInfoPresalesModal()">OK</button>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-container">
@@ -177,6 +323,31 @@
         .no-events p {
             margin: 12px 0;
             font-size: 18px;
+        }
+
+        /* Section Ajouter une soirée */
+        .add-event-section {
+            text-align: center;
+            margin-top: 60px;
+            padding-bottom: 40px;
+        }
+
+        .btn-add-event {
+            padding: 16px 48px;
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-add-event:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.5);
         }
 
         /* Bouton Détails de la soirée */
@@ -363,6 +534,440 @@
                 text-align: center;
             }
         }
+
+        /* Modal Ajouter une soirée */
+        .add-event-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .add-event-modal-content {
+            background: #16213e;
+            border-radius: 24px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid #2d2d44;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            padding: 40px;
+        }
+
+        .add-event-title {
+            font-size: 28px;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            color: #b8b8d1;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a2e;
+            border: 2px solid #2d2d44;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6c63ff;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #2d2d44;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #6c63ff;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .toggle-label {
+            color: #b8b8d1;
+            font-size: 14px;
+        }
+
+        .toggle-switch.active + .toggle-label {
+            color: #6c63ff;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #2d2d44;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            background: #1a1a2e;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-upload-area:hover {
+            border-color: #6c63ff;
+            background: #1f1f35;
+        }
+
+        .image-upload-area.active {
+            border-color: #6c63ff;
+            background: #1f1f35;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #b8b8d1;
+            margin-bottom: 8px;
+        }
+
+        .image-preview {
+            max-width: 300px;
+            margin: 16px auto;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .btn-info-presales {
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #2d2d44;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-info-presales:hover {
+            background: #3a3a54;
+        }
+
+        /* Modal Confirmation */
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            padding: 20px;
+        }
+
+        .confirmation-modal-content {
+            background: #16213e;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid #2d2d44;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .confirmation-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .confirmation-modal-content h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            color: #6c63ff;
+        }
+
+        .confirmation-modal-content p {
+            color: #b8b8d1;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .confirmation-modal-content strong {
+            color: white;
+        }
+
+        /* Modal Info Préventes */
+        .info-presales-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10002;
+            padding: 20px;
+        }
+
+        .info-modal-content {
+            background: #16213e;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid #2d2d44;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .info-modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #6c63ff;
+        }
+
+        .info-modal-content p {
+            color: #b8b8d1;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .add-event-modal-content {
+                padding: 24px;
+            }
+
+            .add-event-title {
+                font-size: 22px;
+            }
+        }
+
+        /* Notifications */
+        .nav-auth-connected {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .notification-bell:hover {
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .notification-bell svg {
+            color: white;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #ff4d4f;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 350px;
+            max-height: 400px;
+            background: #16213e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .notification-dropdown.show {
+            display: flex;
+        }
+
+        .notification-header {
+            padding: 16px;
+            border-bottom: 1px solid #2d2d44;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            font-size: 16px;
+            color: white;
+            margin: 0;
+        }
+
+        .mark-all-read {
+            background: none;
+            border: none;
+            color: #6c63ff;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .mark-all-read:hover {
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .notification-list {
+            overflow-y: auto;
+            max-height: 320px;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #2d2d44;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .notification-item:hover {
+            background: rgba(108, 99, 255, 0.05);
+        }
+
+        .notification-item.unread {
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #6c63ff;
+            border-radius: 50%;
+        }
+
+        .notification-message {
+            color: #b8b8d1;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .notification-time {
+            color: #7f7f9a;
+            font-size: 11px;
+        }
+
+        .notification-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #7f7f9a;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .notification-dropdown {
+                width: 300px;
+                right: -20px;
+            }
+        }
     </style>
 
     <!-- Firebase Auth et chargement des événements -->
@@ -401,16 +1006,19 @@
         const eventsLoading = document.getElementById('events-loading');
         const noEvents = document.getElementById('no-events');
 
+        // Éléments navbar
+        const navAuthConnected = document.getElementById('nav-auth-connected');
+
         // Détecter l'état de connexion
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Utilisateur connecté → afficher "Mon compte"
+                // Utilisateur connecté → afficher notifications + "Mon compte"
                 btnSignup.style.display = 'none';
-                btnAccount.style.display = 'inline-block';
+                navAuthConnected.style.display = 'flex';
             } else {
                 // Utilisateur non connecté → afficher "S'enregistrer"
                 btnSignup.style.display = 'inline-block';
-                btnAccount.style.display = 'none';
+                navAuthConnected.style.display = 'none';
             }
         });
 
@@ -598,5 +1206,11 @@
         loadEvents();
         loadPartners();
     </script>
+
+    <!-- Script gestion des soirées par utilisateurs -->
+    <script type="module" src="user-events.js"></script>
+
+    <!-- Script gestion des notifications -->
+    <script type="module" src="notifications.js"></script>
 </body>
 </html>
