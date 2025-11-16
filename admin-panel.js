@@ -62,6 +62,7 @@ const eventDateInput = document.getElementById('event-date');
 const eventLocationInput = document.getElementById('event-location');
 const eventPriceInput = document.getElementById('event-price');
 const eventAgeInput = document.getElementById('event-age');
+const eventLinkInput = document.getElementById('event-link');
 const eventDescriptionInput = document.getElementById('event-description');
 const presalesToggle = document.getElementById('presales-toggle');
 const presalesLabel = document.getElementById('presales-label');
@@ -74,6 +75,18 @@ const submitBtn = document.getElementById('submit-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const eventsList = document.getElementById('events-list');
 
+// Éléments DOM - Partenaires
+const partnerForm = document.getElementById('partner-form');
+const partnerFormTitle = document.getElementById('partner-form-title');
+const partnerIdInput = document.getElementById('partner-id');
+const partnerImageInput = document.getElementById('partner-image-input');
+const partnerImageUploadArea = document.getElementById('partner-image-upload-area');
+const partnerImagePreview = document.getElementById('partner-image-preview');
+const partnerPreviewImg = document.getElementById('partner-preview-img');
+const partnerSubmitBtn = document.getElementById('partner-submit-btn');
+const partnerCancelBtn = document.getElementById('partner-cancel-btn');
+const partnersList = document.getElementById('partners-list');
+
 // ========================================
 // VARIABLES GLOBALES
 // ========================================
@@ -81,6 +94,11 @@ const eventsList = document.getElementById('events-list');
 let currentImageFile = null;
 let editingEventId = null;
 let currentImageURL = null;
+
+// Variables pour partenaires
+let currentPartnerImageFile = null;
+let editingPartnerId = null;
+let currentPartnerImageURL = null;
 
 // ========================================
 // VÉRIFICATION ADMIN
@@ -112,8 +130,9 @@ onAuthStateChanged(auth, async (user) => {
         loading.style.display = 'none';
         adminContent.style.display = 'block';
 
-        // Charger les événements
+        // Charger les événements et partenaires
         loadEvents();
+        loadPartners();
 
     } catch (error) {
         console.error('❌ Erreur vérification admin:', error);
@@ -218,6 +237,7 @@ eventForm.addEventListener('submit', async (e) => {
         location: eventLocationInput.value.trim(),
         price: parseFloat(eventPriceInput.value),
         age: parseInt(eventAgeInput.value),
+        link: eventLinkInput.value.trim(),
         description: eventDescriptionInput.value.trim(),
         presales: presalesInput.value === 'true'
     };
@@ -395,6 +415,7 @@ window.editEvent = async function(eventId) {
         eventLocationInput.value = event.location;
         eventPriceInput.value = event.price;
         eventAgeInput.value = event.age;
+        eventLinkInput.value = event.link || '';
         eventDescriptionInput.value = event.description || '';
 
         // Toggle préventes
@@ -510,6 +531,227 @@ function setButtonLoading(button, loading) {
         button.style.opacity = '1';
         button.textContent = button.dataset.originalText || button.textContent;
     }
+}
+
+// ========================================
+// GESTION DES PARTENAIRES
+// ========================================
+
+// Gestion de l'upload d'image partenaire
+partnerImageUploadArea.addEventListener('click', () => {
+    partnerImageInput.click();
+});
+
+partnerImageInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Vérifier la taille (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('❌ Le logo ne doit pas dépasser 2MB.');
+        partnerImageInput.value = '';
+        return;
+    }
+
+    // Vérifier le type
+    if (!file.type.startsWith('image/')) {
+        alert('❌ Veuillez sélectionner une image valide.');
+        partnerImageInput.value = '';
+        return;
+    }
+
+    currentPartnerImageFile = file;
+
+    // Afficher l'aperçu
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        partnerPreviewImg.src = e.target.result;
+        partnerImagePreview.style.display = 'block';
+        partnerImageUploadArea.classList.add('active');
+    };
+    reader.readAsDataURL(file);
+});
+
+// Ajouter/Modifier un partenaire
+partnerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Vérifier qu'une image est sélectionnée
+    if (!editingPartnerId && !currentPartnerImageFile) {
+        alert('❌ Veuillez sélectionner un logo.');
+        return;
+    }
+
+    setButtonLoading(partnerSubmitBtn, true);
+
+    try {
+        let imageData = null;
+
+        // Upload nouvelle image si sélectionnée
+        if (currentPartnerImageFile) {
+            const timestamp = Date.now();
+            const fileName = `partners/partner_${timestamp}.${currentPartnerImageFile.name.split('.').pop()}`;
+            const storageRef = ref(storage, fileName);
+
+            console.log('📤 Upload du logo partenaire...');
+            const snapshot = await uploadBytes(storageRef, currentPartnerImageFile);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+
+            imageData = {
+                url: downloadURL,
+                path: fileName
+            };
+        }
+
+        if (editingPartnerId) {
+            // MODIFIER (si jamais on veut implémenter l'édition)
+            const updateData = {};
+            if (imageData) {
+                updateData.logoURL = imageData.url;
+                updateData.logoPath = imageData.path;
+            }
+            updateData.updatedAt = serverTimestamp();
+
+            await updateDoc(doc(db, 'partners', editingPartnerId), updateData);
+            console.log('✅ Partenaire modifié');
+            alert('✅ Partenaire modifié avec succès!');
+
+        } else {
+            // AJOUTER un nouveau partenaire
+            const partnerData = {
+                logoURL: imageData.url,
+                logoPath: imageData.path,
+                createdAt: serverTimestamp()
+            };
+
+            const docRef = await addDoc(collection(db, 'partners'), partnerData);
+            console.log('✅ Partenaire ajouté:', docRef.id);
+            alert('✅ Partenaire ajouté avec succès!');
+        }
+
+        // Réinitialiser le formulaire
+        resetPartnerForm();
+
+        // Recharger la liste
+        loadPartners();
+
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        alert('❌ Erreur: ' + error.message);
+    } finally {
+        setButtonLoading(partnerSubmitBtn, false);
+    }
+});
+
+// Charger les partenaires
+async function loadPartners() {
+    try {
+        console.log('📥 Chargement des partenaires...');
+
+        const querySnapshot = await getDocs(collection(db, 'partners'));
+
+        // Vider la liste
+        partnersList.innerHTML = '';
+
+        if (querySnapshot.empty) {
+            partnersList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🤝</div>
+                    <p>Aucun partenaire ajouté pour le moment.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Afficher chaque partenaire
+        querySnapshot.forEach((doc) => {
+            const partner = doc.data();
+            const partnerId = doc.id;
+
+            const partnerItem = createPartnerItem(partnerId, partner);
+            partnersList.appendChild(partnerItem);
+        });
+
+        console.log(`✅ ${querySnapshot.size} partenaire(s) chargé(s)`);
+
+    } catch (error) {
+        console.error('❌ Erreur chargement partenaires:', error);
+        partnersList.innerHTML = `
+            <div class="empty-state">
+                <p style="color: #ff4d4f;">❌ Erreur lors du chargement des partenaires.</p>
+            </div>
+        `;
+    }
+}
+
+// Créer un élément partenaire
+function createPartnerItem(partnerId, partner) {
+    const partnerItem = document.createElement('div');
+    partnerItem.className = 'partner-item';
+
+    partnerItem.innerHTML = `
+        <img src="${partner.logoURL}" alt="Logo partenaire" class="partner-logo-thumb">
+        <div class="partner-actions">
+            <button class="btn btn-danger" onclick="deletePartner('${partnerId}', '${partner.logoPath || ''}')">🗑️ Supprimer</button>
+        </div>
+    `;
+
+    return partnerItem;
+}
+
+// Supprimer un partenaire
+window.deletePartner = async function(partnerId, logoPath) {
+    if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce partenaire ?')) {
+        return;
+    }
+
+    try {
+        console.log('🗑️ Suppression partenaire:', partnerId);
+
+        // Supprimer le logo du Storage
+        if (logoPath) {
+            try {
+                const logoRef = ref(storage, logoPath);
+                await deleteObject(logoRef);
+                console.log('✅ Logo supprimé du Storage');
+            } catch (error) {
+                console.error('⚠️ Erreur suppression logo:', error);
+            }
+        }
+
+        // Supprimer le document Firestore
+        await deleteDoc(doc(db, 'partners', partnerId));
+
+        console.log('✅ Partenaire supprimé');
+        alert('✅ Partenaire supprimé avec succès!');
+
+        // Recharger la liste
+        loadPartners();
+
+    } catch (error) {
+        console.error('❌ Erreur suppression:', error);
+        alert('❌ Erreur lors de la suppression.');
+    }
+};
+
+// Annuler l'édition partenaire
+partnerCancelBtn.addEventListener('click', () => {
+    resetPartnerForm();
+});
+
+// Réinitialiser le formulaire partenaire
+function resetPartnerForm() {
+    partnerForm.reset();
+    editingPartnerId = null;
+    currentPartnerImageFile = null;
+    currentPartnerImageURL = null;
+    partnerIdInput.value = '';
+    partnerImagePreview.style.display = 'none';
+    partnerImageUploadArea.classList.remove('active');
+    partnerFormTitle.textContent = '🤝 Ajouter un partenaire';
+    partnerSubmitBtn.textContent = 'Ajouter le partenaire';
+    partnerCancelBtn.style.display = 'none';
+    partnerImageInput.setAttribute('required', 'required');
 }
 
 console.log('🔥 Admin Panel initialisé');

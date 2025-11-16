@@ -59,26 +59,73 @@
         <div class="container">
             <h2 class="section-title">Nos partenaires</h2>
 
-            <!-- Logos des partenaires -->
-            <div class="partners-grid">
-                <div class="partner-logo">
-                    <img src="https://via.placeholder.com/150x80/ffffff/6c63ff?text=Partenaire+1" alt="Partenaire 1">
-                </div>
-                <div class="partner-logo">
-                    <img src="https://via.placeholder.com/150x80/ffffff/a29bfe?text=Partenaire+2" alt="Partenaire 2">
-                </div>
-                <div class="partner-logo">
-                    <img src="https://via.placeholder.com/150x80/ffffff/ff6b6b?text=Partenaire+3" alt="Partenaire 3">
-                </div>
-                <div class="partner-logo">
-                    <img src="https://via.placeholder.com/150x80/ffffff/4ecdc4?text=Partenaire+4" alt="Partenaire 4">
-                </div>
-                <div class="partner-logo">
-                    <img src="https://via.placeholder.com/150x80/ffffff/f9ca24?text=Partenaire+5" alt="Partenaire 5">
-                </div>
+            <!-- État de chargement -->
+            <div id="partners-loading" class="events-loading">
+                <p>Chargement des partenaires...</p>
+            </div>
+
+            <!-- Logos des partenaires (chargés dynamiquement) -->
+            <div class="partners-grid" id="partners-grid">
+                <!-- Les partenaires seront chargés ici depuis Firestore -->
+            </div>
+
+            <!-- Message si aucun partenaire -->
+            <div id="no-partners" class="no-events" style="display: none;">
+                <p>Aucun partenaire pour le moment.</p>
             </div>
         </div>
     </section>
+
+    <!-- MODAL DÉTAILS SOIRÉE -->
+    <div id="event-modal" class="event-modal" style="display: none;">
+        <div class="modal-content">
+            <!-- Bouton fermer -->
+            <button class="modal-close" onclick="closeEventModal()">✕</button>
+
+            <div class="modal-body">
+                <!-- Colonne gauche: Image -->
+                <div class="modal-left">
+                    <img id="modal-image" src="" alt="Image de la soirée">
+                </div>
+
+                <!-- Colonne droite: Informations -->
+                <div class="modal-right">
+                    <h2 id="modal-title"></h2>
+
+                    <div class="modal-info-item">
+                        <strong>📅 Date:</strong>
+                        <p id="modal-date"></p>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <strong>📍 Lieu:</strong>
+                        <p id="modal-location"></p>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <strong>🔞 Âge minimum:</strong>
+                        <p id="modal-age"></p>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <strong>💰 Prix:</strong>
+                        <p id="modal-price"></p>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <strong>📝 Description:</strong>
+                        <p id="modal-description"></p>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="modal-actions">
+                        <a id="modal-link" href="#" target="_blank" class="modal-btn modal-btn-primary">Lien de la soirée</a>
+                        <button id="modal-presales" class="modal-btn modal-btn-secondary">🎟️ Préventes disponibles</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- FOOTER -->
     <footer class="footer">
@@ -130,6 +177,191 @@
         .no-events p {
             margin: 12px 0;
             font-size: 18px;
+        }
+
+        /* Bouton Détails de la soirée */
+        .event-details-btn {
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .event-details-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.4);
+        }
+
+        /* Modal */
+        .event-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #16213e;
+            border-radius: 24px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid #2d2d44;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 28px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .modal-left {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .modal-left img {
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            object-fit: cover;
+        }
+
+        .modal-right {
+            padding: 20px 0;
+        }
+
+        .modal-right h2 {
+            font-size: 32px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-info-item {
+            margin-bottom: 20px;
+        }
+
+        .modal-info-item strong {
+            display: block;
+            color: #b8b8d1;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .modal-info-item p {
+            color: white;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            margin-top: 32px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .modal-btn-secondary {
+            background: #2d2d44;
+            color: white;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #3a3a54;
+        }
+
+        @media (max-width: 768px) {
+            .modal-body {
+                grid-template-columns: 1fr;
+                padding: 24px;
+                gap: 24px;
+            }
+
+            .modal-right h2 {
+                font-size: 24px;
+            }
+
+            .modal-info-item p {
+                font-size: 16px;
+            }
+
+            .modal-close {
+                top: 12px;
+                right: 12px;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-btn {
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 
@@ -208,7 +440,12 @@
                 // Afficher les événements
                 querySnapshot.forEach((doc) => {
                     const event = doc.data();
-                    const eventCard = createEventCard(event);
+                    const eventId = doc.id;
+
+                    // Stocker l'événement globalement
+                    window.eventsData[eventId] = event;
+
+                    const eventCard = createEventCard(event, eventId);
                     eventsGrid.appendChild(eventCard);
                 });
 
@@ -221,7 +458,7 @@
         }
 
         // Créer une carte événement
-        function createEventCard(event) {
+        function createEventCard(event, eventId) {
             const card = document.createElement('div');
             card.className = 'event-card';
 
@@ -240,14 +477,126 @@
                 <div class="event-info">
                     <h3>${event.name}</h3>
                     <p class="event-date">📅 ${formattedDate}</p>
+                    <button class="event-details-btn" data-event-id="${eventId}">Détails de la soirée</button>
                 </div>
             `;
+
+            // Ajouter l'écouteur d'événement pour le bouton
+            const detailsBtn = card.querySelector('.event-details-btn');
+            detailsBtn.addEventListener('click', () => openEventModal(eventId));
 
             return card;
         }
 
-        // Charger les événements au démarrage
+        // Stocker les événements globalement pour accès rapide
+        window.eventsData = {};
+
+        // Fonction pour ouvrir le modal
+        window.openEventModal = function(eventId) {
+            const event = window.eventsData[eventId];
+            if (!event) return;
+
+            // Formater la date complète
+            const eventDate = new Date(event.date);
+            const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Remplir le modal
+            document.getElementById('modal-image').src = event.imageURL;
+            document.getElementById('modal-title').textContent = event.name;
+            document.getElementById('modal-date').textContent = formattedDate;
+            document.getElementById('modal-location').textContent = event.location;
+            document.getElementById('modal-age').textContent = event.age + '+ ans';
+            document.getElementById('modal-price').textContent = event.price + '€';
+            document.getElementById('modal-description').textContent = event.description || 'Aucune description disponible.';
+
+            // Lien de la soirée
+            const linkElement = document.getElementById('modal-link');
+            if (event.link) {
+                linkElement.href = event.link;
+                linkElement.style.display = 'inline-block';
+            } else {
+                linkElement.style.display = 'none';
+            }
+
+            // Bouton préventes
+            const presalesBtn = document.getElementById('modal-presales');
+            if (event.presales) {
+                presalesBtn.style.display = 'inline-block';
+            } else {
+                presalesBtn.style.display = 'none';
+            }
+
+            // Afficher le modal
+            document.getElementById('event-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        // Fonction pour fermer le modal
+        window.closeEventModal = function() {
+            document.getElementById('event-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+
+        // Fermer le modal en cliquant en dehors
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('event-modal');
+            if (e.target === modal) {
+                closeEventModal();
+            }
+        });
+
+        // Charger les partenaires depuis Firestore
+        async function loadPartners() {
+            try {
+                console.log('📥 Chargement des partenaires...');
+
+                const partnersGrid = document.getElementById('partners-grid');
+                const partnersLoading = document.getElementById('partners-loading');
+                const noPartners = document.getElementById('no-partners');
+
+                const querySnapshot = await getDocs(collection(db, 'partners'));
+
+                // Masquer le loader
+                partnersLoading.style.display = 'none';
+
+                if (querySnapshot.empty) {
+                    // Aucun partenaire
+                    noPartners.style.display = 'block';
+                    console.log('ℹ️ Aucun partenaire trouvé');
+                    return;
+                }
+
+                // Afficher les partenaires
+                querySnapshot.forEach((doc) => {
+                    const partner = doc.data();
+                    const partnerDiv = document.createElement('div');
+                    partnerDiv.className = 'partner-logo';
+
+                    partnerDiv.innerHTML = `
+                        <img src="${partner.logoURL}" alt="Logo partenaire">
+                    `;
+
+                    partnersGrid.appendChild(partnerDiv);
+                });
+
+                console.log(`✅ ${querySnapshot.size} partenaire(s) chargé(s)`);
+
+            } catch (error) {
+                console.error('❌ Erreur chargement partenaires:', error);
+                document.getElementById('partners-loading').innerHTML = '<p style="color: #ff4d4f;">❌ Erreur lors du chargement des partenaires.</p>';
+            }
+        }
+
+        // Charger les événements et partenaires au démarrage
         loadEvents();
+        loadPartners();
     </script>
 </body>
 </html>

@@ -284,6 +284,37 @@
             opacity: 0.5;
         }
 
+        /* Partners List */
+        .partners-list {
+            margin-top: 32px;
+        }
+
+        .partner-item {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #2d2d44;
+        }
+
+        .partner-logo-thumb {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            object-fit: contain;
+            background: white;
+            padding: 8px;
+        }
+
+        .partner-actions {
+            display: flex;
+            gap: 8px;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -299,6 +330,15 @@
             }
 
             .event-actions {
+                justify-content: center;
+            }
+
+            .partner-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .partner-actions {
                 justify-content: center;
             }
         }
@@ -351,12 +391,20 @@
                         </div>
                     </div>
 
-                    <!-- Row 3: Age -->
+                    <!-- Row 3: Age and Link -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="event-age">Âge requis *</label>
                             <input type="number" id="event-age" placeholder="Ex: 18" min="0" required>
                         </div>
+                        <div class="form-group">
+                            <label for="event-link">Lien de la soirée</label>
+                            <input type="url" id="event-link" placeholder="https://example.com/tickets">
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Presales toggle -->
+                    <div class="form-row">
                         <div class="form-group">
                             <label>Préventes</label>
                             <div class="toggle-container">
@@ -402,6 +450,45 @@
                 <h2>📋 Soirées publiées</h2>
                 <div id="events-list" class="events-list">
                     <!-- Events will be loaded here -->
+                </div>
+            </div>
+
+            <!-- ========== PARTENAIRES ========== -->
+
+            <!-- Add/Edit Partner Form -->
+            <div class="admin-card">
+                <h2 id="partner-form-title">🤝 Ajouter un partenaire</h2>
+
+                <form id="partner-form">
+                    <input type="hidden" id="partner-id" value="">
+
+                    <!-- Partner Logo Upload -->
+                    <div class="form-group full-width">
+                        <label>Logo du partenaire *</label>
+                        <div class="image-upload-area" id="partner-image-upload-area">
+                            <div class="upload-icon">🏢</div>
+                            <div class="upload-text">Cliquez pour uploader le logo</div>
+                            <small style="color: #b8b8d1;">PNG ou SVG de préférence - Max 2MB</small>
+                        </div>
+                        <input type="file" id="partner-image-input" accept="image/*" required>
+                        <div class="image-preview" id="partner-image-preview">
+                            <img id="partner-preview-img" src="" alt="Preview">
+                        </div>
+                    </div>
+
+                    <!-- Submit buttons -->
+                    <div style="margin-top: 24px; display: flex; gap: 12px;">
+                        <button type="submit" class="btn" id="partner-submit-btn">Ajouter le partenaire</button>
+                        <button type="button" class="btn btn-secondary" id="partner-cancel-btn" style="display: none;">Annuler</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Partners List -->
+            <div class="admin-card">
+                <h2>🏢 Partenaires publiés</h2>
+                <div id="partners-list" class="partners-list">
+                    <!-- Partners will be loaded here -->
                 </div>
             </div>
 
