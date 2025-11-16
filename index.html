@@ -155,13 +155,13 @@
                             </div>
                         </div>
 
-                        <div class="info-bubble" id="modal-presales-bubble">
-                            <span class="bubble-icon">🎟️</span>
-                            <div class="bubble-content">
-                                <span class="bubble-label">Préventes</span>
-                                <span class="bubble-value" id="modal-presales-status">Oui</span>
-                            </div>
-                        </div>
+                    </div>
+
+                    <!-- Bouton Préventes -->
+                    <div class="presales-button-section">
+                        <button id="modal-presales-button" class="presales-button">
+                            🎟️ Voir les préventes
+                        </button>
                     </div>
 
                     <!-- Description séparée -->
@@ -509,18 +509,19 @@
         .modal-info-bubbles {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 32px;
+            gap: 12px;
+            margin-bottom: 24px;
+            max-width: 500px;
         }
 
         .info-bubble {
             background: rgba(108, 99, 255, 0.1);
             border: 1px solid rgba(108, 99, 255, 0.3);
-            border-radius: 16px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 10px 12px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             transition: all 0.3s;
         }
 
@@ -531,20 +532,20 @@
         }
 
         .bubble-icon {
-            font-size: 24px;
+            font-size: 20px;
             flex-shrink: 0;
         }
 
         .bubble-content {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
             flex: 1;
         }
 
         .bubble-label {
             color: #b8b8d1;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -552,7 +553,7 @@
 
         .bubble-value {
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
         }
 
@@ -571,6 +572,42 @@
             font-size: 16px;
             line-height: 1.6;
             white-space: pre-line;
+        }
+
+        .presales-button-section {
+            margin-bottom: 24px;
+            max-width: 500px;
+        }
+
+        .presales-button {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .presales-button.active {
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            color: white;
+        }
+
+        .presales-button.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .presales-button.disabled {
+            background: #2d2d44;
+            color: #8888a0;
+            cursor: not-allowed;
         }
 
         .modal-actions {
@@ -1142,12 +1179,12 @@
         }
 
         .liker-photo {
-            width: 22px;
-            height: 22px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            border: 2px solid white;
+            border: 1.5px solid white;
             object-fit: cover;
-            margin-left: -4px;
+            margin-left: -3px;
         }
 
         .liker-photo:first-child {
@@ -1157,11 +1194,11 @@
         .likes-count {
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 12px;
-            margin-left: 4px;
+            padding: 3px 6px;
+            border-radius: 10px;
+            margin-left: 3px;
         }
 
         .like-button {
@@ -1350,13 +1387,13 @@
             }
 
             .liker-photo {
-                width: 22px;
-                height: 22px;
+                width: 16px;
+                height: 16px;
             }
 
             .likes-count {
-                font-size: 11px;
-                padding: 3px 6px;
+                font-size: 10px;
+                padding: 2px 5px;
             }
 
             .like-button {
@@ -1608,15 +1645,14 @@
                 linkElement.style.display = 'none';
             }
 
-            // Bulle préventes
-            const presalesBubble = document.getElementById('modal-presales-bubble');
-            const presalesStatus = document.getElementById('modal-presales-status');
+            // Bouton préventes
+            const presalesButton = document.getElementById('modal-presales-button');
             if (event.presales) {
-                presalesStatus.textContent = 'Oui';
-                presalesBubble.style.display = 'flex';
+                presalesButton.textContent = '🎟️ Voir les préventes';
+                presalesButton.className = 'presales-button active';
             } else {
-                presalesStatus.textContent = 'Non';
-                presalesBubble.style.display = 'flex';
+                presalesButton.textContent = '🚫 Pas de préventes';
+                presalesButton.className = 'presales-button disabled';
             }
 
             // Afficher le modal
