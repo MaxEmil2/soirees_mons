@@ -273,6 +273,37 @@
         </div>
     </div>
 
+    <!-- MODAL CHOIX LIKE PUBLIC/ANONYME -->
+    <div id="like-choice-modal" class="like-choice-modal" style="display: none;">
+        <div class="like-choice-content">
+            <h2>❤️ Liker cette soirée</h2>
+            <p>Voulez-vous liker en public ou en anonyme ?</p>
+
+            <div class="like-choice-buttons">
+                <button class="like-choice-btn like-choice-public" id="like-public-btn">
+                    <span class="like-choice-icon">👤</span>
+                    <strong>Public</strong>
+                    <small>Votre photo sera affichée</small>
+                </button>
+
+                <button class="like-choice-btn like-choice-anonymous" id="like-anonymous-btn">
+                    <span class="like-choice-icon">🕶️</span>
+                    <strong>Anonyme</strong>
+                    <small>Juste +1 dans le compteur</small>
+                </button>
+            </div>
+
+            <button class="like-choice-cancel" onclick="closeLikeChoiceModal()">Annuler</button>
+        </div>
+    </div>
+
+    <!-- Animation cœur (style Instagram) -->
+    <div id="heart-animation" class="heart-animation" style="display: none;">
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="#ff4458">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+    </div>
+
     <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-container">
@@ -968,6 +999,238 @@
                 right: -20px;
             }
         }
+
+        /* Système de Likes */
+        .event-image {
+            position: relative;
+        }
+
+        .likes-container {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .likers-photos {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .liker-photo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+            margin-left: -8px;
+        }
+
+        .liker-photo:first-child {
+            margin-left: 0;
+        }
+
+        .likes-count {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-left: 4px;
+        }
+
+        .like-button {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .like-button:hover {
+            transform: scale(1.1);
+            background: white;
+        }
+
+        .like-button.liked {
+            background: #ff4458;
+        }
+
+        .like-button svg {
+            width: 22px;
+            height: 22px;
+            fill: #ff4458;
+        }
+
+        .like-button.liked svg {
+            fill: white;
+        }
+
+        /* Modal choix like */
+        .like-choice-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10003;
+            padding: 20px;
+        }
+
+        .like-choice-content {
+            background: #16213e;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid #2d2d44;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .like-choice-content h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #ff4458;
+        }
+
+        .like-choice-content p {
+            color: #b8b8d1;
+            margin-bottom: 32px;
+        }
+
+        .like-choice-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .like-choice-btn {
+            background: #1a1a2e;
+            border: 2px solid #2d2d44;
+            border-radius: 16px;
+            padding: 24px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .like-choice-btn:hover {
+            border-color: #6c63ff;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.3);
+        }
+
+        .like-choice-icon {
+            font-size: 36px;
+        }
+
+        .like-choice-btn strong {
+            color: white;
+            font-size: 16px;
+        }
+
+        .like-choice-btn small {
+            color: #b8b8d1;
+            font-size: 12px;
+        }
+
+        .like-choice-cancel {
+            background: #2d2d44;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .like-choice-cancel:hover {
+            background: #3a3a54;
+        }
+
+        /* Animation cœur Instagram */
+        .heart-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 10004;
+            pointer-events: none;
+            opacity: 0;
+            animation: heartBurst 0.8s ease-out;
+        }
+
+        .heart-animation.show {
+            display: block !important;
+        }
+
+        @keyframes heartBurst {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            15% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            30% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            80% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .like-choice-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .liker-photo {
+                width: 28px;
+                height: 28px;
+            }
+
+            .likes-count {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
+
+            .like-button {
+                width: 36px;
+                height: 36px;
+            }
+
+            .like-button svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
     </style>
 
     <!-- Firebase Auth et chargement des événements -->
@@ -1027,33 +1290,37 @@
             try {
                 console.log('📥 Chargement des événements...');
 
-                // Récupérer les événements futurs, triés par date croissante
-                const eventsQuery = query(
-                    collection(db, 'events'),
-                    orderBy('date', 'asc')
-                );
-
-                const querySnapshot = await getDocs(eventsQuery);
+                // Récupérer tous les événements
+                const querySnapshot = await getDocs(collection(db, 'events'));
 
                 // Masquer le loader
                 eventsLoading.style.display = 'none';
 
-                if (querySnapshot.empty) {
-                    // Aucun événement
+                // Filtrer les événements approuvés uniquement
+                const approvedEvents = [];
+                querySnapshot.forEach((doc) => {
+                    const event = doc.data();
+                    // Afficher uniquement les événements approuvés ou sans status (anciennes soirées)
+                    if (event.status === 'approved' || !event.status) {
+                        approvedEvents.push({ id: doc.id, ...event });
+                    }
+                });
+
+                if (approvedEvents.length === 0) {
+                    // Aucun événement approuvé
                     noEvents.style.display = 'block';
-                    console.log('ℹ️ Aucun événement trouvé');
+                    console.log('ℹ️ Aucun événement approuvé trouvé');
                     return;
                 }
 
-                // Afficher les événements
-                querySnapshot.forEach((doc) => {
-                    const event = doc.data();
-                    const eventId = doc.id;
+                // Afficher les événements approuvés
+                approvedEvents.forEach((eventData) => {
+                    const eventId = eventData.id;
 
                     // Stocker l'événement globalement
-                    window.eventsData[eventId] = event;
+                    window.eventsData[eventId] = eventData;
 
-                    const eventCard = createEventCard(event, eventId);
+                    const eventCard = createEventCard(eventData, eventId);
                     eventsGrid.appendChild(eventCard);
                 });
 
@@ -1066,7 +1333,7 @@
         }
 
         // Créer une carte événement
-        function createEventCard(event, eventId) {
+        async function createEventCard(event, eventId) {
             const card = document.createElement('div');
             card.className = 'event-card';
 
@@ -1079,8 +1346,21 @@
             });
 
             card.innerHTML = `
-                <div class="event-image">
+                <div class="event-image" id="event-image-${eventId}">
                     <img src="${event.imageURL}" alt="${event.name}">
+                    <div class="likes-container" id="likes-container-${eventId}">
+                        <div class="likers-info" style="display: flex; align-items: center;">
+                            <div class="likers-photos" id="likers-photos-${eventId}">
+                                <!-- Photos des likers seront ajoutées ici -->
+                            </div>
+                            <span class="likes-count" id="likes-count-${eventId}" style="display: none;">+0</span>
+                        </div>
+                        <button class="like-button" id="like-btn-${eventId}" data-event-id="${eventId}">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="event-info">
                     <h3>${event.name}</h3>
@@ -1089,9 +1369,12 @@
                 </div>
             `;
 
-            // Ajouter l'écouteur d'événement pour le bouton
+            // Ajouter l'écouteur d'événement pour le bouton détails
             const detailsBtn = card.querySelector('.event-details-btn');
             detailsBtn.addEventListener('click', () => openEventModal(eventId));
+
+            // Charger les likes pour cet événement
+            loadEventLikesUI(eventId);
 
             return card;
         }
@@ -1212,5 +1495,157 @@
 
     <!-- Script gestion des notifications -->
     <script type="module" src="notifications.js"></script>
+
+    <!-- Script gestion des likes -->
+    <script type="module">
+        import { loadEventLikes, hasUserLiked, likeEvent, getRecentPublicLikers, getTotalLikes } from './likes.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let currentLikeEventId = null;
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+        });
+
+        // Charger les likes d'un événement et afficher dans l'UI
+        window.loadEventLikesUI = async function(eventId) {
+            try {
+                // Récupérer les 3 derniers likers publics
+                const recentLikers = await getRecentPublicLikers(eventId);
+
+                // Récupérer le total de likes
+                const totalLikes = await getTotalLikes(eventId);
+
+                // Afficher les photos des likers
+                const likersPhotosContainer = document.getElementById(`likers-photos-${eventId}`);
+                if (likersPhotosContainer) {
+                    likersPhotosContainer.innerHTML = '';
+
+                    recentLikers.forEach((liker) => {
+                        const img = document.createElement('img');
+                        img.src = liker.userPhotoURL;
+                        img.alt = 'Liker';
+                        img.className = 'liker-photo';
+                        likersPhotosContainer.appendChild(img);
+                    });
+                }
+
+                // Afficher le compteur
+                const likesCountElement = document.getElementById(`likes-count-${eventId}`);
+                if (likesCountElement) {
+                    const countToShow = totalLikes - recentLikers.length;
+                    if (countToShow > 0 || totalLikes > 0) {
+                        likesCountElement.textContent = `+${Math.max(1, countToShow)}`;
+                        likesCountElement.style.display = 'inline-block';
+                    }
+                }
+
+                // Vérifier si l'utilisateur a déjà liké
+                if (currentUser) {
+                    const userHasLiked = await hasUserLiked(eventId, currentUser.uid);
+                    const likeBtn = document.getElementById(`like-btn-${eventId}`);
+                    if (likeBtn) {
+                        if (userHasLiked) {
+                            likeBtn.classList.add('liked');
+                        }
+
+                        // Ajouter l'écouteur de click
+                        likeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            handleLikeClick(eventId);
+                        });
+                    }
+                }
+
+            } catch (error) {
+                console.error('Erreur chargement likes UI:', error);
+            }
+        };
+
+        // Gérer le click sur le bouton like
+        function handleLikeClick(eventId) {
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Ouvrir le modal de choix
+            currentLikeEventId = eventId;
+            openLikeChoiceModal();
+        }
+
+        // Ouvrir le modal de choix
+        function openLikeChoiceModal() {
+            const modal = document.getElementById('like-choice-modal');
+            modal.style.display = 'flex';
+        }
+
+        window.closeLikeChoiceModal = function() {
+            const modal = document.getElementById('like-choice-modal');
+            modal.style.display = 'none';
+            currentLikeEventId = null;
+        };
+
+        // Bouton Like Public
+        document.getElementById('like-public-btn').addEventListener('click', async () => {
+            if (!currentLikeEventId) return;
+
+            await performLike(currentLikeEventId, true);
+            closeLikeChoiceModal();
+        });
+
+        // Bouton Like Anonyme
+        document.getElementById('like-anonymous-btn').addEventListener('click', async () => {
+            if (!currentLikeEventId) return;
+
+            await performLike(currentLikeEventId, false);
+            closeLikeChoiceModal();
+        });
+
+        // Effectuer le like
+        async function performLike(eventId, isPublic) {
+            try {
+                await likeEvent(eventId, isPublic);
+
+                // Animation type Instagram
+                showHeartAnimation();
+
+                // Recharger les likes
+                setTimeout(() => {
+                    loadEventLikesUI(eventId);
+                }, 300);
+
+            } catch (error) {
+                console.error('Erreur like:', error);
+            }
+        }
+
+        // Animation cœur Instagram
+        function showHeartAnimation() {
+            const heartAnim = document.getElementById('heart-animation');
+            heartAnim.classList.add('show');
+
+            setTimeout(() => {
+                heartAnim.classList.remove('show');
+            }, 800);
+        }
+
+        console.log('❤️ Likes UI initialisé');
+    </script>
 </body>
 </html>

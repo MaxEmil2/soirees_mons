@@ -74,6 +74,7 @@ const previewImg = document.getElementById('preview-img');
 const submitBtn = document.getElementById('submit-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const eventsList = document.getElementById('events-list');
+const pendingEventsList = document.getElementById('pending-events-list');
 
 // Éléments DOM - Partenaires
 const partnerForm = document.getElementById('partner-form');
@@ -130,8 +131,9 @@ onAuthStateChanged(auth, async (user) => {
         loading.style.display = 'none';
         adminContent.style.display = 'block';
 
-        // Charger les événements et partenaires
+        // Charger les événements, soirées en attente et partenaires
         loadEvents();
+        loadPendingEvents();
         loadPartners();
 
     } catch (error) {
@@ -308,20 +310,26 @@ eventForm.addEventListener('submit', async (e) => {
 
 async function loadEvents() {
     try {
-        console.log('📥 Chargement des événements...');
+        console.log('📥 Chargement des événements approuvés...');
 
-        // Récupérer tous les événements, triés par date
-        const eventsQuery = query(
-            collection(db, 'events'),
-            orderBy('date', 'desc')
-        );
-        const querySnapshot = await getDocs(eventsQuery);
+        // Récupérer tous les événements approuvés (ou sans status pour compatibilité)
+        const querySnapshot = await getDocs(collection(db, 'events'));
 
         // Vider la liste
         eventsList.innerHTML = '';
 
-        if (querySnapshot.empty) {
-            // Aucun événement
+        // Filtrer pour n'afficher que les événements approuvés
+        const approvedEvents = [];
+        querySnapshot.forEach((doc) => {
+            const event = doc.data();
+            // Afficher si approuvé ou sans status (pour compatibilité avec anciennes soirées)
+            if (event.status === 'approved' || !event.status) {
+                approvedEvents.push({ id: doc.id, ...event });
+            }
+        });
+
+        if (approvedEvents.length === 0) {
+            // Aucun événement approuvé
             eventsList.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">🎉</div>
@@ -332,12 +340,9 @@ async function loadEvents() {
             return;
         }
 
-        // Afficher chaque événement
-        querySnapshot.forEach((doc) => {
-            const event = doc.data();
-            const eventId = doc.id;
-
-            const eventItem = createEventItem(eventId, event);
+        // Afficher chaque événement approuvé
+        approvedEvents.forEach((eventData) => {
+            const eventItem = createEventItem(eventData.id, eventData);
             eventsList.appendChild(eventItem);
         });
 
@@ -532,6 +537,185 @@ function setButtonLoading(button, loading) {
         button.textContent = button.dataset.originalText || button.textContent;
     }
 }
+
+// ========================================
+// CHARGER LES SOIRÉES EN ATTENTE
+// ========================================
+
+async function loadPendingEvents() {
+    try {
+        console.log('📥 Chargement des soirées en attente...');
+
+        // Récupérer les événements avec status = 'pending'
+        const eventsQuery = query(
+            collection(db, 'events'),
+            where('status', '==', 'pending'),
+            orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(eventsQuery);
+
+        // Vider la liste
+        pendingEventsList.innerHTML = '';
+
+        if (querySnapshot.empty) {
+            pendingEventsList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">✅</div>
+                    <p>Aucune soirée en attente de validation.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Afficher chaque événement en attente
+        querySnapshot.forEach((doc) => {
+            const event = doc.data();
+            const eventId = doc.id;
+
+            const eventItem = createPendingEventItem(eventId, event);
+            pendingEventsList.appendChild(eventItem);
+        });
+
+        console.log(`✅ ${querySnapshot.size} soirée(s) en attente chargée(s)`);
+
+    } catch (error) {
+        console.error('❌ Erreur chargement soirées en attente:', error);
+        pendingEventsList.innerHTML = `
+            <div class="empty-state">
+                <p style="color: #ff4d4f;">❌ Erreur lors du chargement des soirées en attente.</p>
+            </div>
+        `;
+    }
+}
+
+// ========================================
+// CRÉER UN ÉLÉMENT SOIRÉE EN ATTENTE
+// ========================================
+
+function createPendingEventItem(eventId, event) {
+    const eventItem = document.createElement('div');
+    eventItem.className = 'event-item';
+
+    // Formater la date
+    const eventDate = new Date(event.date);
+    const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    eventItem.innerHTML = `
+        <img src="${event.imageURL}" alt="${event.name}" class="event-image-thumb">
+        <div class="event-details">
+            <h3>${event.name}</h3>
+            <p>📅 ${formattedDate}</p>
+            <p>📍 ${event.location}</p>
+            <p>💰 ${event.price}€ • 🔞 ${event.age}+ ans</p>
+            <p>👤 Proposé par: ${event.createdByEmail}</p>
+            <p>🎟️ Préventes: ${event.presales ? '✅ Activées' : '❌ Désactivées'}</p>
+            ${event.link ? `<p>🔗 <a href="${event.link}" target="_blank" style="color: #6c63ff;">Lien de la soirée</a></p>` : ''}
+            ${event.description ? `<p style="margin-top: 8px; color: #b8b8d1;">📝 ${event.description}</p>` : ''}
+        </div>
+        <div class="event-actions" style="flex-direction: column;">
+            <button class="btn" style="background: #4caf50;" onclick="approveEvent('${eventId}', '${event.createdBy}', '${event.name}')">✅ Accepter</button>
+            <button class="btn btn-danger" onclick="rejectEvent('${eventId}', '${event.createdBy}', '${event.name}')">❌ Refuser</button>
+        </div>
+    `;
+
+    return eventItem;
+}
+
+// ========================================
+// ACCEPTER UNE SOIRÉE
+// ========================================
+
+window.approveEvent = async function(eventId, createdBy, eventName) {
+    if (!confirm(`✅ Accepter la soirée "${eventName}" ?`)) {
+        return;
+    }
+
+    try {
+        console.log('✅ Acceptation de la soirée:', eventId);
+
+        // Mettre à jour le statut
+        await updateDoc(doc(db, 'events', eventId), {
+            status: 'approved',
+            approvedAt: serverTimestamp()
+        });
+
+        // Créer une notification pour l'utilisateur
+        await addDoc(collection(db, 'notifications'), {
+            userId: createdBy,
+            type: 'event_approved',
+            eventId: eventId,
+            eventName: eventName,
+            message: `Votre soirée "${eventName}" a été approuvée par l'administrateur ! Elle est maintenant visible publiquement.`,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+
+        console.log('✅ Soirée approuvée et notification envoyée');
+        alert('✅ Soirée approuvée avec succès!');
+
+        // Recharger les listes
+        loadEvents();
+        loadPendingEvents();
+
+    } catch (error) {
+        console.error('❌ Erreur approbation:', error);
+        alert('❌ Erreur lors de l\'approbation.');
+    }
+};
+
+// ========================================
+// REFUSER UNE SOIRÉE
+// ========================================
+
+window.rejectEvent = async function(eventId, createdBy, eventName) {
+    const reason = prompt(`❌ Refuser la soirée "${eventName}"\n\nVeuillez indiquer la raison du refus (optionnel):`);
+
+    if (reason === null) {
+        return; // L'utilisateur a annulé
+    }
+
+    try {
+        console.log('❌ Refus de la soirée:', eventId);
+
+        // Mettre à jour le statut
+        await updateDoc(doc(db, 'events', eventId), {
+            status: 'rejected',
+            rejectedAt: serverTimestamp(),
+            rejectionReason: reason || 'Aucune raison fournie'
+        });
+
+        // Créer une notification pour l'utilisateur
+        const message = reason
+            ? `Votre soirée "${eventName}" a été refusée par l'administrateur. Raison: ${reason}`
+            : `Votre soirée "${eventName}" a été refusée par l'administrateur.`;
+
+        await addDoc(collection(db, 'notifications'), {
+            userId: createdBy,
+            type: 'event_rejected',
+            eventId: eventId,
+            eventName: eventName,
+            message: message,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+
+        console.log('✅ Soirée refusée et notification envoyée');
+        alert('✅ Soirée refusée.');
+
+        // Recharger la liste
+        loadPendingEvents();
+
+    } catch (error) {
+        console.error('❌ Erreur refus:', error);
+        alert('❌ Erreur lors du refus.');
+    }
+};
 
 // ========================================
 // GESTION DES PARTENAIRES
