@@ -149,7 +149,7 @@ resetForm.addEventListener('submit', async (e) => {
 
         // Rediriger vers la page de connexion après 5 secondes
         setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         }, 5000);
 
     } catch (error) {

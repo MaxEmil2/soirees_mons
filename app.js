@@ -220,8 +220,7 @@ onAuthStateChanged(auth, (user) => {
         console.log('✅ Utilisateur déjà connecté:', user.email);
 
         // Rediriger vers le dashboard si on est sur la page de connexion
-        if (window.location.pathname.includes('index.html') ||
-            window.location.pathname.endsWith('/')) {
+        if (window.location.pathname.includes('login.html')) {
             redirectToDashboard(user);
         }
     } else {

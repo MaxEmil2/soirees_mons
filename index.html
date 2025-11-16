@@ -3,88 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Soirées Mons</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Soirées Mons - Événements & Soirées à Mons</title>
+    <link rel="stylesheet" href="home.css">
 </head>
 <body>
-    <!-- Conteneur principal avec fond sombre -->
-    <div class="container">
-        <!-- Carte de connexion centrée -->
-        <div class="login-card">
-            <!-- Logo ou titre -->
-            <div class="header">
-                <h1>Bienvenue</h1>
-                <p>Connectez-vous à votre compte</p>
+    <!-- BARRE DE NAVIGATION -->
+    <header class="navbar">
+        <div class="nav-container">
+            <!-- Logo à gauche -->
+            <div class="logo">
+                <h1>Soirées Mons</h1>
             </div>
 
-            <!-- Zone d'affichage des erreurs -->
-            <div id="error-message" class="error-message"></div>
+            <!-- Menu au centre -->
+            <nav class="nav-menu">
+                <a href="#evenements">Soirées</a>
+                <a href="#partenaires">Partenaires</a>
+            </nav>
 
-            <!-- Formulaire de connexion email/mot de passe -->
-            <form id="login-form">
-                <div class="input-group">
-                    <label for="email">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        placeholder="votre@email.com"
-                        required
-                        autocomplete="email"
-                    >
-                </div>
-
-                <div class="input-group">
-                    <label for="password">Mot de passe</label>
-                    <input
-                        type="password"
-                        id="password"
-                        placeholder="••••••••"
-                        required
-                        autocomplete="current-password"
-                    >
-                </div>
-
-                <!-- Bouton de connexion principal -->
-                <button type="submit" class="btn btn-primary" id="login-btn">
-                    <span class="btn-text">Se connecter</span>
-                    <span class="btn-loader" style="display: none;">⏳</span>
-                </button>
-
-                <!-- Lien mot de passe oublié -->
-                <div style="text-align: center; margin-top: 12px;">
-                    <a href="forgot-password.html" style="color: var(--text-secondary); font-size: 14px; text-decoration: none;">
-                        Mot de passe oublié ?
-                    </a>
-                </div>
-            </form>
-
-            <!-- Séparateur -->
-            <div class="divider">
-                <span>OU</span>
-            </div>
-
-            <!-- Boutons de connexion sociale -->
-            <div class="social-buttons">
-                <!-- Connexion Google -->
-                <button class="btn btn-social btn-google" id="google-login-btn">
-                    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                        <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
-                        <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                        <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
-                    </svg>
-                    <span>Continuer avec Google</span>
-                </button>
-            </div>
-
-            <!-- Lien inscription -->
-            <div class="footer-link">
-                <p>Pas encore de compte ? <a href="signup.html">S'inscrire</a></p>
+            <!-- Bouton Mon Compte à droite -->
+            <div class="nav-auth">
+                <a href="login.html" class="btn-login">Mon Compte</a>
+                <a href="signup.html" class="btn-signup">S'enregistrer</a>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- Import Firebase SDK v10 (ES Modules) -->
-    <script type="module" src="app.js"></script>
+    <!-- SECTION ÉVÉNEMENTS -->
+    <section id="evenements" class="events-section">
+        <div class="container">
+            <h2 class="section-title">Événements à venir</h2>
+
+            <!-- Grille d'événements -->
+            <div class="events-grid">
+                <!-- Carte événement 1 -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="https://via.placeholder.com/400x400/6c63ff/ffffff?text=Soirée+1" alt="Soirée 1">
+                    </div>
+                    <div class="event-info">
+                        <h3>Soirée House Music</h3>
+                        <p class="event-date">📅 15/12/2024</p>
+                    </div>
+                </div>
+
+                <!-- Carte événement 2 -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="https://via.placeholder.com/400x400/a29bfe/ffffff?text=Soirée+2" alt="Soirée 2">
+                    </div>
+                    <div class="event-info">
+                        <h3>Nuit Électro</h3>
+                        <p class="event-date">📅 22/12/2024</p>
+                    </div>
+                </div>
+
+                <!-- Carte événement 3 -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="https://via.placeholder.com/400x400/ff6b6b/ffffff?text=Soirée+3" alt="Soirée 3">
+                    </div>
+                    <div class="event-info">
+                        <h3>Réveillon du Nouvel An</h3>
+                        <p class="event-date">📅 31/12/2024</p>
+                    </div>
+                </div>
+
+                <!-- Carte événement 4 -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="https://via.placeholder.com/400x400/4ecdc4/ffffff?text=Soirée+4" alt="Soirée 4">
+                    </div>
+                    <div class="event-info">
+                        <h3>Soirée Hip-Hop</h3>
+                        <p class="event-date">📅 05/01/2025</p>
+                    </div>
+                </div>
+
+                <!-- Carte événement 5 -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="https://via.placeholder.com/400x400/f9ca24/ffffff?text=Soirée+5" alt="Soirée 5">
+                    </div>
+                    <div class="event-info">
+                        <h3>Soirée Latino</h3>
+                        <p class="event-date">📅 12/01/2025</p>
+                    </div>
+                </div>
+
+                <!-- Carte événement 6 -->
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="https://via.placeholder.com/400x400/ee5a6f/ffffff?text=Soirée+6" alt="Soirée 6">
+                    </div>
+                    <div class="event-info">
+                        <h3>Soirée Techno</h3>
+                        <p class="event-date">📅 19/01/2025</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION PARTENAIRES -->
+    <section id="partenaires" class="partners-section">
+        <div class="container">
+            <h2 class="section-title">Nos partenaires</h2>
+
+            <!-- Logos des partenaires -->
+            <div class="partners-grid">
+                <div class="partner-logo">
+                    <img src="https://via.placeholder.com/150x80/ffffff/6c63ff?text=Partenaire+1" alt="Partenaire 1">
+                </div>
+                <div class="partner-logo">
+                    <img src="https://via.placeholder.com/150x80/ffffff/a29bfe?text=Partenaire+2" alt="Partenaire 2">
+                </div>
+                <div class="partner-logo">
+                    <img src="https://via.placeholder.com/150x80/ffffff/ff6b6b?text=Partenaire+3" alt="Partenaire 3">
+                </div>
+                <div class="partner-logo">
+                    <img src="https://via.placeholder.com/150x80/ffffff/4ecdc4?text=Partenaire+4" alt="Partenaire 4">
+                </div>
+                <div class="partner-logo">
+                    <img src="https://via.placeholder.com/150x80/ffffff/f9ca24?text=Partenaire+5" alt="Partenaire 5">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Gauche: Copyright -->
+            <div class="footer-left">
+                <p>© 2025 Soirées Mons, All Rights Reserved.</p>
+            </div>
+
+            <!-- Centre: Logo -->
+            <div class="footer-center">
+                <h2>Soirées Mons</h2>
+            </div>
+
+            <!-- Droite: Réseaux sociaux -->
+            <div class="footer-right">
+                <p>Follow Us:</p>
+                <div class="social-icons">
+                    <a href="https://instagram.com" target="_blank" aria-label="Instagram">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="https://tiktok.com" target="_blank" aria-label="TikTok">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

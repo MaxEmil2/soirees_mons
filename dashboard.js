@@ -190,7 +190,7 @@ onAuthStateChanged(auth, (user) => {
     } else {
         // L'utilisateur n'est pas connecté - rediriger
         console.log('❌ Aucun utilisateur connecté');
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
     }
 });
 
@@ -202,7 +202,7 @@ logoutBtn.addEventListener('click', async () => {
     try {
         await signOut(auth);
         console.log('✅ Déconnexion réussie');
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
     } catch (error) {
         console.error('❌ Erreur lors de la déconnexion:', error);
         showError('Erreur lors de la déconnexion: ' + error.message);
@@ -267,7 +267,7 @@ if (updateEmailForm) {
 
             // Déconnexion et redirection
             await signOut(auth);
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
 
         } catch (error) {
             console.error('❌ Erreur modification email:', error);
