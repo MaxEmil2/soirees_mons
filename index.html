@@ -36,73 +36,20 @@
         <div class="container">
             <h2 class="section-title">Événements à venir</h2>
 
-            <!-- Grille d'événements -->
-            <div class="events-grid">
-                <!-- Carte événement 1 -->
-                <div class="event-card">
-                    <div class="event-image">
-                        <img src="https://via.placeholder.com/400x400/6c63ff/ffffff?text=Soirée+1" alt="Soirée 1">
-                    </div>
-                    <div class="event-info">
-                        <h3>Soirée House Music</h3>
-                        <p class="event-date">📅 15/12/2024</p>
-                    </div>
-                </div>
+            <!-- État de chargement -->
+            <div id="events-loading" class="events-loading">
+                <p>Chargement des événements...</p>
+            </div>
 
-                <!-- Carte événement 2 -->
-                <div class="event-card">
-                    <div class="event-image">
-                        <img src="https://via.placeholder.com/400x400/a29bfe/ffffff?text=Soirée+2" alt="Soirée 2">
-                    </div>
-                    <div class="event-info">
-                        <h3>Nuit Électro</h3>
-                        <p class="event-date">📅 22/12/2024</p>
-                    </div>
-                </div>
+            <!-- Grille d'événements (chargée dynamiquement) -->
+            <div class="events-grid" id="events-grid">
+                <!-- Les événements seront chargés ici depuis Firestore -->
+            </div>
 
-                <!-- Carte événement 3 -->
-                <div class="event-card">
-                    <div class="event-image">
-                        <img src="https://via.placeholder.com/400x400/ff6b6b/ffffff?text=Soirée+3" alt="Soirée 3">
-                    </div>
-                    <div class="event-info">
-                        <h3>Réveillon du Nouvel An</h3>
-                        <p class="event-date">📅 31/12/2024</p>
-                    </div>
-                </div>
-
-                <!-- Carte événement 4 -->
-                <div class="event-card">
-                    <div class="event-image">
-                        <img src="https://via.placeholder.com/400x400/4ecdc4/ffffff?text=Soirée+4" alt="Soirée 4">
-                    </div>
-                    <div class="event-info">
-                        <h3>Soirée Hip-Hop</h3>
-                        <p class="event-date">📅 05/01/2025</p>
-                    </div>
-                </div>
-
-                <!-- Carte événement 5 -->
-                <div class="event-card">
-                    <div class="event-image">
-                        <img src="https://via.placeholder.com/400x400/f9ca24/ffffff?text=Soirée+5" alt="Soirée 5">
-                    </div>
-                    <div class="event-info">
-                        <h3>Soirée Latino</h3>
-                        <p class="event-date">📅 12/01/2025</p>
-                    </div>
-                </div>
-
-                <!-- Carte événement 6 -->
-                <div class="event-card">
-                    <div class="event-image">
-                        <img src="https://via.placeholder.com/400x400/ee5a6f/ffffff?text=Soirée+6" alt="Soirée 6">
-                    </div>
-                    <div class="event-info">
-                        <h3>Soirée Techno</h3>
-                        <p class="event-date">📅 19/01/2025</p>
-                    </div>
-                </div>
+            <!-- Message si aucun événement -->
+            <div id="no-events" class="no-events" style="display: none;">
+                <p>🎉 Aucune soirée prévue pour le moment.</p>
+                <p>Revenez bientôt pour découvrir nos prochains événements!</p>
             </div>
         </div>
     </section>
@@ -165,10 +112,39 @@
         </div>
     </footer>
 
-    <!-- Firebase Auth pour détection utilisateur connecté -->
+    <!-- Styles pour le chargement et messages -->
+    <style>
+        .events-loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #b8b8d1;
+            font-size: 18px;
+        }
+
+        .no-events {
+            text-align: center;
+            padding: 60px 20px;
+            color: #b8b8d1;
+        }
+
+        .no-events p {
+            margin: 12px 0;
+            font-size: 18px;
+        }
+    </style>
+
+    <!-- Firebase Auth et chargement des événements -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            query,
+            orderBy,
+            where
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         // Configuration Firebase
         const firebaseConfig = {
@@ -184,10 +160,14 @@
         // Initialiser Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // Éléments DOM
         const btnSignup = document.getElementById('btn-signup');
         const btnAccount = document.getElementById('btn-account');
+        const eventsGrid = document.getElementById('events-grid');
+        const eventsLoading = document.getElementById('events-loading');
+        const noEvents = document.getElementById('no-events');
 
         // Détecter l'état de connexion
         onAuthStateChanged(auth, (user) => {
@@ -201,6 +181,73 @@
                 btnAccount.style.display = 'none';
             }
         });
+
+        // Charger les événements depuis Firestore
+        async function loadEvents() {
+            try {
+                console.log('📥 Chargement des événements...');
+
+                // Récupérer les événements futurs, triés par date croissante
+                const eventsQuery = query(
+                    collection(db, 'events'),
+                    orderBy('date', 'asc')
+                );
+
+                const querySnapshot = await getDocs(eventsQuery);
+
+                // Masquer le loader
+                eventsLoading.style.display = 'none';
+
+                if (querySnapshot.empty) {
+                    // Aucun événement
+                    noEvents.style.display = 'block';
+                    console.log('ℹ️ Aucun événement trouvé');
+                    return;
+                }
+
+                // Afficher les événements
+                querySnapshot.forEach((doc) => {
+                    const event = doc.data();
+                    const eventCard = createEventCard(event);
+                    eventsGrid.appendChild(eventCard);
+                });
+
+                console.log(`✅ ${querySnapshot.size} événement(s) chargé(s)`);
+
+            } catch (error) {
+                console.error('❌ Erreur chargement événements:', error);
+                eventsLoading.innerHTML = '<p style="color: #ff4d4f;">❌ Erreur lors du chargement des événements.</p>';
+            }
+        }
+
+        // Créer une carte événement
+        function createEventCard(event) {
+            const card = document.createElement('div');
+            card.className = 'event-card';
+
+            // Formater la date
+            const eventDate = new Date(event.date);
+            const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+
+            card.innerHTML = `
+                <div class="event-image">
+                    <img src="${event.imageURL}" alt="${event.name}">
+                </div>
+                <div class="event-info">
+                    <h3>${event.name}</h3>
+                    <p class="event-date">📅 ${formattedDate}</p>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Charger les événements au démarrage
+        loadEvents();
     </script>
 </body>
 </html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Soirées Mons</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn {
+            background: #6c63ff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #5850db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: #2d2d44;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a54;
+        }
+
+        .btn-danger {
+            background: #ff4d4f;
+        }
+
+        .btn-danger:hover {
+            background: #e03e3e;
+        }
+
+        .admin-card {
+            background: #16213e;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            border: 1px solid #2d2d44;
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #6c63ff;
+            margin-bottom: 24px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            color: #b8b8d1;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a2e;
+            border: 2px solid #2d2d44;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6c63ff;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #2d2d44;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            background: #1a1a2e;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-upload-area:hover {
+            border-color: #6c63ff;
+            background: #1f1f35;
+        }
+
+        .image-upload-area.active {
+            border-color: #6c63ff;
+            background: #1f1f35;
+        }
+
+        #image-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #b8b8d1;
+            margin-bottom: 8px;
+        }
+
+        .image-preview {
+            display: none;
+            max-width: 300px;
+            margin: 16px auto;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #2d2d44;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #6c63ff;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .toggle-label {
+            color: #b8b8d1;
+            font-size: 14px;
+        }
+
+        .toggle-switch.active + .toggle-label {
+            color: #6c63ff;
+        }
+
+        /* Events List */
+        .events-list {
+            margin-top: 32px;
+        }
+
+        .event-item {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 20px;
+            align-items: center;
+            border: 1px solid #2d2d44;
+        }
+
+        .event-image-thumb {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .event-details h3 {
+            color: white;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .event-details p {
+            color: #b8b8d1;
+            font-size: 14px;
+            margin: 4px 0;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 0;
+            font-size: 18px;
+            color: #b8b8d1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #b8b8d1;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .event-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .event-image-thumb {
+                margin: 0 auto;
+            }
+
+            .event-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="admin-header">
+            <h1>🔑 Panel Admin - Gestion des Soirées</h1>
+            <a href="dashboard.html" class="btn btn-secondary">Retour au Dashboard</a>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loading" class="loading">
+            Vérification des droits d'administration...
+        </div>
+
+        <!-- Admin content (hidden until auth check) -->
+        <div id="admin-content" style="display: none;">
+
+            <!-- Add/Edit Event Form -->
+            <div class="admin-card">
+                <h2 id="form-title">➕ Ajouter une nouvelle soirée</h2>
+
+                <form id="event-form">
+                    <input type="hidden" id="event-id" value="">
+
+                    <!-- Row 1: Name and Date -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-name">Nom de la soirée *</label>
+                            <input type="text" id="event-name" placeholder="Ex: Soirée House Music" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="event-date">Date *</label>
+                            <input type="datetime-local" id="event-date" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Location and Price -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-location">Lieu *</label>
+                            <input type="text" id="event-location" placeholder="Ex: Le Reflektor, Mons" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="event-price">Prix (€) *</label>
+                            <input type="number" id="event-price" placeholder="Ex: 15" step="0.01" min="0" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Age -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-age">Âge requis *</label>
+                            <input type="number" id="event-age" placeholder="Ex: 18" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Préventes</label>
+                            <div class="toggle-container">
+                                <div class="toggle-switch" id="presales-toggle">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                                <span class="toggle-label" id="presales-label">Désactivé</span>
+                            </div>
+                            <input type="hidden" id="event-presales" value="false">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group full-width">
+                        <label for="event-description">Description</label>
+                        <textarea id="event-description" placeholder="Décrivez la soirée..."></textarea>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="form-group full-width">
+                        <label>Image de la soirée *</label>
+                        <div class="image-upload-area" id="image-upload-area">
+                            <div class="upload-icon">📸</div>
+                            <div class="upload-text">Cliquez pour uploader une image</div>
+                            <small style="color: #b8b8d1;">JPG, PNG ou WEBP - Max 5MB</small>
+                        </div>
+                        <input type="file" id="image-input" accept="image/*" required>
+                        <div class="image-preview" id="image-preview">
+                            <img id="preview-img" src="" alt="Preview">
+                        </div>
+                    </div>
+
+                    <!-- Submit buttons -->
+                    <div style="margin-top: 24px; display: flex; gap: 12px;">
+                        <button type="submit" class="btn" id="submit-btn">Publier la soirée</button>
+                        <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">Annuler</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Events List -->
+            <div class="admin-card">
+                <h2>📋 Soirées publiées</h2>
+                <div id="events-list" class="events-list">
+                    <!-- Events will be loaded here -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module" src="admin-panel.js"></script>
+</body>
+</html>

@@ -32,7 +32,17 @@ const firebaseConfig = {
 
 // Initialiser Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialiser Auth et Firestore
 const auth = getAuth(app);
+
+import {
+    getFirestore,
+    doc,
+    getDoc
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+const db = getFirestore(app);
 
 // ========================================
 // ÉLÉMENTS DOM - INFORMATIONS
@@ -46,6 +56,7 @@ const userProvider = document.getElementById('user-provider');
 const userCreated = document.getElementById('user-created');
 const userEmailVerified = document.getElementById('user-email-verified');
 const logoutBtn = document.getElementById('logout-btn');
+const adminPanelBtn = document.getElementById('admin-panel-btn');
 
 // ========================================
 // ÉLÉMENTS DOM - PROFIL
@@ -135,10 +146,26 @@ async function reauthenticate(password) {
 // AFFICHAGE DES INFORMATIONS UTILISATEUR
 // ========================================
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         // L'utilisateur est connecté - afficher les infos
         console.log('✅ Utilisateur connecté:', user);
+
+        // Vérifier si l'utilisateur est admin
+        try {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userData = userDoc.data();
+
+            if (userData && userData.isAdmin === true) {
+                // L'utilisateur est admin - afficher le bouton Panel Admin
+                if (adminPanelBtn) {
+                    adminPanelBtn.style.display = 'inline-block';
+                }
+                console.log('🔑 Utilisateur est ADMIN');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la vérification admin:', error);
+        }
 
         // Remplir les informations
         userEmail.textContent = user.email || 'Non disponible';
