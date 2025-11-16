@@ -192,8 +192,8 @@ function redirectToDashboard(user, emailSent = false) {
         alert('✅ Inscription réussie ! Un email de vérification vous a été envoyé. Vérifiez votre boîte de réception.');
     }
 
-    // Redirection vers le dashboard
-    window.location.href = 'dashboard.html';
+    // Redirection vers l'accueil
+    window.location.href = 'index.html';
 }
 
 // ========================================

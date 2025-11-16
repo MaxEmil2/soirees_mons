@@ -129,14 +129,14 @@ function getErrorMessage(errorCode) {
 }
 
 /**
- * Redirige vers le dashboard après connexion réussie
+ * Redirige vers l'accueil après connexion réussie
  * @param {object} user - L'utilisateur connecté
  */
 function redirectToDashboard(user) {
     console.log('✅ Utilisateur connecté:', user.email);
 
-    // Redirection vers le dashboard
-    window.location.href = 'dashboard.html';
+    // Redirection vers l'accueil
+    window.location.href = 'index.html';
 }
 
 // ========================================

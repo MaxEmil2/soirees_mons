@@ -27,6 +27,11 @@
 
                 <!-- Affiché si connecté -->
                 <div class="nav-auth-connected" id="nav-auth-connected" style="display: none;">
+                    <!-- Bouton Ajouter une soirée -->
+                    <button class="btn-add-event-nav" id="btn-add-event">
+                        ➕ Ajouter une soirée
+                    </button>
+
                     <!-- Cloche notifications -->
                     <div class="notification-bell" id="notification-bell">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -74,13 +79,6 @@
             <div id="no-events" class="no-events" style="display: none;">
                 <p>🎉 Aucune soirée prévue pour le moment.</p>
                 <p>Revenez bientôt pour découvrir nos prochains événements!</p>
-            </div>
-
-            <!-- Bouton Ajouter une soirée -->
-            <div class="add-event-section">
-                <button class="btn-add-event" id="btn-add-event">
-                    ➕ Ajouter une soirée
-                </button>
             </div>
         </div>
     </section>
@@ -276,10 +274,10 @@
     <!-- MODAL CHOIX LIKE PUBLIC/ANONYME -->
     <div id="like-choice-modal" class="like-choice-modal" style="display: none;">
         <div class="like-choice-content">
-            <h2>❤️ Liker cette soirée</h2>
-            <p>Voulez-vous liker en public ou en anonyme ?</p>
+            <h2 id="like-modal-title">❤️ Liker cette soirée</h2>
+            <p id="like-modal-description">Voulez-vous liker en public ou en anonyme ?</p>
 
-            <div class="like-choice-buttons">
+            <div class="like-choice-buttons" id="like-choice-buttons">
                 <button class="like-choice-btn like-choice-public" id="like-public-btn">
                     <span class="like-choice-icon">👤</span>
                     <strong>Public</strong>
@@ -292,6 +290,10 @@
                     <small>Juste +1 dans le compteur</small>
                 </button>
             </div>
+
+            <button class="like-choice-unlike" id="like-unlike-btn" style="display: none;">
+                💔 Ne plus aimer
+            </button>
 
             <button class="like-choice-cancel" onclick="closeLikeChoiceModal()">Annuler</button>
         </div>
@@ -861,6 +863,24 @@
             gap: 20px;
         }
 
+        .btn-add-event-nav {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-add-event-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.4);
+        }
+
         .notification-bell {
             position: relative;
             cursor: pointer;
@@ -998,6 +1018,15 @@
                 width: 300px;
                 right: -20px;
             }
+
+            .btn-add-event-nav {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+
+            .nav-auth-connected {
+                gap: 12px;
+            }
         }
 
         /* Système de Likes */
@@ -1023,12 +1052,12 @@
         }
 
         .liker-photo {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
-            margin-left: -8px;
+            margin-left: -6px;
         }
 
         .liker-photo:first-child {
@@ -1046,8 +1075,8 @@
         }
 
         .like-button {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             background: rgba(255, 255, 255, 0.9);
             border: none;
             border-radius: 50%;
@@ -1068,8 +1097,8 @@
         }
 
         .like-button svg {
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             fill: #ff4458;
         }
 
@@ -1152,6 +1181,25 @@
         .like-choice-btn small {
             color: #b8b8d1;
             font-size: 12px;
+        }
+
+        .like-choice-unlike {
+            background: linear-gradient(135deg, #ff4458 0%, #ff6b7a 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .like-choice-unlike:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 68, 88, 0.4);
         }
 
         .like-choice-cancel {
@@ -1590,8 +1638,34 @@
         }
 
         // Ouvrir le modal de choix
-        function openLikeChoiceModal() {
+        async function openLikeChoiceModal() {
             const modal = document.getElementById('like-choice-modal');
+            const likeChoiceButtons = document.getElementById('like-choice-buttons');
+            const unlikeBtn = document.getElementById('like-unlike-btn');
+            const modalTitle = document.getElementById('like-modal-title');
+            const modalDescription = document.getElementById('like-modal-description');
+
+            // Vérifier si l'utilisateur a déjà liké
+            const alreadyLiked = await hasUserLiked(currentLikeEventId, currentUser.uid);
+
+            if (alreadyLiked) {
+                // Cacher les boutons Public/Anonyme
+                likeChoiceButtons.style.display = 'none';
+                modalDescription.style.display = 'none';
+                // Afficher le bouton "Ne plus aimer"
+                unlikeBtn.style.display = 'block';
+                // Changer le titre
+                modalTitle.textContent = '💗 Vous aimez cette soirée';
+            } else {
+                // Afficher les boutons Public/Anonyme
+                likeChoiceButtons.style.display = 'grid';
+                modalDescription.style.display = 'block';
+                // Cacher le bouton "Ne plus aimer"
+                unlikeBtn.style.display = 'none';
+                // Remettre le titre normal
+                modalTitle.textContent = '❤️ Liker cette soirée';
+            }
+
             modal.style.display = 'flex';
         }
 
@@ -1615,6 +1689,24 @@
 
             await performLike(currentLikeEventId, false);
             closeLikeChoiceModal();
+        });
+
+        // Bouton Ne plus aimer
+        document.getElementById('like-unlike-btn').addEventListener('click', async () => {
+            if (!currentLikeEventId) return;
+
+            try {
+                await unlikeEvent(currentLikeEventId);
+
+                // Recharger les likes
+                setTimeout(() => {
+                    loadEventLikesUI(currentLikeEventId);
+                }, 300);
+
+                closeLikeChoiceModal();
+            } catch (error) {
+                console.error('Erreur unlike:', error);
+            }
         });
 
         // Effectuer le like
