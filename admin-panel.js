@@ -29,6 +29,9 @@ import {
     deleteObject
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
+// ✅ VERIFICATION: Ce fichier a bien l'import 'where' - Version 2.0
+console.log('✅ admin-panel.js VERSION 2.0 CHARGÉ - where est importé:', typeof where);
+
 // ========================================
 // CONFIGURATION FIREBASE
 // ========================================
