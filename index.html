@@ -121,35 +121,58 @@
                 <div class="modal-right">
                     <h2 id="modal-title"></h2>
 
-                    <div class="modal-info-item">
-                        <strong>📅 Date:</strong>
-                        <p id="modal-date"></p>
+                    <!-- Bulles d'infos -->
+                    <div class="modal-info-bubbles">
+                        <div class="info-bubble">
+                            <span class="bubble-icon">📅</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Date</span>
+                                <span class="bubble-value" id="modal-date"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-bubble">
+                            <span class="bubble-icon">📍</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Lieu</span>
+                                <span class="bubble-value" id="modal-location"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-bubble">
+                            <span class="bubble-icon">🔞</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Âge requis</span>
+                                <span class="bubble-value" id="modal-age"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-bubble">
+                            <span class="bubble-icon">💰</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Prix</span>
+                                <span class="bubble-value" id="modal-price"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-bubble" id="modal-presales-bubble">
+                            <span class="bubble-icon">🎟️</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Préventes</span>
+                                <span class="bubble-value" id="modal-presales-status">Oui</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="modal-info-item">
-                        <strong>📍 Lieu:</strong>
-                        <p id="modal-location"></p>
-                    </div>
-
-                    <div class="modal-info-item">
-                        <strong>🔞 Âge minimum:</strong>
-                        <p id="modal-age"></p>
-                    </div>
-
-                    <div class="modal-info-item">
-                        <strong>💰 Prix:</strong>
-                        <p id="modal-price"></p>
-                    </div>
-
-                    <div class="modal-info-item">
-                        <strong>📝 Description:</strong>
+                    <!-- Description séparée -->
+                    <div class="modal-description-section">
+                        <h3>📝 Description</h3>
                         <p id="modal-description"></p>
                     </div>
 
                     <!-- Boutons d'action -->
                     <div class="modal-actions">
                         <a id="modal-link" href="#" target="_blank" class="modal-btn modal-btn-primary">Lien de la soirée</a>
-                        <button id="modal-presales" class="modal-btn modal-btn-secondary">🎟️ Préventes disponibles</button>
                     </div>
                 </div>
             </div>
@@ -490,20 +513,69 @@
             background-clip: text;
         }
 
-        .modal-info-item {
-            margin-bottom: 20px;
+        .modal-info-bubbles {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
         }
 
-        .modal-info-item strong {
-            display: block;
+        .info-bubble {
+            background: rgba(108, 99, 255, 0.1);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+
+        .info-bubble:hover {
+            background: rgba(108, 99, 255, 0.15);
+            border-color: rgba(108, 99, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .bubble-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .bubble-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .bubble-label {
             color: #b8b8d1;
-            font-size: 14px;
-            margin-bottom: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .modal-info-item p {
+        .bubble-value {
             color: white;
-            font-size: 18px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-description-section {
+            margin-bottom: 24px;
+        }
+
+        .modal-description-section h3 {
+            color: #b8b8d1;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .modal-description-section p {
+            color: white;
+            font-size: 16px;
             line-height: 1.6;
             white-space: pre-line;
         }
@@ -557,8 +629,25 @@
                 font-size: 24px;
             }
 
-            .modal-info-item p {
-                font-size: 16px;
+            .modal-info-bubbles {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .info-bubble {
+                padding: 12px;
+            }
+
+            .bubble-icon {
+                font-size: 20px;
+            }
+
+            .bubble-value {
+                font-size: 14px;
+            }
+
+            .modal-description-section p {
+                font-size: 14px;
             }
 
             .modal-close {
