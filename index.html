@@ -1314,15 +1314,15 @@
                 }
 
                 // Afficher les événements approuvés
-                approvedEvents.forEach((eventData) => {
+                for (const eventData of approvedEvents) {
                     const eventId = eventData.id;
 
                     // Stocker l'événement globalement
                     window.eventsData[eventId] = eventData;
 
-                    const eventCard = createEventCard(eventData, eventId);
+                    const eventCard = await createEventCard(eventData, eventId);
                     eventsGrid.appendChild(eventCard);
-                });
+                }
 
                 console.log(`✅ ${querySnapshot.size} événement(s) chargé(s)`);
 

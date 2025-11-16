@@ -18,6 +18,7 @@ import {
     deleteDoc,
     serverTimestamp,
     query,
+    where,
     orderBy
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import {
