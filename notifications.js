@@ -35,7 +35,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Éléments DOM
+// Éléments DOM - avec vérification d'existence
 const notificationBell = document.getElementById('notification-bell');
 const notificationBadge = document.getElementById('notification-badge');
 const notificationDropdown = document.getElementById('notification-dropdown');
@@ -45,6 +45,13 @@ const markAllReadBtn = document.getElementById('mark-all-read');
 let currentUser = null;
 let unsubscribeNotifications = null;
 
+// Vérifier si tous les éléments DOM nécessaires existent
+const hasNotificationElements = notificationBell && notificationBadge && notificationDropdown && notificationList;
+
+if (!hasNotificationElements) {
+    console.log('⚠️ Système de notifications désactivé : éléments DOM manquants sur cette page');
+}
+
 // ========================================
 // ÉCOUTER LES NOTIFICATIONS EN TEMPS RÉEL
 // ========================================
@@ -52,7 +59,10 @@ let unsubscribeNotifications = null;
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        listenToNotifications(user.uid);
+        // Seulement si les éléments DOM existent
+        if (hasNotificationElements) {
+            listenToNotifications(user.uid);
+        }
     } else {
         currentUser = null;
         if (unsubscribeNotifications) {
@@ -62,37 +72,47 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function listenToNotifications(userId) {
-    // Créer une requête pour les notifications de l'utilisateur
-    const notificationsQuery = query(
-        collection(db, 'notifications'),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
-    );
+    if (!hasNotificationElements) return;
 
-    // Écouter les changements en temps réel
-    unsubscribeNotifications = onSnapshot(notificationsQuery, (snapshot) => {
-        const notifications = [];
-        let unreadCount = 0;
+    try {
+        // Créer une requête pour les notifications de l'utilisateur
+        const notificationsQuery = query(
+            collection(db, 'notifications'),
+            where('userId', '==', userId),
+            orderBy('createdAt', 'desc')
+        );
 
-        snapshot.forEach((doc) => {
-            const notif = { id: doc.id, ...doc.data() };
-            notifications.push(notif);
-            if (!notif.read) {
-                unreadCount++;
+        // Écouter les changements en temps réel
+        unsubscribeNotifications = onSnapshot(notificationsQuery, (snapshot) => {
+            const notifications = [];
+            let unreadCount = 0;
+
+            snapshot.forEach((doc) => {
+                const notif = { id: doc.id, ...doc.data() };
+                notifications.push(notif);
+                if (!notif.read) {
+                    unreadCount++;
+                }
+            });
+
+            // Mettre à jour le badge (avec vérification)
+            if (notificationBadge) {
+                if (unreadCount > 0) {
+                    notificationBadge.textContent = unreadCount;
+                    notificationBadge.style.display = 'flex';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
             }
+
+            // Afficher les notifications
+            displayNotifications(notifications);
+        }, (error) => {
+            console.error('Erreur écoute notifications:', error);
         });
-
-        // Mettre à jour le badge
-        if (unreadCount > 0) {
-            notificationBadge.textContent = unreadCount;
-            notificationBadge.style.display = 'flex';
-        } else {
-            notificationBadge.style.display = 'none';
-        }
-
-        // Afficher les notifications
-        displayNotifications(notifications);
-    });
+    } catch (error) {
+        console.error('Erreur initialisation notifications:', error);
+    }
 }
 
 // ========================================
@@ -100,6 +120,8 @@ function listenToNotifications(userId) {
 // ========================================
 
 function displayNotifications(notifications) {
+    if (!notificationList) return;
+
     if (notifications.length === 0) {
         notificationList.innerHTML = '<div class="notification-empty">Aucune notification</div>';
         return;
@@ -169,46 +191,50 @@ async function markAsRead(notifId) {
 // MARQUER TOUTES COMME LUES
 // ========================================
 
-markAllReadBtn.addEventListener('click', async () => {
-    if (!currentUser) return;
+if (markAllReadBtn) {
+    markAllReadBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
 
-    try {
-        const notificationsQuery = query(
-            collection(db, 'notifications'),
-            where('userId', '==', currentUser.uid),
-            where('read', '==', false)
-        );
+        try {
+            const notificationsQuery = query(
+                collection(db, 'notifications'),
+                where('userId', '==', currentUser.uid),
+                where('read', '==', false)
+            );
 
-        const snapshot = await getDocs(notificationsQuery);
+            const snapshot = await getDocs(notificationsQuery);
 
-        const promises = [];
-        snapshot.forEach((docSnap) => {
-            promises.push(updateDoc(doc(db, 'notifications', docSnap.id), {
-                read: true
-            }));
-        });
+            const promises = [];
+            snapshot.forEach((docSnap) => {
+                promises.push(updateDoc(doc(db, 'notifications', docSnap.id), {
+                    read: true
+                }));
+            });
 
-        await Promise.all(promises);
-        console.log('✅ Toutes les notifications marquées comme lues');
-    } catch (error) {
-        console.error('Erreur marquage toutes lues:', error);
-    }
-});
+            await Promise.all(promises);
+            console.log('✅ Toutes les notifications marquées comme lues');
+        } catch (error) {
+            console.error('Erreur marquage toutes lues:', error);
+        }
+    });
+}
 
 // ========================================
 // TOGGLE DROPDOWN
 // ========================================
 
-notificationBell.addEventListener('click', (e) => {
-    e.stopPropagation();
-    notificationDropdown.classList.toggle('show');
-});
+if (notificationBell && notificationDropdown) {
+    notificationBell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notificationDropdown.classList.toggle('show');
+    });
 
-// Fermer en cliquant ailleurs
-document.addEventListener('click', (e) => {
-    if (!notificationBell.contains(e.target)) {
-        notificationDropdown.classList.remove('show');
-    }
-});
+    // Fermer en cliquant ailleurs
+    document.addEventListener('click', (e) => {
+        if (!notificationBell.contains(e.target)) {
+            notificationDropdown.classList.remove('show');
+        }
+    });
+}
 
-console.log('🔔 Notifications initialisées');
+console.log('🔔 Système de notifications initialisé');

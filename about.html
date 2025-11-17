@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>À propos de nous - Soirées Mons</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="home.css">
     <style>
         /* Styles spécifiques pour la page À propos */
@@ -378,6 +379,8 @@
 
             for (const [name, data] of Object.entries(creators)) {
                 try {
+                    console.log(`🔍 Recherche de ${name} avec email: ${data.email}`);
+
                     // Rechercher l'utilisateur par email dans Firestore
                     const usersQuery = query(
                         collection(db, 'users'),
@@ -386,27 +389,50 @@
 
                     const snapshot = await getDocs(usersQuery);
 
-                    if (!snapshot.empty) {
-                        const userData = snapshot.docs[0].data();
-                        // Utiliser photoURL (photo custom) en priorité, sinon imageURL (photo Google)
-                        const imageURL = userData.photoURL || userData.imageURL;
+                    if (snapshot.empty) {
+                        console.log(`⚠️ Aucun utilisateur trouvé pour ${name} (${data.email})`);
+                        console.log(`💡 Astuce : Vérifiez que l'utilisateur existe dans Firestore avec exactement cet email`);
+                        continue;
+                    }
 
-                        if (imageURL) {
-                            const imgElement = document.getElementById(data.imgId);
-                            if (imgElement) {
-                                imgElement.src = imageURL;
-                                imgElement.style.objectFit = 'cover';
-                            }
+                    const userData = snapshot.docs[0].data();
+                    console.log(`✅ Utilisateur ${name} trouvé, données:`, {
+                        hasPhotoURL: !!userData.photoURL,
+                        hasImageURL: !!userData.imageURL,
+                        photoURL: userData.photoURL ? 'présent' : 'absent',
+                        imageURL: userData.imageURL ? 'présent' : 'absent'
+                    });
+
+                    // Utiliser photoURL (photo custom) en priorité, sinon imageURL (photo Google)
+                    const imageURL = userData.photoURL || userData.imageURL;
+
+                    if (imageURL) {
+                        const imgElement = document.getElementById(data.imgId);
+                        if (imgElement) {
+                            imgElement.src = imageURL;
+                            imgElement.style.objectFit = 'cover';
+                            console.log(`✅ Photo de ${name} chargée avec succès`);
+                        } else {
+                            console.warn(`⚠️ Element img #${data.imgId} non trouvé dans le DOM`);
                         }
+                    } else {
+                        console.log(`⚠️ Aucune photo disponible pour ${name} (ni photoURL ni imageURL)`);
                     }
                 } catch (error) {
-                    console.log(`Info: Photo de ${name} non chargée depuis Firebase`);
+                    console.error(`❌ Erreur lors du chargement de la photo de ${name}:`, error);
+                    console.error('Détails de l\'erreur:', {
+                        message: error.message,
+                        code: error.code,
+                        name: error.name
+                    });
                 }
             }
         }
 
         // Charger les photos au chargement de la page
-        loadCreatorPhotos();
+        loadCreatorPhotos().catch(error => {
+            console.error('❌ Erreur globale loadCreatorPhotos:', error);
+        });
     </script>
 
     <!-- Import du système de notifications -->
