@@ -1029,6 +1029,8 @@
                 const likersPhotosContainer = document.getElementById(`likers-photos-${eventId}`);
                 if (likersPhotosContainer) {
                     likersPhotosContainer.innerHTML = '';
+                    // Forcer le style du conteneur
+                    likersPhotosContainer.style.cssText = 'display: flex; align-items: center; gap: 0; flex-wrap: nowrap;';
 
                     // Limiter à 3 avatars maximum
                     const maxAvatars = 3;
@@ -1041,6 +1043,20 @@
                         img.src = liker.userPhotoURL || 'https://via.placeholder.com/32';
                         img.alt = 'Liker';
                         img.className = 'liker-photo';
+                        // FORCER les styles directement via JavaScript (style inline)
+                        img.style.cssText = `
+                            width: 28px !important;
+                            height: 28px !important;
+                            min-width: 28px !important;
+                            max-width: 28px !important;
+                            border-radius: 50%;
+                            border: 2px solid white;
+                            object-fit: cover;
+                            margin-left: ${index === 0 ? '0' : '-8px'};
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                            transition: transform 0.2s;
+                            display: inline-block;
+                        `;
                         img.onerror = function() {
                             this.src = 'https://via.placeholder.com/32';
                         };
