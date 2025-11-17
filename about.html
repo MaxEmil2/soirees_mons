@@ -239,31 +239,27 @@
             <div class="about-content">
                 <div class="about-text">
                     <p style="margin-bottom: 24px;">
-                        🎉 Bienvenue sur <strong>Soirées Mons</strong> ! 🎉
+                        ✨ Soirées Mons, lancé le 7 octobre 2024 par Maxence et Emilien, est un projet qui vise à mettre en avant les événements de Mons.
                     </p>
 
                     <p style="margin-bottom: 24px;">
-                        On est Maxence et Emilien, deux passionnés de la vie nocturne montoise ! 🌙✨ Notre mission ? Rendre les soirées à Mons plus accessibles, plus fun, et surtout... inoubliables ! 🔥
+                        Notre but est de créer une plateforme moderne, fiable et accessible, pour que tout le monde puisse facilement découvrir les soirées, concerts et activités à ne pas rater dans la région 🎉.
                     </p>
 
                     <p style="margin-bottom: 24px;">
-                        💡 L'idée est simple : créer <strong>LA</strong> plateforme où tu peux découvrir tous les événements cool de la région ! 🎵 Concerts, soirées étudiantes, festivals... tout y est ! On veut que tu ne rates plus jamais THE soirée de l'année ! 🚀
+                        Nous soutenons aussi les organisateurs locaux en leur offrant une visibilité professionnelle, un bon relais de communication et une mise en valeur cohérente de leurs événements 📣.
                     </p>
 
                     <p style="margin-bottom: 24px;">
-                        🤝 On est aussi là pour les organisateurs locaux ! On leur offre une visibilité au top 📢, une communication pro 💼, et on met leurs événements en valeur comme ils le méritent ! 🌟
+                        Avec une approche sérieuse et dynamique orientée vers la communauté, on s'assure que les infos publiées et l'expérience utilisateur restent de haute qualité ⭐.
                     </p>
 
                     <p style="margin-bottom: 24px;">
-                        🎯 Notre promesse ? Une plateforme moderne, fiable, et communautaire ! On vérifie chaque événement 🔍, on reste transparents 💎, et on est toujours à l'écoute de notre communauté ! 👂❤️
+                        Soirées Mons souhaite devenir une référence locale des événements, tout en alliant transparence, rigueur et proximité avec son public 🤝.
                     </p>
 
                     <p style="margin-bottom: 24px;">
-                        📱 Chaque jour, on bosse dur pour ajouter de nouvelles fonctionnalités, renforcer nos partenariats 🤜🤛, et créer un espace où les jeunes peuvent se rencontrer, échanger et profiter à fond de la vie nocturne montoise ! 🥳
-                    </p>
-
-                    <p style="text-align: center; font-size: 20px; margin-top: 32px;">
-                        Alors, prêt à découvrir ta prochaine soirée ? 🎊
+                        Chaque jour, on développe de nouvelles fonctionnalités, on renforce nos partenariats et on crée un espace où les jeunes peuvent se rencontrer, échanger et s'amuser dans la vie nocturne de Mons 🔥.
                     </p>
                 </div>
 
@@ -288,7 +284,12 @@
                                 <img src="assets/default-avatar.png" alt="Emilien" class="creator-photo" id="photo-emilien">
                             </div>
                             <h4 class="creator-name">Emilien</h4>
-                            <p class="creator-role">Co-fondateur</p>
+                            <a href="https://www.instagram.com/_e.dl._/" target="_blank" class="creator-instagram">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                                <span>@_e.dl._</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -387,12 +388,14 @@
 
                     if (!snapshot.empty) {
                         const userData = snapshot.docs[0].data();
-                        const photoURL = userData.photoURL;
+                        // Utiliser imageURL (image Google) en priorité, sinon photoURL
+                        const imageURL = userData.imageURL || userData.photoURL;
 
-                        if (photoURL) {
+                        if (imageURL) {
                             const imgElement = document.getElementById(data.imgId);
                             if (imgElement) {
-                                imgElement.src = photoURL;
+                                imgElement.src = imageURL;
+                                imgElement.style.objectFit = 'cover';
                             }
                         }
                     }
