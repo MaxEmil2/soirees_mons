@@ -334,7 +334,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFirestore, collection, query, where, getDocs, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         // Configuration Firebase
         const firebaseConfig = {
@@ -356,32 +356,55 @@
         const btnSignup = document.getElementById('btn-signup');
         const navAuthConnected = document.getElementById('nav-auth-connected');
 
-        // Détecter l'état de connexion
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Utilisateur connecté → afficher notifications + "Mon compte"
-                btnSignup.style.display = 'none';
-                navAuthConnected.style.display = 'flex';
-            } else {
-                // Utilisateur non connecté → afficher "S'enregistrer"
-                btnSignup.style.display = 'inline-block';
-                navAuthConnected.style.display = 'none';
-            }
-        });
-
         // Charger les photos des créateurs depuis Firebase
         async function loadCreatorPhotos() {
-            // Map des créateurs avec leurs emails ou UIDs
+            // Map des créateurs avec leurs emails et UIDs connus
             const creators = {
-                'maxence': { email: 'maxence@soirees-mons.com', imgId: 'photo-maxence' },
-                'emilien': { email: 'emilien@soirees-mons.com', imgId: 'photo-emilien' }
+                'maxence': {
+                    email: 'maxence@soirees-mons.com',
+                    uid: null, // On peut ajouter l'UID si connu pour recherche directe
+                    imgId: 'photo-maxence',
+                    fallbackUrl: null // URL de fallback si disponible
+                },
+                'emilien': {
+                    email: 'emilien@soirees-mons.com',
+                    uid: null,
+                    imgId: 'photo-emilien',
+                    fallbackUrl: null
+                }
             };
+
+            // Vérifier si l'utilisateur est connecté
+            const currentUser = auth.currentUser;
+
+            if (!currentUser) {
+                console.log('ℹ️ Utilisateur non connecté : chargement des photos créateurs désactivé');
+                console.log('💡 Les photos des créateurs ne peuvent être chargées que si vous êtes connecté (permissions Firebase)');
+                // Les images par défaut (default-avatar.png) resteront affichées
+                return;
+            }
+
+            console.log('✅ Utilisateur connecté, tentative de chargement des photos créateurs...');
 
             for (const [name, data] of Object.entries(creators)) {
                 try {
                     console.log(`🔍 Recherche de ${name} avec email: ${data.email}`);
 
-                    // Rechercher l'utilisateur par email dans Firestore
+                    // Méthode 1 : Recherche par UID si disponible (plus rapide et fiable)
+                    if (data.uid) {
+                        const userDoc = await getDoc(doc(db, 'users', data.uid));
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            const imageURL = userData.photoURL || userData.imageURL;
+
+                            if (imageURL) {
+                                updateCreatorImage(data.imgId, imageURL, name);
+                                continue;
+                            }
+                        }
+                    }
+
+                    // Méthode 2 : Recherche par email (fallback)
                     const usersQuery = query(
                         collection(db, 'users'),
                         where('email', '==', data.email)
@@ -391,12 +414,18 @@
 
                     if (snapshot.empty) {
                         console.log(`⚠️ Aucun utilisateur trouvé pour ${name} (${data.email})`);
-                        console.log(`💡 Astuce : Vérifiez que l'utilisateur existe dans Firestore avec exactement cet email`);
+
+                        // Utiliser l'URL de fallback si disponible
+                        if (data.fallbackUrl) {
+                            updateCreatorImage(data.imgId, data.fallbackUrl, name);
+                        }
                         continue;
                     }
 
                     const userData = snapshot.docs[0].data();
-                    console.log(`✅ Utilisateur ${name} trouvé, données:`, {
+                    const userUid = snapshot.docs[0].id;
+
+                    console.log(`✅ Utilisateur ${name} trouvé (UID: ${userUid}), données:`, {
                         hasPhotoURL: !!userData.photoURL,
                         hasImageURL: !!userData.imageURL,
                         photoURL: userData.photoURL ? 'présent' : 'absent',
@@ -407,31 +436,60 @@
                     const imageURL = userData.photoURL || userData.imageURL;
 
                     if (imageURL) {
-                        const imgElement = document.getElementById(data.imgId);
-                        if (imgElement) {
-                            imgElement.src = imageURL;
-                            imgElement.style.objectFit = 'cover';
-                            console.log(`✅ Photo de ${name} chargée avec succès`);
-                        } else {
-                            console.warn(`⚠️ Element img #${data.imgId} non trouvé dans le DOM`);
-                        }
+                        updateCreatorImage(data.imgId, imageURL, name);
                     } else {
                         console.log(`⚠️ Aucune photo disponible pour ${name} (ni photoURL ni imageURL)`);
                     }
+
                 } catch (error) {
-                    console.error(`❌ Erreur lors du chargement de la photo de ${name}:`, error);
-                    console.error('Détails de l\'erreur:', {
-                        message: error.message,
-                        code: error.code,
-                        name: error.name
-                    });
+                    // Gérer spécifiquement l'erreur de permissions
+                    if (error.code === 'permission-denied') {
+                        console.log(`🔒 Permissions insuffisantes pour charger la photo de ${name}`);
+                        console.log('💡 Solution : Les règles Firestore doivent autoriser la lecture de la collection "users"');
+                        console.log('   Ou créez une collection publique "creators" avec les photos des créateurs');
+                    } else {
+                        console.error(`❌ Erreur lors du chargement de la photo de ${name}:`, error.message);
+                    }
+
+                    // Utiliser l'URL de fallback si disponible
+                    if (data.fallbackUrl) {
+                        updateCreatorImage(data.imgId, data.fallbackUrl, name);
+                    }
                 }
             }
         }
 
-        // Charger les photos au chargement de la page
-        loadCreatorPhotos().catch(error => {
-            console.error('❌ Erreur globale loadCreatorPhotos:', error);
+        // Fonction helper pour mettre à jour l'image d'un créateur
+        function updateCreatorImage(imgId, imageURL, creatorName) {
+            const imgElement = document.getElementById(imgId);
+            if (imgElement) {
+                imgElement.src = imageURL;
+                imgElement.style.objectFit = 'cover';
+                console.log(`✅ Photo de ${creatorName} chargée avec succès`);
+            } else {
+                console.warn(`⚠️ Element img #${imgId} non trouvé dans le DOM`);
+            }
+        }
+
+        // Attendre que l'utilisateur soit connecté avant de charger les photos
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Utilisateur connecté → afficher notifications + "Mon compte"
+                btnSignup.style.display = 'none';
+                navAuthConnected.style.display = 'flex';
+
+                // Charger les photos des créateurs maintenant que l'utilisateur est connecté
+                loadCreatorPhotos().catch(error => {
+                    console.error('❌ Erreur globale loadCreatorPhotos:', error);
+                });
+            } else {
+                // Utilisateur non connecté → afficher "S'enregistrer"
+                btnSignup.style.display = 'inline-block';
+                navAuthConnected.style.display = 'none';
+
+                // Ne pas essayer de charger les photos (permissions insuffisantes)
+                console.log('ℹ️ Photos créateurs non chargées : connexion requise');
+            }
         });
     </script>
 
