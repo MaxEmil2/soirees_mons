@@ -175,6 +175,100 @@
                 gap: 12px;
             }
         }
+
+        /* STYLES CRITIQUES DES LIKES - Inline pour éviter problème de chargement CSS */
+        .likers-photos {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .liker-photo {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+            margin-left: -8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .liker-photo:first-child {
+            margin-left: 0;
+        }
+
+        .liker-photo:hover {
+            transform: scale(1.15);
+            z-index: 2;
+        }
+
+        .likes-count {
+            background: rgba(0, 0, 0, 0.8) !important;
+            color: white !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            padding: 4px 8px !important;
+            border-radius: 12px !important;
+            margin-left: 6px !important;
+            border: 2px solid white !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+            min-width: 28px !important;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .likes-container {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        /* Responsive likes - Mobile */
+        @media (max-width: 768px) {
+            .liker-photo {
+                width: 24px !important;
+                height: 24px !important;
+                border-width: 1.5px;
+                margin-left: -6px;
+            }
+
+            .liker-photo:first-child {
+                margin-left: 0;
+            }
+
+            .likes-count {
+                font-size: 10px !important;
+                padding: 3px 6px !important;
+                min-width: 24px !important;
+                margin-left: 4px !important;
+            }
+        }
+
+        /* Responsive likes - Tablette */
+        @media (min-width: 769px) and (max-width: 992px) {
+            .liker-photo {
+                width: 26px !important;
+                height: 26px !important;
+                margin-left: -7px;
+            }
+
+            .liker-photo:first-child {
+                margin-left: 0;
+            }
+
+            .likes-count {
+                font-size: 10px !important;
+                padding: 3px 7px !important;
+                min-width: 26px !important;
+                margin-left: 5px !important;
+            }
+        }
     </style>
 </head>
 <body>
