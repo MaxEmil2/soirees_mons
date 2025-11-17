@@ -1025,7 +1025,7 @@
 
                 console.log(`🔍 Event ${eventId}: ${totalLikes} likes totaux, ${recentLikers.length} likers publics`);
 
-                // Afficher les photos des likers (max 3)
+                // Afficher les photos des likers publics (max 3)
                 const likersPhotosContainer = document.getElementById(`likers-photos-${eventId}`);
                 if (likersPhotosContainer) {
                     likersPhotosContainer.innerHTML = '';
@@ -1036,7 +1036,7 @@
                     const maxAvatars = 3;
                     const likersToShow = recentLikers.slice(0, maxAvatars);
 
-                    console.log(`✅ Affichage de ${likersToShow.length} avatars max 3 pour event ${eventId}`);
+                    console.log(`✅ Affichage de ${likersToShow.length} avatars publics pour event ${eventId}`);
 
                     likersToShow.forEach((liker, index) => {
                         const img = document.createElement('img');
@@ -1066,18 +1066,19 @@
                     });
                 }
 
-                // Afficher le compteur
+                // Afficher le compteur : total - avatars affichés
                 const likesCountElement = document.getElementById(`likes-count-${eventId}`);
                 if (likesCountElement) {
-                    if (totalLikes > 3) {
-                        // Afficher le nombre restant après les 3 avatars
-                        const remaining = totalLikes - 3;
-                        likesCountElement.textContent = `+${remaining}`;
+                    const displayedAvatars = Math.min(recentLikers.length, 3);
+                    const remainingLikes = totalLikes - displayedAvatars;
+
+                    if (remainingLikes > 0) {
+                        // Il y a des likes anonymes ou plus de 3 likes publics
+                        likesCountElement.textContent = `+${remainingLikes}`;
                         likesCountElement.style.display = 'inline-block';
-                    } else if (totalLikes > 0 && totalLikes <= 3) {
-                        // Si moins de 3 likes, ne pas afficher le badge
-                        likesCountElement.style.display = 'none';
+                        console.log(`📊 Badge +${remainingLikes} affiché (${totalLikes} total - ${displayedAvatars} avatars)`);
                     } else {
+                        // Pas de compteur si tous les likes sont affichés en avatar
                         likesCountElement.style.display = 'none';
                     }
                 }
@@ -1089,6 +1090,8 @@
                     if (likeBtn) {
                         if (userHasLiked) {
                             likeBtn.classList.add('liked');
+                        } else {
+                            likeBtn.classList.remove('liked');
                         }
 
                         // Ajouter l'écouteur de click
@@ -1177,14 +1180,20 @@
             try {
                 await unlikeEvent(currentLikeEventId);
 
-                // Recharger les likes
-                setTimeout(() => {
-                    loadEventLikesUI(currentLikeEventId);
-                }, 300);
+                // Mise à jour immédiate du bouton like
+                const likeBtn = document.getElementById(`like-btn-${currentLikeEventId}`);
+                if (likeBtn) {
+                    likeBtn.classList.remove('liked');
+                }
+
+                // Recharger les avatars et le compteur immédiatement
+                loadEventLikesUI(currentLikeEventId);
 
                 closeLikeChoiceModal();
+                console.log('✅ Unlike effectué avec succès');
             } catch (error) {
                 console.error('Erreur unlike:', error);
+                alert('❌ Erreur lors du retrait du like');
             }
         });
 
@@ -1193,26 +1202,60 @@
             try {
                 await likeEvent(eventId, isPublic);
 
-                // Animation type Instagram
-                showHeartAnimation();
+                // Animation type Instagram sur la carte spécifique
+                showHeartAnimation(eventId);
 
-                // Recharger les likes
-                setTimeout(() => {
-                    loadEventLikesUI(eventId);
-                }, 300);
+                // Recharger les likes immédiatement
+                loadEventLikesUI(eventId);
 
             } catch (error) {
                 console.error('Erreur like:', error);
             }
         }
 
-        // Animation cœur Instagram
-        function showHeartAnimation() {
-            const heartAnim = document.getElementById('heart-animation');
-            heartAnim.classList.add('show');
+        // Animation cœur Instagram sur la carte spécifique
+        function showHeartAnimation(eventId) {
+            const eventCard = document.getElementById(`event-image-${eventId}`);
+            if (!eventCard) return;
+
+            // Créer l'animation de cœur pour cette carte spécifique
+            const heart = document.createElement('div');
+            heart.className = 'heart-animation-card';
+            heart.innerHTML = `
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="#ff4458">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            `;
+            heart.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                z-index: 100;
+                pointer-events: none;
+                opacity: 0;
+            `;
+
+            eventCard.appendChild(heart);
+
+            // Animation
+            setTimeout(() => {
+                heart.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                heart.style.opacity = '1';
+                heart.style.transition = 'all 0.2s ease-out';
+            }, 10);
 
             setTimeout(() => {
-                heartAnim.classList.remove('show');
+                heart.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 150);
+
+            setTimeout(() => {
+                heart.style.opacity = '0';
+                heart.style.transform = 'translate(-50%, -50%) scale(0)';
+            }, 600);
+
+            setTimeout(() => {
+                heart.remove();
             }, 800);
         }
 
