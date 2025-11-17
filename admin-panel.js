@@ -380,16 +380,22 @@ function createEventItem(eventId, event) {
         minute: '2-digit'
     });
 
+    const isPriority = event.isPriority || false;
+    const priorityButtonText = isPriority ? '📌 Rendre normale' : '⭐ Rendre prioritaire';
+    const priorityButtonClass = isPriority ? 'btn-warning' : 'btn-primary';
+
     eventItem.innerHTML = `
         <img src="${event.imageURL}" alt="${event.name}" class="event-image-thumb">
         <div class="event-details">
-            <h3>${event.name}</h3>
+            <h3>${event.name} ${isPriority ? '<span style="color: #ffd700;">⭐</span>' : ''}</h3>
             <p>📅 ${formattedDate}</p>
             <p>📍 ${event.location}</p>
             <p>💰 ${event.price}€ • 🔞 ${event.age}+ ans</p>
             <p>🎟️ Préventes: ${event.presales ? '✅ Activées' : '❌ Désactivées'}</p>
+            <p>⭐ Prioritaire: ${isPriority ? '✅ Oui' : '❌ Non'}</p>
         </div>
         <div class="event-actions">
+            <button class="btn ${priorityButtonClass}" onclick="togglePriority('${eventId}', ${!isPriority})">${priorityButtonText}</button>
             <button class="btn btn-secondary" onclick="editEvent('${eventId}')">✏️ Modifier</button>
             <button class="btn btn-danger" onclick="deleteEvent('${eventId}', '${event.imagePath || ''}')">🗑️ Supprimer</button>
         </div>
@@ -455,6 +461,31 @@ window.editEvent = async function(eventId) {
     } catch (error) {
         console.error('❌ Erreur modification:', error);
         alert('❌ Erreur lors de la modification.');
+    }
+};
+
+// ========================================
+// BASCULER PRIORITÉ D'UN ÉVÉNEMENT
+// ========================================
+
+window.togglePriority = async function(eventId, newPriorityStatus) {
+    try {
+        console.log('⭐ Changement priorité événement:', eventId, '→', newPriorityStatus);
+
+        // Mettre à jour le statut prioritaire dans Firestore
+        await updateDoc(doc(db, 'events', eventId), {
+            isPriority: newPriorityStatus
+        });
+
+        console.log('✅ Statut prioritaire mis à jour');
+        alert(newPriorityStatus ? '⭐ Soirée marquée comme prioritaire !' : '📌 Soirée revenue à normale !');
+
+        // Recharger la liste des événements
+        loadEvents();
+
+    } catch (error) {
+        console.error('❌ Erreur changement priorité:', error);
+        alert('❌ Erreur lors du changement de priorité');
     }
 };
 

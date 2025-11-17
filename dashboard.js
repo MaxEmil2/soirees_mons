@@ -453,85 +453,11 @@ const photoContainer = document.getElementById('photo-container');
 const photoInput = document.getElementById('photo-input');
 const adminBtn = document.getElementById('admin-btn');
 
-// Soirées likées
-const likedEventsLoading = document.getElementById('liked-events-loading');
-const likedEventsGrid = document.getElementById('liked-events-grid');
-const noLikedEvents = document.getElementById('no-liked-events');
-
 // Modals
 const editPseudoModal = document.getElementById('edit-pseudo-modal');
 const editPasswordModal = document.getElementById('edit-password-modal');
 const editPseudoBtn = document.getElementById('edit-pseudo');
 const editPasswordBtn = document.getElementById('edit-password');
-
-// ========================================
-// FONCTIONS POUR LES SOIRÉES LIKÉES
-// ========================================
-
-// Charger les soirées likées
-async function loadLikedEvents(userId) {
-    try {
-        const likesQuery = query(
-            collection(db, 'likes'),
-            where('userId', '==', userId)
-        );
-
-        const likesSnapshot = await getDocs(likesQuery);
-
-        if (likesSnapshot.empty) {
-            likedEventsLoading.style.display = 'none';
-            noLikedEvents.style.display = 'block';
-            return;
-        }
-
-        const eventIds = [];
-        likesSnapshot.forEach(docSnap => {
-            eventIds.push(docSnap.data().eventId);
-        });
-
-        likedEventsLoading.style.display = 'none';
-        likedEventsGrid.style.display = 'grid';
-
-        for (const eventId of eventIds) {
-            const eventDoc = await getDoc(doc(db, 'events', eventId));
-            if (eventDoc.exists()) {
-                const event = eventDoc.data();
-                const card = createLikedEventCard(event, eventId);
-                likedEventsGrid.appendChild(card);
-            }
-        }
-    } catch (error) {
-        console.error('Erreur chargement soirées likées:', error);
-        likedEventsLoading.innerHTML = '<p style="color: #ff4d4f;">Erreur de chargement</p>';
-    }
-}
-
-// Créer une carte de soirée likée
-function createLikedEventCard(event, eventId) {
-    const card = document.createElement('div');
-    card.className = 'liked-event-card';
-
-    const eventDate = new Date(event.date);
-    const formattedDate = eventDate.toLocaleDateString('fr-FR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-
-    card.innerHTML = `
-        <img src="${event.imageURL}" alt="${event.name}" class="liked-event-image">
-        <div class="liked-event-info">
-            <div class="liked-event-name">${event.name}</div>
-            <div class="liked-event-date">📅 ${formattedDate}</div>
-        </div>
-    `;
-
-    card.addEventListener('click', () => {
-        window.location.href = 'index.html#event-' + eventId;
-    });
-
-    return card;
-}
 
 // ========================================
 // GESTION DU NOUVEAU DASHBOARD
@@ -565,11 +491,6 @@ onAuthStateChanged(auth, async (user) => {
         if (adminBtn) adminBtn.style.display = 'inline-block';
         if (adminPanelBtn) adminPanelBtn.style.display = 'inline-block';
     }
-
-    // Charger les soirées likées
-    if (likedEventsLoading) {
-        loadLikedEvents(user.uid);
-    }
 });
 
 // Upload photo de profil
@@ -592,8 +513,8 @@ if (photoContainer && photoInput) {
             await updateProfile(auth.currentUser, { photoURL });
             profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
 
-            // Afficher le succès immédiatement
-            alert('✅ Photo de profil mise à jour avec succès !');
+            // Afficher le modal de succès
+            document.getElementById('photo-success-modal').style.display = 'flex';
 
             // 2. Mettre à jour les likes en arrière-plan (ne pas bloquer l'utilisateur)
             try {

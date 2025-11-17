@@ -694,6 +694,28 @@ body {
             font-weight: 600;
         }
 
+        .modal-interest-section {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 149, 0, 0.1) 100%);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .interest-text {
+            color: #ff9800;
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .interest-text span {
+            color: #ff6b6b;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
         .modal-description-section {
             margin-bottom: 20px;
         }
