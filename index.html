@@ -1040,25 +1040,25 @@
 
                     likersToShow.forEach((liker, index) => {
                         const img = document.createElement('img');
-                        img.src = liker.userPhotoURL || 'https://via.placeholder.com/32';
+                        img.src = liker.userPhotoURL || 'https://via.placeholder.com/50';
                         img.alt = 'Liker';
                         img.className = 'liker-photo';
                         // FORCER les styles directement via JavaScript (style inline)
                         img.style.cssText = `
-                            width: 28px !important;
-                            height: 28px !important;
-                            min-width: 28px !important;
-                            max-width: 28px !important;
+                            width: 50px !important;
+                            height: 50px !important;
+                            min-width: 50px !important;
+                            max-width: 50px !important;
                             border-radius: 50%;
-                            border: 2px solid white;
+                            border: 3px solid white;
                             object-fit: cover;
-                            margin-left: ${index === 0 ? '0' : '-8px'};
-                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                            margin-left: ${index === 0 ? '0' : '-15px'};
+                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
                             transition: transform 0.2s;
                             display: inline-block;
                         `;
                         img.onerror = function() {
-                            this.src = 'https://via.placeholder.com/32';
+                            this.src = 'https://via.placeholder.com/50';
                         };
                         likersPhotosContainer.appendChild(img);
                     });
