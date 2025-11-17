@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soirées Mons - Événements & Soirées à Mons</title>
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="home.css?v=2024117001">
     <style>
         /* Mobile navigation - Hidden on desktop */
         .nav-mobile-right {
@@ -929,6 +929,8 @@
                 // Récupérer le total de likes
                 const totalLikes = await getTotalLikes(eventId);
 
+                console.log(`🔍 Event ${eventId}: ${totalLikes} likes totaux, ${recentLikers.length} likers publics`);
+
                 // Afficher les photos des likers (max 3)
                 const likersPhotosContainer = document.getElementById(`likers-photos-${eventId}`);
                 if (likersPhotosContainer) {
@@ -937,6 +939,8 @@
                     // Limiter à 3 avatars maximum
                     const maxAvatars = 3;
                     const likersToShow = recentLikers.slice(0, maxAvatars);
+
+                    console.log(`✅ Affichage de ${likersToShow.length} avatars max 3 pour event ${eventId}`);
 
                     likersToShow.forEach((liker, index) => {
                         const img = document.createElement('img');
