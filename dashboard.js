@@ -583,6 +583,7 @@ if (photoContainer && photoInput) {
         if (!file) return;
 
         try {
+            // 1. Upload de la photo et mise à jour du profil
             const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
             await uploadBytes(storageRef, file);
             const photoURL = await getDownloadURL(storageRef);
@@ -591,30 +592,37 @@ if (photoContainer && photoInput) {
             await updateProfile(auth.currentUser, { photoURL });
             profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
 
-            // Mettre à jour tous les likes existants avec la nouvelle photo
-            const likesQuery = query(
-                collection(db, 'likes'),
-                where('userId', '==', auth.currentUser.uid)
-            );
-            const likesSnapshot = await getDocs(likesQuery);
+            // Afficher le succès immédiatement
+            alert('✅ Photo de profil mise à jour avec succès !');
 
-            // Mettre à jour chaque like avec la nouvelle photo
-            const updatePromises = [];
-            likesSnapshot.forEach((likeDoc) => {
-                updatePromises.push(
-                    updateDoc(doc(db, 'likes', likeDoc.id), {
-                        userPhotoURL: photoURL
-                    })
+            // 2. Mettre à jour les likes en arrière-plan (ne pas bloquer l'utilisateur)
+            try {
+                const likesQuery = query(
+                    collection(db, 'likes'),
+                    where('userId', '==', auth.currentUser.uid)
                 );
-            });
+                const likesSnapshot = await getDocs(likesQuery);
 
-            await Promise.all(updatePromises);
-            console.log(`✅ ${updatePromises.length} likes mis à jour avec la nouvelle photo`);
+                // Mettre à jour chaque like avec la nouvelle photo
+                const updatePromises = [];
+                likesSnapshot.forEach((likeDoc) => {
+                    updatePromises.push(
+                        updateDoc(doc(db, 'likes', likeDoc.id), {
+                            userPhotoURL: photoURL
+                        })
+                    );
+                });
 
-            alert('✅ Photo de profil mise à jour !');
+                await Promise.all(updatePromises);
+                console.log(`✅ ${updatePromises.length} likes mis à jour automatiquement`);
+            } catch (likesError) {
+                // Si la mise à jour des likes échoue, ce n'est pas grave
+                console.warn('⚠️ Impossible de mettre à jour tous les likes:', likesError);
+            }
+
         } catch (error) {
             console.error('Erreur upload photo:', error);
-            alert('❌ Erreur lors du téléchargement de la photo');
+            alert('❌ Erreur : Impossible de télécharger la photo. Vérifiez votre connexion et réessayez.');
         }
     });
 }

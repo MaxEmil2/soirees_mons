@@ -1040,7 +1040,9 @@
 
                     likersToShow.forEach((liker, index) => {
                         const img = document.createElement('img');
-                        img.src = liker.userPhotoURL || 'https://via.placeholder.com/50';
+                        // Ajouter cache buster pour forcer rechargement des images
+                        const photoURL = liker.userPhotoURL || 'https://via.placeholder.com/50';
+                        img.src = photoURL.includes('?') ? `${photoURL}&t=${Date.now()}` : `${photoURL}?t=${Date.now()}`;
                         img.alt = 'Liker';
                         img.className = 'liker-photo';
                         // FORCER les styles directement via JavaScript (style inline)

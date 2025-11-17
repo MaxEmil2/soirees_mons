@@ -727,9 +727,10 @@ body {
             }
 
             .modal-right {
-                max-height: 50vh;
+                max-height: 65vh;
                 overflow-y: auto;
                 padding-right: 8px;
+                padding-bottom: 20px;
             }
 
             .modal-right h2 {
