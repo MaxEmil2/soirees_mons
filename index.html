@@ -995,6 +995,61 @@
         let currentTab = 'upcoming'; // 'upcoming' ou 'liked'
         let allApprovedEvents = []; // Stocker tous les événements approuvés
 
+        // Fonction helper pour grouper et afficher les événements par mois
+        async function displayEventsByMonth(events) {
+            const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+            // Grouper les événements par mois
+            const eventsByMonth = {};
+            events.forEach(eventData => {
+                const eventDate = new Date(eventData.date);
+                const monthKey = eventDate.getFullYear() + '-' + String(eventDate.getMonth()).padStart(2, '0');
+                const monthLabel = monthNames[eventDate.getMonth()];
+
+                if (!eventsByMonth[monthKey]) {
+                    eventsByMonth[monthKey] = {
+                        label: monthLabel,
+                        year: eventDate.getFullYear(),
+                        month: eventDate.getMonth(),
+                        events: []
+                    };
+                }
+
+                eventsByMonth[monthKey].events.push(eventData);
+            });
+
+            // Trier les mois par ordre chronologique
+            const sortedMonthKeys = Object.keys(eventsByMonth).sort();
+
+            // Vider le conteneur
+            eventsGrid.innerHTML = '';
+
+            // Afficher les événements par mois
+            for (const monthKey of sortedMonthKeys) {
+                const monthData = eventsByMonth[monthKey];
+
+                // Créer la section du mois
+                const monthSection = document.createElement('div');
+                monthSection.className = 'month-section';
+                monthSection.innerHTML = '<h3 class="month-title">' + monthData.label + ' ' + monthData.year + '</h3><div class="events-grid-month"></div>';
+
+                const monthGrid = monthSection.querySelector('.events-grid-month');
+
+                // Ajouter les événements du mois
+                for (const eventData of monthData.events) {
+                    const eventId = eventData.id;
+
+                    // Stocker l'événement globalement
+                    window.eventsData[eventId] = eventData;
+
+                    const eventCard = await createEventCard(eventData, eventId);
+                    monthGrid.appendChild(eventCard);
+                }
+
+                eventsGrid.appendChild(monthSection);
+            }
+        }
+
         // Fonction pour charger les événements likés par l'utilisateur
         async function loadLikedEvents() {
             try {
@@ -1045,12 +1100,8 @@
                     return;
                 }
 
-                // Afficher les événements likés
-                for (const eventData of likedEvents) {
-                    const eventId = eventData.id;
-                    const eventCard = await createEventCard(eventData, eventId);
-                    eventsGrid.appendChild(eventCard);
-                }
+                // Afficher les événements likés groupés par mois
+                await displayEventsByMonth(likedEvents);
 
                 console.log(`✅ ${likedEvents.length} événement(s) aimé(s) affiché(s)`);
 
@@ -1080,12 +1131,8 @@
                     return;
                 }
 
-                // Afficher tous les événements approuvés
-                for (const eventData of allApprovedEvents) {
-                    const eventId = eventData.id;
-                    const eventCard = await createEventCard(eventData, eventId);
-                    eventsGrid.appendChild(eventCard);
-                }
+                // Afficher tous les événements approuvés groupés par mois
+                await displayEventsByMonth(allApprovedEvents);
             } else if (tab === 'liked') {
                 currentTab = 'liked';
                 await loadLikedEvents();
