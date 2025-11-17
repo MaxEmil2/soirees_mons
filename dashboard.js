@@ -516,7 +516,18 @@ if (photoContainer && photoInput) {
             // Afficher le modal de succès
             document.getElementById('photo-success-modal').style.display = 'flex';
 
-            // 2. Mettre à jour les likes en arrière-plan (ne pas bloquer l'utilisateur)
+            // 2. Mettre à jour le document Firestore users avec la nouvelle photo
+            try {
+                const userDocRef = doc(db, 'users', auth.currentUser.uid);
+                await updateDoc(userDocRef, {
+                    photoURL: photoURL
+                });
+                console.log('✅ Document Firestore users mis à jour avec photoURL');
+            } catch (firestoreError) {
+                console.warn('⚠️ Impossible de mettre à jour Firestore users:', firestoreError);
+            }
+
+            // 3. Mettre à jour les likes en arrière-plan (ne pas bloquer l'utilisateur)
             try {
                 const likesQuery = query(
                     collection(db, 'likes'),

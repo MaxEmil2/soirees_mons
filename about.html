@@ -388,8 +388,8 @@
 
                     if (!snapshot.empty) {
                         const userData = snapshot.docs[0].data();
-                        // Utiliser imageURL (image Google) en priorité, sinon photoURL
-                        const imageURL = userData.imageURL || userData.photoURL;
+                        // Utiliser photoURL (photo custom) en priorité, sinon imageURL (photo Google)
+                        const imageURL = userData.photoURL || userData.imageURL;
 
                         if (imageURL) {
                             const imgElement = document.getElementById(data.imgId);
