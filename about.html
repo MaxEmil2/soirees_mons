@@ -54,33 +54,96 @@
             text-align: justify;
         }
 
-        .about-founders {
-            margin-top: 32px;
-            padding-top: 32px;
+        .about-creators {
+            margin-top: 48px;
+            padding-top: 48px;
             border-top: 2px solid var(--border-color);
+        }
+
+        .creators-title {
+            font-size: 28px;
             text-align: center;
-        }
-
-        .founders-title {
-            font-size: 20px;
-            color: var(--primary-color);
-            margin-bottom: 16px;
-            font-weight: 600;
-        }
-
-        .founders-names {
-            font-size: 24px;
-            font-weight: 700;
+            margin-bottom: 32px;
             background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .launch-date {
-            margin-top: 12px;
-            font-size: 16px;
+        .creators-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .creator-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .creator-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .creator-photo-wrapper {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+        }
+
+        .creator-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .creator-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 8px;
+        }
+
+        .creator-role {
+            font-size: 14px;
             color: var(--text-gray);
+            margin-top: 8px;
+        }
+
+        .creator-instagram {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .creator-instagram:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(188, 24, 136, 0.4);
+        }
+
+        .creator-instagram svg {
+            flex-shrink: 0;
         }
 
         /* Responsive */
@@ -98,8 +161,13 @@
                 text-align: left;
             }
 
-            .founders-names {
-                font-size: 20px;
+            .creators-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .creators-title {
+                font-size: 24px;
             }
         }
 
@@ -169,23 +237,102 @@
             </div>
 
             <div class="about-content">
-                <p class="about-text">
-                    Soirées Mons, lancé le 7 octobre 2024 par Maxence et Emilien, est un projet qui vise à mettre en avant les événements de Mons. Notre but est de créer une plateforme moderne et fiable, pour que tout le monde puisse facilement découvrir les soirées, concerts et activités à ne pas rater dans la région. Nous sommes aussi là pour soutenir les organisateurs locaux en leur offrant une visibilité professionnelle, un bon relais de communication et une mise en valeur cohérente de leurs événements. Avec une approche sérieuse et dynamique orientée vers la communauté, on s'assure que les infos publiées et l'expérience utilisateur restent de haute qualité. Soirées Mons souhaite devenir une référence locale des événements, tout en alliant transparence, rigueur et proximité avec son public. Chaque jour, on travaille à développer de nouvelles fonctionnalités, à renforcer nos partenariats et à créer un espace où les jeunes peuvent se rencontrer, échanger et s'amuser dans la vie nocturne de Mons.
-                </p>
+                <div class="about-text">
+                    <p style="margin-bottom: 24px;">
+                        🎉 Bienvenue sur <strong>Soirées Mons</strong> ! 🎉
+                    </p>
 
-                <div class="about-founders">
-                    <p class="founders-title">Fondateurs</p>
-                    <p class="founders-names">Maxence & Emilien</p>
-                    <p class="launch-date">📅 Lancé le 7 octobre 2024</p>
+                    <p style="margin-bottom: 24px;">
+                        On est Maxence et Emilien, deux passionnés de la vie nocturne montoise ! 🌙✨ Notre mission ? Rendre les soirées à Mons plus accessibles, plus fun, et surtout... inoubliables ! 🔥
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        💡 L'idée est simple : créer <strong>LA</strong> plateforme où tu peux découvrir tous les événements cool de la région ! 🎵 Concerts, soirées étudiantes, festivals... tout y est ! On veut que tu ne rates plus jamais THE soirée de l'année ! 🚀
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        🤝 On est aussi là pour les organisateurs locaux ! On leur offre une visibilité au top 📢, une communication pro 💼, et on met leurs événements en valeur comme ils le méritent ! 🌟
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        🎯 Notre promesse ? Une plateforme moderne, fiable, et communautaire ! On vérifie chaque événement 🔍, on reste transparents 💎, et on est toujours à l'écoute de notre communauté ! 👂❤️
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        📱 Chaque jour, on bosse dur pour ajouter de nouvelles fonctionnalités, renforcer nos partenariats 🤜🤛, et créer un espace où les jeunes peuvent se rencontrer, échanger et profiter à fond de la vie nocturne montoise ! 🥳
+                    </p>
+
+                    <p style="text-align: center; font-size: 20px; margin-top: 32px;">
+                        Alors, prêt à découvrir ta prochaine soirée ? 🎊
+                    </p>
+                </div>
+
+                <div class="about-creators">
+                    <h3 class="creators-title">🌟 Les Créateurs 🌟</h3>
+                    <div class="creators-grid">
+                        <div class="creator-card" id="creator-maxence">
+                            <div class="creator-photo-wrapper">
+                                <img src="assets/default-avatar.png" alt="Maxence" class="creator-photo" id="photo-maxence">
+                            </div>
+                            <h4 class="creator-name">Maxence</h4>
+                            <a href="https://www.instagram.com/7.maxncs/" target="_blank" class="creator-instagram">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                                <span>@7.maxncs</span>
+                            </a>
+                        </div>
+
+                        <div class="creator-card" id="creator-emilien">
+                            <div class="creator-photo-wrapper">
+                                <img src="assets/default-avatar.png" alt="Emilien" class="creator-photo" id="photo-emilien">
+                            </div>
+                            <h4 class="creator-name">Emilien</h4>
+                            <p class="creator-role">Co-fondateur</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Firebase Auth pour navbar dynamique -->
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Gauche: Copyright -->
+            <div class="footer-left">
+                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank" style="color: var(--primary-color); text-decoration: none; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Maxence</a></p>
+            </div>
+
+            <!-- Centre: Logo -->
+            <div class="footer-center">
+                <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
+            </div>
+
+            <!-- Droite: Réseaux sociaux -->
+            <div class="footer-right">
+                <p>Suivez-nous :</p>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/soirees_mons/" target="_blank" aria-label="Instagram">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@soirees_mons" target="_blank" aria-label="TikTok">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase Auth pour navbar dynamique et photos créateurs -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         // Configuration Firebase
         const firebaseConfig = {
@@ -201,6 +348,7 @@
         // Initialiser Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // Éléments DOM
         const btnSignup = document.getElementById('btn-signup');
@@ -218,6 +366,44 @@
                 navAuthConnected.style.display = 'none';
             }
         });
+
+        // Charger les photos des créateurs depuis Firebase
+        async function loadCreatorPhotos() {
+            // Map des créateurs avec leurs emails ou UIDs
+            const creators = {
+                'maxence': { email: 'maxence@soirees-mons.com', imgId: 'photo-maxence' },
+                'emilien': { email: 'emilien@soirees-mons.com', imgId: 'photo-emilien' }
+            };
+
+            for (const [name, data] of Object.entries(creators)) {
+                try {
+                    // Rechercher l'utilisateur par email dans Firestore
+                    const usersQuery = query(
+                        collection(db, 'users'),
+                        where('email', '==', data.email)
+                    );
+
+                    const snapshot = await getDocs(usersQuery);
+
+                    if (!snapshot.empty) {
+                        const userData = snapshot.docs[0].data();
+                        const photoURL = userData.photoURL;
+
+                        if (photoURL) {
+                            const imgElement = document.getElementById(data.imgId);
+                            if (imgElement) {
+                                imgElement.src = photoURL;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.log(`Info: Photo de ${name} non chargée depuis Firebase`);
+                }
+            }
+        }
+
+        // Charger les photos au chargement de la page
+        loadCreatorPhotos();
     </script>
 
     <!-- Import du système de notifications -->

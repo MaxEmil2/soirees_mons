@@ -383,9 +383,6 @@
                 <button class="tab-btn" id="tab-liked" data-tab="liked">
                     ❤️ Événements aimés
                 </button>
-                <button class="tab-btn" id="tab-priority" data-tab="priority">
-                    ⭐ Soirées prioritaires
-                </button>
             </div>
 
             <!-- État de chargement -->
@@ -660,7 +657,7 @@
         <div class="footer-container">
             <!-- Gauche: Copyright -->
             <div class="footer-left">
-                <p>Site créé par Maxence</p>
+                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank" style="color: var(--primary-color); text-decoration: none; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Maxence</a></p>
             </div>
 
             <!-- Centre: Logo -->
@@ -1013,9 +1010,13 @@
         async function displayEventsByMonth(events) {
             const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-            // Grouper les événements par mois
+            // Séparer les événements prioritaires et normaux
+            const priorityEvents = events.filter(e => e.isPriority === true);
+            const normalEvents = events.filter(e => !e.isPriority);
+
+            // Grouper les événements normaux par mois
             const eventsByMonth = {};
-            events.forEach(eventData => {
+            normalEvents.forEach(eventData => {
                 const eventDate = new Date(eventData.date);
                 const monthKey = eventDate.getFullYear() + '-' + String(eventDate.getMonth()).padStart(2, '0');
                 const monthLabel = monthNames[eventDate.getMonth()];
@@ -1038,7 +1039,25 @@
             // Vider le conteneur
             eventsGrid.innerHTML = '';
 
-            // Afficher les événements par mois
+            // Afficher d'abord les événements prioritaires
+            if (priorityEvents.length > 0) {
+                const prioritySection = document.createElement('div');
+                prioritySection.className = 'month-section priority-section';
+                prioritySection.innerHTML = '<h3 class="month-title priority-title">⭐ Soirées prioritaires</h3><div class="events-grid-month"></div>';
+
+                const priorityGrid = prioritySection.querySelector('.events-grid-month');
+
+                for (const eventData of priorityEvents) {
+                    const eventId = eventData.id;
+                    window.eventsData[eventId] = eventData;
+                    const eventCard = await createEventCard(eventData, eventId);
+                    priorityGrid.appendChild(eventCard);
+                }
+
+                eventsGrid.appendChild(prioritySection);
+            }
+
+            // Afficher les événements normaux par mois
             for (const monthKey of sortedMonthKeys) {
                 const monthData = eventsByMonth[monthKey];
 
@@ -1157,43 +1176,11 @@
             }
         }
 
-        // Fonction pour charger les événements prioritaires
-        async function loadPriorityEvents() {
-            try {
-                eventsLoading.style.display = 'block';
-                noEvents.style.display = 'none';
-
-                // Filtrer les événements prioritaires
-                let priorityEvents = allApprovedEvents.filter(event => event.isPriority === true);
-
-                eventsLoading.style.display = 'none';
-
-                if (priorityEvents.length === 0) {
-                    noEvents.innerHTML = '<p>⭐ Aucune soirée prioritaire pour le moment.</p><p>Les soirées les plus importantes seront affichées ici !</p>';
-                    noEvents.style.display = 'block';
-                    return;
-                }
-
-                // Trier par nombre de likes
-                priorityEvents = await sortEventsByLikes(priorityEvents);
-
-                // Afficher les événements prioritaires groupés par mois
-                await displayEventsByMonth(priorityEvents);
-
-                console.log(`✅ ${priorityEvents.length} soirée(s) prioritaire(s) affichée(s)`);
-
-            } catch (error) {
-                console.error('❌ Erreur chargement soirées prioritaires:', error);
-                eventsLoading.innerHTML = '<p style="color: #ff4d4f;">❌ Erreur lors du chargement des soirées prioritaires.</p>';
-            }
-        }
-
         // Fonction pour basculer entre les onglets
         async function switchTab(tab) {
             // Mettre à jour l'onglet actif visuellement
             document.getElementById('tab-upcoming').classList.toggle('active', tab === 'upcoming');
             document.getElementById('tab-liked').classList.toggle('active', tab === 'liked');
-            document.getElementById('tab-priority').classList.toggle('active', tab === 'priority');
 
             // Vider la grille
             eventsGrid.innerHTML = '';
@@ -1217,16 +1204,12 @@
             } else if (tab === 'liked') {
                 currentTab = 'liked';
                 await loadLikedEvents();
-            } else if (tab === 'priority') {
-                currentTab = 'priority';
-                await loadPriorityEvents();
             }
         }
 
         // Ajouter les écouteurs sur les boutons d'onglets
         document.getElementById('tab-upcoming').addEventListener('click', () => switchTab('upcoming'));
         document.getElementById('tab-liked').addEventListener('click', () => switchTab('liked'));
-        document.getElementById('tab-priority').addEventListener('click', () => switchTab('priority'));
 
         // ========================================
         // CHARGEMENT INITIAL MODIFIÉ
