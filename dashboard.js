@@ -503,10 +503,37 @@ if (photoContainer && photoInput) {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Vérifier que c'est une image
+        if (!file.type.startsWith('image/')) {
+            alert('❌ Veuillez sélectionner une image (JPG, PNG, WebP)');
+            return;
+        }
+
         try {
-            // 1. Upload de la photo et mise à jour du profil
+            // ========================================
+            // COMPRESSION DE L'IMAGE (PHOTOS DE PROFIL UNIQUEMENT)
+            // ========================================
+
+            console.log(`📸 Image originale : ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+
+            // Options de compression
+            const options = {
+                maxSizeMB: 0.5,              // Taille max : 500 KB
+                maxWidthOrHeight: 800,        // Dimensions max : 800x800 pixels
+                useWebWorker: true,           // Utiliser un web worker (ne bloque pas l'UI)
+                quality: 0.85,                // Qualité : 85% (excellent compromis)
+                fileType: 'image/jpeg'        // Convertir en JPEG (meilleur compression que PNG)
+            };
+
+            // Compresser l'image
+            const compressedFile = await imageCompression(file, options);
+
+            console.log(`✅ Image compressée : ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+            console.log(`📊 Réduction : ${((1 - compressedFile.size / file.size) * 100).toFixed(1)}%`);
+
+            // 1. Upload de la photo compressée et mise à jour du profil
             const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
-            await uploadBytes(storageRef, file);
+            await uploadBytes(storageRef, compressedFile);
             const photoURL = await getDownloadURL(storageRef);
 
             // Mettre à jour le profil Firebase Auth
