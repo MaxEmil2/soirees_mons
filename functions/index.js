@@ -157,12 +157,11 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté pour acheter une prévente');
     }
 
-    const { eventId, baseUrl } = data;
+    const { eventId, baseUrl, price } = data;
     const userId = context.auth.uid;
     const userEmail = context.auth.token.email;
 
     try {
-        // Récupérer les infos de l'événement
         const eventDoc = await db.collection('events').doc(eventId).get();
         if (!eventDoc.exists) {
             throw new functions.https.HttpsError('not-found', 'Événement non trouvé');
@@ -170,13 +169,12 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
 
         const event = eventDoc.data();
 
-        // Vérifications
+        // Vérifier si préventes OK
         if (event.status !== 'approved') {
             throw new functions.https.HttpsError('failed-precondition', 'Cet événement n\'est pas encore approuvé');
         }
-
         if (!event.presales) {
-            throw new functions.https.HttpsError('failed-precondition', 'Les préventes ne sont pas activées pour cet événement');
+            throw new functions.https.HttpsError('failed-precondition', 'Les préventes ne sont pas activées');
         }
 
         // Vérifier la date de fin des préventes
@@ -187,22 +185,25 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
             }
         }
 
-        // Vérifier que le créateur a un compte Stripe actif
+        // Prix personnalisé
+        const totalAmount = Math.round(price * 100); // ex: 7 => 700 centimes
+        const platformFee = 100; // 1€
+        const creatorAmount = totalAmount - platformFee;
+
+        if (creatorAmount <= 0) {
+            throw new functions.https.HttpsError('invalid-argument', 'Le montant doit être supérieur à 1€');
+        }
+
+        // Vérifier le compte Stripe créateur
         const creatorDoc = await db.collection('users').doc(event.createdBy).get();
         if (!creatorDoc.exists || !creatorDoc.data().stripeAccountId) {
-            throw new functions.https.HttpsError('failed-precondition', 'Le créateur de l\'événement n\'a pas configuré son compte de paiement');
+            throw new functions.https.HttpsError('failed-precondition', 'Créateur non configuré');
         }
 
         const creatorStripeAccountId = creatorDoc.data().stripeAccountId;
-
         const stripeClient = getStripe();
 
-        // Prix fixe : 8€ (7€ créateur + 1€ commission)
-        const totalAmount = 800; // En centimes
-        const creatorAmount = 700; // 7€ pour le créateur
-        const platformFee = 100; // 1€ commission Soirées Mons
-
-        // Créer la session Checkout avec split payment
+        // Créer la session Stripe Checkout
         const session = await stripeClient.checkout.sessions.create({
             payment_method_types: ['card', 'bancontact', 'ideal'],
             mode: 'payment',
@@ -212,7 +213,7 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
                     currency: 'eur',
                     product_data: {
                         name: `Prévente - ${event.name}`,
-                        description: `Entrée pour ${event.name} le ${new Date(event.date).toLocaleDateString('fr-BE')}`,
+                        description: `Prix choisi : ${price}€`,
                         images: event.imageURL ? [event.imageURL] : []
                     },
                     unit_amount: totalAmount
@@ -220,25 +221,24 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
                 quantity: 1
             }],
             payment_intent_data: {
-                application_fee_amount: platformFee,
+                application_fee_amount: platformFee, // 1€ commission
                 transfer_data: {
-                    destination: creatorStripeAccountId
+                    destination: creatorStripeAccountId // Le créateur reçoit le reste
                 },
                 metadata: {
-                    eventId: eventId,
-                    userId: userId,
-                    userEmail: userEmail,
+                    eventId,
+                    userId,
+                    userEmail,
                     eventName: event.name,
-                    eventDate: event.date,
-                    creatorId: event.createdBy
+                    price
                 }
             },
             metadata: {
-                eventId: eventId,
-                userId: userId,
-                userEmail: userEmail,
+                eventId,
+                userId,
+                userEmail,
                 eventName: event.name,
-                creatorId: event.createdBy
+                price
             },
             success_url: `${baseUrl}/presale-success.html?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${baseUrl}/index.html?presale=cancelled`,
@@ -383,13 +383,15 @@ async function handleCheckoutCompleted(session) {
         const eventDoc = await db.collection('events').doc(eventId).get();
         if (eventDoc.exists) {
             const creatorId = eventDoc.data().createdBy;
+            const amount = session.amount_total / 100;
+            const creatorAmount = amount - 1; // Moins 1€ de commission
             await db.collection('notifications').add({
                 userId: creatorId,
                 type: 'presale_sold',
                 eventId: eventId,
                 eventName: eventName,
                 presaleId: presaleId,
-                message: `Nouvelle prévente vendue pour "${eventName}" ! Vous recevrez 7€.`,
+                message: `Nouvelle prévente vendue pour "${eventName}" ! Vous recevrez ${creatorAmount}€.`,
                 read: false,
                 createdAt: admin.firestore.FieldValue.serverTimestamp()
             });
@@ -836,6 +838,7 @@ exports.getPresalesForEvent = functions.https.onCall(async (data, context) => {
             .get();
 
         const presales = [];
+        let totalRevenue = 0;
         presalesSnapshot.forEach(doc => {
             const data = doc.data();
             presales.push({
@@ -847,6 +850,9 @@ exports.getPresalesForEvent = functions.https.onCall(async (data, context) => {
                 createdAt: data.createdAt?.toDate?.() || data.createdAt,
                 usedAt: data.usedAt?.toDate?.() || data.usedAt
             });
+            if (data.status !== 'refunded') {
+                totalRevenue += (data.amount - 1); // Montant moins 1€ de commission
+            }
         });
 
         // Statistiques
@@ -855,7 +861,7 @@ exports.getPresalesForEvent = functions.https.onCall(async (data, context) => {
             valid: presales.filter(p => p.status === 'valid').length,
             used: presales.filter(p => p.status === 'used').length,
             refunded: presales.filter(p => p.status === 'refunded').length,
-            totalRevenue: presales.filter(p => p.status !== 'refunded').length * 7 // 7€ par prévente pour le créateur
+            totalRevenue: totalRevenue
         };
 
         return { presales, stats };
@@ -935,6 +941,10 @@ exports.getAllPresales = functions.https.onCall(async (data, context) => {
             .get();
 
         const presales = [];
+        let totalRevenue = 0;
+        let platformCommission = 0;
+        let creatorsRevenue = 0;
+
         presalesSnapshot.forEach(doc => {
             const data = doc.data();
             presales.push({
@@ -948,6 +958,11 @@ exports.getAllPresales = functions.https.onCall(async (data, context) => {
                 createdAt: data.createdAt?.toDate?.() || data.createdAt,
                 usedAt: data.usedAt?.toDate?.() || data.usedAt
             });
+            if (data.status !== 'refunded') {
+                totalRevenue += data.amount;
+                platformCommission += 1;
+                creatorsRevenue += (data.amount - 1);
+            }
         });
 
         // Statistiques globales
@@ -956,9 +971,9 @@ exports.getAllPresales = functions.https.onCall(async (data, context) => {
             valid: presales.filter(p => p.status === 'valid').length,
             used: presales.filter(p => p.status === 'used').length,
             refunded: presales.filter(p => p.status === 'refunded').length,
-            totalRevenue: presales.filter(p => p.status !== 'refunded').length * 8,
-            platformCommission: presales.filter(p => p.status !== 'refunded').length * 1,
-            creatorsRevenue: presales.filter(p => p.status !== 'refunded').length * 7
+            totalRevenue: totalRevenue,
+            platformCommission: platformCommission,
+            creatorsRevenue: creatorsRevenue
         };
 
         return { presales, stats };

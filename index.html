@@ -988,11 +988,14 @@
                 }
 
                 if (presalesAvailable) {
-                    presalesButton.textContent = '🎟️ Acheter une prévente (8€)';
+                    const eventPrice = event.price || 8;
+                    presalesButton.textContent = `🎟️ Acheter une prévente (${eventPrice}€)`;
                     presalesButton.className = 'modal-btn modal-btn-primary';
                     presalesButton.style.cursor = 'pointer';
                     presalesButton.disabled = false;
                     presalesButton.dataset.eventId = eventId;
+                    // Stocker le prix de l'événement pour l'achat
+                    window.currentEventPrice = eventPrice;
                 } else {
                     presalesButton.textContent = '🚫 Préventes terminées';
                     presalesButton.className = 'modal-btn modal-btn-secondary';
@@ -1047,16 +1050,17 @@
 
                 if (!existingPresales.empty) {
                     alert('Vous avez déjà une prévente pour cet événement !');
-                    this.textContent = '🎟️ Acheter une prévente (8€)';
+                    this.textContent = `🎟️ Acheter une prévente (${window.currentEventPrice || 8}€)`;
                     this.disabled = false;
                     return;
                 }
 
-                // Créer la session de checkout
+                // Créer la session de checkout avec le prix de l'événement
                 const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
                 const result = await createCheckoutSession({
                     eventId: eventId,
-                    baseUrl: window.location.origin
+                    baseUrl: window.location.origin,
+                    price: window.currentEventPrice || 8 // Prix de l'événement ou 8€ par défaut
                 });
 
                 if (result.data.url) {
@@ -1069,7 +1073,7 @@
             } catch (error) {
                 console.error('Erreur achat prévente:', error);
                 alert('Erreur: ' + (error.message || 'Impossible de procéder au paiement'));
-                this.textContent = '🎟️ Acheter une prévente (8€)';
+                this.textContent = `🎟️ Acheter une prévente (${window.currentEventPrice || 8}€)`;
                 this.disabled = false;
             }
         });
