@@ -185,13 +185,13 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
             }
         }
 
-        // Prix personnalisé
-        const totalAmount = Math.round(price * 100); // ex: 7 => 700 centimes
-        const platformFee = 100; // 1€
+        // Prix personnalisé avec commission de 12%
+        const totalAmount = Math.round(price * 100); // ex: 8 => 800 centimes
+        const platformFee = Math.round(totalAmount * 0.12); // 12% commission
         const creatorAmount = totalAmount - platformFee;
 
         if (creatorAmount <= 0) {
-            throw new functions.https.HttpsError('invalid-argument', 'Le montant doit être supérieur à 1€');
+            throw new functions.https.HttpsError('invalid-argument', 'Le montant doit être supérieur à 0€');
         }
 
         // Vérifier le compte Stripe créateur
@@ -221,7 +221,7 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
                 quantity: 1
             }],
             payment_intent_data: {
-                application_fee_amount: platformFee, // 1€ commission
+                application_fee_amount: platformFee, // 12% commission
                 transfer_data: {
                     destination: creatorStripeAccountId // Le créateur reçoit le reste
                 },
