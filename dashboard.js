@@ -54,10 +54,16 @@ import {
     getDownloadURL
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
+import {
+    getFunctions,
+    httpsCallable
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
+
 import { showSuccess, showError, showWarning } from './modal-utils.js';
 
 const db = getFirestore(app);
 const storage = getStorage(app);
+const functions = getFunctions(app, 'europe-west1');
 
 // ========================================
 // ÉLÉMENTS DOM - INFORMATIONS
@@ -539,3 +545,139 @@ if (document.getElementById('edit-password-form')) {
     });
 }
 
+// ========================================
+// STRIPE CONNECT SECTION
+// ========================================
+
+const stripeConnectSection = document.getElementById('stripe-connect-section');
+const stripeStatus = document.getElementById('stripe-status');
+const setupStripeBtn = document.getElementById('setup-stripe-btn');
+const scannerBtn = document.getElementById('scanner-btn');
+
+// Vérifier si l'utilisateur a des événements avec préventes
+async function checkUserHasPresalesEvents(userId) {
+    try {
+        const eventsQuery = query(
+            collection(db, 'events'),
+            where('createdBy', '==', userId),
+            where('presales', '==', true)
+        );
+        const eventsSnapshot = await getDocs(eventsQuery);
+        return !eventsSnapshot.empty;
+    } catch (error) {
+        console.error('Erreur vérification événements:', error);
+        return false;
+    }
+}
+
+// Vérifier le statut du compte Stripe
+async function checkStripeStatus() {
+    try {
+        const checkStripeAccountStatus = httpsCallable(functions, 'checkStripeAccountStatus');
+        const result = await checkStripeAccountStatus();
+        return result.data;
+    } catch (error) {
+        console.error('Erreur vérification statut Stripe:', error);
+        return { status: 'error', canReceivePayments: false };
+    }
+}
+
+// Afficher le statut Stripe
+function displayStripeStatus(status) {
+    if (status.canReceivePayments) {
+        stripeStatus.style.background = 'rgba(82, 196, 26, 0.2)';
+        stripeStatus.style.color = '#52c41a';
+        stripeStatus.innerHTML = '✅ Compte configuré - Vous pouvez recevoir des paiements';
+        setupStripeBtn.textContent = '📊 Gérer mon compte Stripe';
+    } else if (status.status === 'pending') {
+        stripeStatus.style.background = 'rgba(250, 173, 20, 0.2)';
+        stripeStatus.style.color = '#faad14';
+        stripeStatus.innerHTML = '⏳ Configuration en cours - Terminez la configuration pour recevoir des paiements';
+        setupStripeBtn.textContent = '⚙️ Terminer la configuration';
+    } else if (status.status === 'not_created') {
+        stripeStatus.style.background = 'rgba(255, 77, 79, 0.2)';
+        stripeStatus.style.color = '#ff4d4f';
+        stripeStatus.innerHTML = '❌ Compte non configuré - Configurez votre compte pour recevoir des paiements';
+        setupStripeBtn.textContent = '⚙️ Configurer mon compte';
+    } else {
+        stripeStatus.style.background = 'rgba(255, 255, 255, 0.1)';
+        stripeStatus.style.color = 'var(--text-secondary)';
+        stripeStatus.innerHTML = 'Statut inconnu';
+    }
+}
+
+// Setup du compte Stripe Connect
+if (setupStripeBtn) {
+    setupStripeBtn.addEventListener('click', async () => {
+        setupStripeBtn.disabled = true;
+        setupStripeBtn.textContent = '⏳ Chargement...';
+
+        try {
+            const createStripeConnectAccount = httpsCallable(functions, 'createStripeConnectAccount');
+            const result = await createStripeConnectAccount({
+                baseUrl: window.location.origin
+            });
+
+            if (result.data.url) {
+                window.location.href = result.data.url;
+            } else {
+                showError('Erreur lors de la configuration Stripe');
+                setupStripeBtn.disabled = false;
+                setupStripeBtn.textContent = '⚙️ Configurer mon compte';
+            }
+        } catch (error) {
+            console.error('Erreur setup Stripe:', error);
+            showError('Erreur: ' + (error.message || 'Impossible de configurer Stripe'));
+            setupStripeBtn.disabled = false;
+            setupStripeBtn.textContent = '⚙️ Configurer mon compte';
+        }
+    });
+}
+
+// Initialiser la section Stripe après le chargement de l'utilisateur
+async function initStripeSection(userId) {
+    // Vérifier si l'utilisateur a des événements avec préventes
+    const hasPresalesEvents = await checkUserHasPresalesEvents(userId);
+
+    if (hasPresalesEvents && stripeConnectSection) {
+        stripeConnectSection.style.display = 'block';
+
+        // Afficher le bouton scanner
+        if (scannerBtn) {
+            scannerBtn.style.display = 'inline-block';
+        }
+
+        // Vérifier le statut du compte Stripe
+        const status = await checkStripeStatus();
+        displayStripeStatus(status);
+    }
+
+    // Vérifier les paramètres URL pour Stripe Connect callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const stripeCallback = urlParams.get('stripe');
+
+    if (stripeCallback === 'success') {
+        showSuccess('Compte Stripe configuré avec succès !');
+        // Nettoyer l'URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Rafraîchir le statut
+        if (stripeConnectSection) {
+            stripeConnectSection.style.display = 'block';
+            const status = await checkStripeStatus();
+            displayStripeStatus(status);
+        }
+    } else if (stripeCallback === 'refresh') {
+        showWarning('Configuration Stripe non terminée. Veuillez réessayer.');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
+// Observer l'état d'authentification pour initialiser Stripe
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Initialiser la section Stripe après un court délai pour laisser le temps au dashboard de charger
+        setTimeout(() => {
+            initStripeSection(user.uid);
+        }, 500);
+    }
+});

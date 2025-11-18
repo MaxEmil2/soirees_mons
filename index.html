@@ -495,10 +495,11 @@
                         <a id="modal-link" href="#" target="_blank" class="modal-btn modal-btn-primary">
                             📎 Lien de la soirée
                         </a>
-                        <button id="modal-presales-button" class="modal-btn modal-btn-primary">
-                            🎟️ Voir les préventes
+                        <button id="modal-presales-button" class="modal-btn modal-btn-primary" data-event-id="">
+                            🎟️ Acheter une prévente (8€)
                         </button>
                     </div>
+                    <p id="modal-presales-info" class="presales-info-text" style="display: none; font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 10px; text-align: center;"></p>
                 </div>
             </div>
         </div>
@@ -613,13 +614,37 @@
         </div>
     </div>
 
-    <!-- MODAL INFO PRÉVENTES (non configuré pour l'instant) -->
+    <!-- MODAL INFO PRÉVENTES -->
     <div id="info-presales-modal" class="info-presales-modal" style="display: none;">
         <div class="info-modal-content">
             <button class="modal-close" onclick="closeInfoPresalesModal()">✕</button>
             <h2>ℹ️ Informations sur les préventes</h2>
-            <p>Cette fonctionnalité sera configurée prochainement.</p>
-            <button class="modal-btn modal-btn-primary" onclick="closeInfoPresalesModal()">OK</button>
+            <div style="text-align: left; margin: 20px 0;">
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Comment ça marche ?</h3>
+                <p style="margin-bottom: 15px;">Les préventes permettent à vos participants d'acheter leurs billets à l'avance via un paiement sécurisé.</p>
+
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Prix et commissions</h3>
+                <ul style="margin-bottom: 15px; padding-left: 20px;">
+                    <li>Prix de la prévente : <strong>8€</strong></li>
+                    <li>Vous recevez : <strong>7€</strong> sur votre compte</li>
+                    <li>Commission Soirées Mons : <strong>1€</strong></li>
+                </ul>
+
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Ce que reçoit l'acheteur</h3>
+                <ul style="margin-bottom: 15px; padding-left: 20px;">
+                    <li>Un email avec un <strong>QR code unique</strong></li>
+                    <li>Le QR code contient ses informations personnelles</li>
+                    <li>Il présente le QR code à l'entrée de l'événement</li>
+                </ul>
+
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Pour l'organisateur</h3>
+                <ul style="padding-left: 20px;">
+                    <li>Configurez votre compte bancaire via <strong>Stripe Connect</strong></li>
+                    <li>Scannez les QR codes avec la <a href="scanner.html" style="color: #00d4ff;">page de scan</a></li>
+                    <li>Les tickets ne peuvent être utilisés qu'une seule fois</li>
+                </ul>
+            </div>
+            <button class="modal-btn modal-btn-primary" onclick="closeInfoPresalesModal()">Compris !</button>
         </div>
     </div>
 
@@ -702,8 +727,11 @@
             getDocs,
             query,
             orderBy,
-            where
+            where,
+            doc,
+            getDoc
         } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
         import { getTotalLikes } from './likes.js';
 
         // Configuration Firebase
@@ -721,6 +749,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const functions = getFunctions(app, 'europe-west1');
 
         // Éléments DOM
         const btnSignup = document.getElementById('btn-signup');
@@ -935,19 +964,115 @@
 
             // Bouton préventes
             const presalesButton = document.getElementById('modal-presales-button');
+            const presalesInfo = document.getElementById('modal-presales-info');
+
             if (event.presales) {
-                presalesButton.textContent = '🎟️ Voir les préventes';
-                presalesButton.className = 'modal-btn modal-btn-primary';
+                // Vérifier si les préventes sont encore disponibles
+                let presalesAvailable = true;
+                let infoText = '';
+
+                if (event.presalesEndDate) {
+                    const endDate = new Date(event.presalesEndDate);
+                    if (new Date() > endDate) {
+                        presalesAvailable = false;
+                        infoText = 'Les préventes sont terminées';
+                    } else {
+                        const formattedEndDate = endDate.toLocaleDateString('fr-BE', {
+                            day: 'numeric',
+                            month: 'long',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        infoText = `Préventes disponibles jusqu'au ${formattedEndDate}`;
+                    }
+                }
+
+                if (presalesAvailable) {
+                    presalesButton.textContent = '🎟️ Acheter une prévente (8€)';
+                    presalesButton.className = 'modal-btn modal-btn-primary';
+                    presalesButton.style.cursor = 'pointer';
+                    presalesButton.disabled = false;
+                    presalesButton.dataset.eventId = eventId;
+                } else {
+                    presalesButton.textContent = '🚫 Préventes terminées';
+                    presalesButton.className = 'modal-btn modal-btn-secondary';
+                    presalesButton.style.cursor = 'not-allowed';
+                    presalesButton.disabled = true;
+                }
+
+                if (infoText) {
+                    presalesInfo.textContent = infoText;
+                    presalesInfo.style.display = 'block';
+                } else {
+                    presalesInfo.style.display = 'none';
+                }
             } else {
                 presalesButton.textContent = '🚫 Pas de préventes';
                 presalesButton.className = 'modal-btn modal-btn-secondary';
                 presalesButton.style.cursor = 'not-allowed';
+                presalesButton.disabled = true;
+                presalesInfo.style.display = 'none';
             }
 
             // Afficher le modal
             document.getElementById('event-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         };
+
+        // Gestionnaire de clic pour le bouton préventes
+        document.getElementById('modal-presales-button').addEventListener('click', async function() {
+            const eventId = this.dataset.eventId;
+            if (!eventId || this.disabled) return;
+
+            const user = auth.currentUser;
+            if (!user) {
+                // Rediriger vers la connexion
+                window.location.href = `login.html?redirect=${encodeURIComponent(window.location.pathname)}`;
+                return;
+            }
+
+            // Désactiver le bouton pendant le traitement
+            this.disabled = true;
+            this.textContent = '⏳ Chargement...';
+
+            try {
+                // Vérifier si l'utilisateur a déjà une prévente pour cet événement
+                const presalesQuery = query(
+                    collection(db, 'presales'),
+                    where('eventId', '==', eventId),
+                    where('userId', '==', user.uid),
+                    where('status', '==', 'valid')
+                );
+                const existingPresales = await getDocs(presalesQuery);
+
+                if (!existingPresales.empty) {
+                    alert('Vous avez déjà une prévente pour cet événement !');
+                    this.textContent = '🎟️ Acheter une prévente (8€)';
+                    this.disabled = false;
+                    return;
+                }
+
+                // Créer la session de checkout
+                const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+                const result = await createCheckoutSession({
+                    eventId: eventId,
+                    baseUrl: window.location.origin
+                });
+
+                if (result.data.url) {
+                    // Rediriger vers Stripe Checkout
+                    window.location.href = result.data.url;
+                } else {
+                    throw new Error('URL de paiement non reçue');
+                }
+
+            } catch (error) {
+                console.error('Erreur achat prévente:', error);
+                alert('Erreur: ' + (error.message || 'Impossible de procéder au paiement'));
+                this.textContent = '🎟️ Acheter une prévente (8€)';
+                this.disabled = false;
+            }
+        });
 
         // Fonction pour fermer le modal
         window.closeEventModal = function() {
