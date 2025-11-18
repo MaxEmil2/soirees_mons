@@ -5,17 +5,301 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - Soirées Mons</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 50%, #0a0a12 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Fond animé avec particules */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
+            top: -250px;
+            right: -250px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(108, 99, 255, 0.1) 0%, transparent 70%);
+            bottom: -200px;
+            left: -200px;
+            animation: float 15s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(100px, -50px) scale(1.1);
+            }
+            66% {
+                transform: translate(-50px, 100px) scale(0.9);
+            }
+        }
+
+        .signup-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            padding: 0 20px;
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .signup-card {
+            background: rgba(22, 33, 62, 0.6);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .signup-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(108, 99, 255, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #00d4ff 0%, #6c63ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin: 0;
+        }
+
+        .error-message {
+            display: none;
+            background: rgba(255, 77, 79, 0.15);
+            border: 1px solid rgba(255, 77, 79, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            color: #ff4d4f;
+            font-size: 14px;
+            animation: shake 0.4s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .password-hint {
+            color: var(--text-tertiary);
+            font-size: 12px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .password-hint svg {
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 28px 0;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
+        .social-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-social {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-social:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-social svg {
+            flex-shrink: 0;
+        }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-link p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .footer-link a {
+            color: var(--primary-500);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link a:hover {
+            color: var(--accent-500);
+            text-decoration: underline;
+        }
+
+        .btn-loader {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Bouton retour accueil */
+        .back-home {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 10;
+        }
+
+        .back-home a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-home a:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateX(-4px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .signup-card {
+                padding: 36px 28px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .back-home {
+                top: 16px;
+                left: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Conteneur principal avec fond sombre -->
-    <div class="container">
-        <!-- Carte d'inscription centrée -->
-        <div class="login-card">
-            <!-- Logo ou titre -->
+    <!-- Bouton retour accueil -->
+    <div class="back-home">
+        <a href="index.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Accueil
+        </a>
+    </div>
+
+    <!-- Conteneur principal -->
+    <div class="signup-container">
+        <!-- Carte d'inscription -->
+        <div class="signup-card">
+            <!-- En-tête -->
             <div class="header">
                 <h1>Créer un compte</h1>
-                <p>Inscrivez-vous pour commencer</p>
+                <p>Rejoignez Soirées Mons en quelques secondes</p>
             </div>
 
             <!-- Zone d'affichage des erreurs -->
@@ -24,7 +308,7 @@
             <!-- Formulaire d'inscription email/mot de passe -->
             <form id="signup-form">
                 <div class="input-group">
-                    <label for="email">Email</label>
+                    <label for="email">Adresse email</label>
                     <input
                         type="email"
                         id="email"
@@ -43,9 +327,13 @@
                         required
                         autocomplete="new-password"
                     >
-                    <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px; display: block;">
-                        Minimum 6 caractères
-                    </small>
+                    <div class="password-hint">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        <span>Minimum 6 caractères</span>
+                    </div>
                 </div>
 
                 <div class="input-group">
@@ -60,8 +348,8 @@
                 </div>
 
                 <!-- Bouton d'inscription principal -->
-                <button type="submit" class="btn btn-primary" id="signup-btn">
-                    <span class="btn-text">S'inscrire</span>
+                <button type="submit" class="btn btn-primary" id="signup-btn" style="width: 100%; margin-top: 8px;">
+                    <span class="btn-text">Créer mon compte</span>
                     <span class="btn-loader" style="display: none;">⏳</span>
                 </button>
             </form>
@@ -74,14 +362,14 @@
             <!-- Boutons de connexion sociale -->
             <div class="social-buttons">
                 <!-- Inscription Google -->
-                <button class="btn btn-social btn-google" id="google-signup-btn">
+                <button class="btn-social" id="google-signup-btn">
                     <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                         <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
                         <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
                         <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
                         <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
                     </svg>
-                    <span>S'inscrire avec Google</span>
+                    <span>Continuer avec Google</span>
                 </button>
             </div>
 
