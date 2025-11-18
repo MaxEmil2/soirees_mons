@@ -38,6 +38,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Image par défaut pour les utilisateurs sans photo
+const DEFAULT_AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzZjNjNmZiIvPjxjaXJjbGUgY3g9IjIwIiBjeT0iMTUiIHI9IjciIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMjAgMjRjLTYgMC0xMSAzLTExIDhsMjIgMGMwLTUtNS04LTExLTh6IiBmaWxsPSIjZmZmIi8+PC9zdmc+';
+
 let currentUser = null;
 
 // Écouter l'état de connexion
@@ -67,7 +70,6 @@ export async function loadEventLikes(eventId) {
         return likes;
 
     } catch (error) {
-        console.error('Erreur chargement likes:', error);
         return [];
     }
 }
@@ -88,7 +90,6 @@ export async function hasUserLiked(eventId, userId) {
         return !snapshot.empty;
 
     } catch (error) {
-        console.error('Erreur vérification like:', error);
         return false;
     }
 }
@@ -129,18 +130,16 @@ export async function likeEvent(eventId, isPublic) {
             eventId: eventId,
             userId: currentUser.uid,
             userEmail: currentUser.email,
-            userPhotoURL: userPhotoURL,
+            userPhotoURL: userPhotoURL || DEFAULT_AVATAR,
             isPublic: isPublic,
             createdAt: serverTimestamp()
         };
 
         const docRef = await addDoc(collection(db, 'likes'), likeData);
 
-        console.log('✅ Like ajouté:', docRef.id);
         return { id: docRef.id, ...likeData };
 
     } catch (error) {
-        console.error('❌ Erreur like:', error);
         return null;
     }
 }
@@ -164,14 +163,12 @@ export async function unlikeEvent(eventId) {
         if (!snapshot.empty) {
             // Supprimer le like
             await deleteDoc(doc(db, 'likes', snapshot.docs[0].id));
-            console.log('✅ Like retiré');
             return true;
         }
 
         return false;
 
     } catch (error) {
-        console.error('❌ Erreur unlike:', error);
         return false;
     }
 }
@@ -195,15 +192,16 @@ export async function getRecentPublicLikers(eventId) {
         const likers = [];
         snapshot.forEach((doc) => {
             const like = doc.data();
-            if (like.userPhotoURL) {
-                likers.push(like);
-            }
+            // Inclure tous les likers publics, avec avatar par défaut si pas de photo
+            likers.push({
+                ...like,
+                userPhotoURL: like.userPhotoURL || DEFAULT_AVATAR
+            });
         });
 
         return likers;
 
     } catch (error) {
-        console.error('Erreur récupération likers:', error);
         return [];
     }
 }
@@ -223,9 +221,7 @@ export async function getTotalLikes(eventId) {
         return snapshot.size;
 
     } catch (error) {
-        console.error('Erreur comptage likes:', error);
         return 0;
     }
 }
 
-console.log('❤️ Système de likes initialisé');

@@ -50,6 +50,8 @@ const userEventForm = document.getElementById('user-event-form');
 const userPresalesToggle = document.getElementById('user-presales-toggle');
 const userPresalesLabel = document.getElementById('user-presales-label');
 const userPresalesInput = document.getElementById('user-event-presales');
+const userPresalesEndContainer = document.getElementById('user-presales-end-container');
+const userPresalesEndDateInput = document.getElementById('user-presales-end-date');
 const userImageUploadArea = document.getElementById('user-image-upload-area');
 const userImageInput = document.getElementById('user-image-input');
 const userImagePreview = document.getElementById('user-image-preview');
@@ -109,6 +111,10 @@ userPresalesToggle.addEventListener('click', () => {
     const isActive = userPresalesToggle.classList.contains('active');
     userPresalesInput.value = isActive ? 'true' : 'false';
     userPresalesLabel.textContent = isActive ? 'Activé' : 'Désactivé';
+    // Afficher/masquer le champ de date de fin des préventes
+    if (userPresalesEndContainer) {
+        userPresalesEndContainer.style.display = isActive ? 'block' : 'none';
+    }
 });
 
 // ========================================
@@ -187,7 +193,8 @@ userEventForm.addEventListener('submit', async (e) => {
         age: parseInt(document.getElementById('user-event-age').value),
         link: document.getElementById('user-event-link').value.trim(),
         description: document.getElementById('user-event-description').value.trim(),
-        presales: userPresalesInput.value === 'true'
+        presales: userPresalesInput.value === 'true',
+        presalesEndDate: userPresalesEndDateInput && userPresalesEndDateInput.value ? userPresalesEndDateInput.value : null
     };
 
     // Validation
@@ -277,5 +284,7 @@ function resetUserForm() {
     userPresalesToggle.classList.remove('active');
     userPresalesInput.value = 'false';
     userPresalesLabel.textContent = 'Désactivé';
+    if (userPresalesEndContainer) userPresalesEndContainer.style.display = 'none';
+    if (userPresalesEndDateInput) userPresalesEndDateInput.value = '';
 }
 

@@ -72,6 +72,8 @@ const eventDescriptionInput = document.getElementById('event-description');
 const presalesToggle = document.getElementById('presales-toggle');
 const presalesLabel = document.getElementById('presales-label');
 const presalesInput = document.getElementById('event-presales');
+const presalesEndContainer = document.getElementById('presales-end-container');
+const presalesEndDateInput = document.getElementById('presales-end-date');
 const imageInput = document.getElementById('image-input');
 const imageUploadArea = document.getElementById('image-upload-area');
 const imagePreview = document.getElementById('image-preview');
@@ -155,6 +157,10 @@ presalesToggle.addEventListener('click', () => {
     const isActive = presalesToggle.classList.contains('active');
     presalesInput.value = isActive ? 'true' : 'false';
     presalesLabel.textContent = isActive ? 'Activé' : 'Désactivé';
+    // Afficher/masquer le champ de date de fin des préventes
+    if (presalesEndContainer) {
+        presalesEndContainer.style.display = isActive ? 'block' : 'none';
+    }
 });
 
 // ========================================
@@ -241,7 +247,8 @@ eventForm.addEventListener('submit', async (e) => {
         age: parseInt(eventAgeInput.value),
         link: eventLinkInput.value.trim(),
         description: eventDescriptionInput.value.trim(),
-        presales: presalesInput.value === 'true'
+        presales: presalesInput.value === 'true',
+        presalesEndDate: presalesEndDateInput && presalesEndDateInput.value ? presalesEndDateInput.value : null
     };
 
     // Validation
@@ -427,10 +434,15 @@ window.editEvent = async function(eventId) {
             presalesToggle.classList.add('active');
             presalesInput.value = 'true';
             presalesLabel.textContent = 'Activé';
+            if (presalesEndContainer) presalesEndContainer.style.display = 'block';
+            if (presalesEndDateInput && event.presalesEndDate) {
+                presalesEndDateInput.value = event.presalesEndDate;
+            }
         } else {
             presalesToggle.classList.remove('active');
             presalesInput.value = 'false';
             presalesLabel.textContent = 'Désactivé';
+            if (presalesEndContainer) presalesEndContainer.style.display = 'none';
         }
 
         // Afficher l'image actuelle
@@ -531,6 +543,8 @@ function resetForm() {
     presalesToggle.classList.remove('active');
     presalesInput.value = 'false';
     presalesLabel.textContent = 'Désactivé';
+    if (presalesEndContainer) presalesEndContainer.style.display = 'none';
+    if (presalesEndDateInput) presalesEndDateInput.value = '';
     formTitle.textContent = '➕ Ajouter une nouvelle soirée';
     submitBtn.textContent = 'Publier la soirée';
     cancelBtn.style.display = 'none';
