@@ -54,6 +54,8 @@ import {
     getDownloadURL
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
+import { showSuccess, showError, showWarning } from './modal-utils.js';
+
 const db = getFirestore(app);
 const storage = getStorage(app);
 
@@ -101,19 +103,7 @@ const verifyEmailBtn = document.getElementById('verify-email-btn');
 // FONCTIONS UTILITAIRES
 // ========================================
 
-/**
- * Affiche un message de succès
- */
-function showSuccess(message) {
-    alert('✅ ' + message);
-}
-
-/**
- * Affiche un message d'erreur
- */
-function showError(message) {
-    alert('❌ ' + message);
-}
+// Les fonctions showSuccess et showError sont importées depuis modal-utils.js
 
 /**
  * Active/désactive le loader sur un bouton
@@ -415,7 +405,7 @@ if (photoContainer && photoInput) {
 
         // Vérifier que c'est une image
         if (!file.type.startsWith('image/')) {
-            alert('❌ Veuillez sélectionner une image (JPG, PNG, WebP)');
+            showError('Veuillez sélectionner une image (JPG, PNG, WebP)');
             return;
         }
 
@@ -483,7 +473,7 @@ if (photoContainer && photoInput) {
             }
 
         } catch (error) {
-            alert('❌ Erreur : Impossible de télécharger la photo. Vérifiez votre connexion et réessayez.');
+            showError('Impossible de télécharger la photo. Vérifiez votre connexion et réessayez.');
         }
     });
 }
@@ -505,9 +495,9 @@ if (document.getElementById('edit-pseudo-form')) {
             await updateProfile(auth.currentUser, { displayName: newPseudo });
             userPseudo.textContent = newPseudo;
             editPseudoModal.classList.remove('show');
-            alert('✅ Pseudo mis à jour !');
+            showSuccess('Pseudo mis à jour !');
         } catch (error) {
-            alert('❌ Erreur lors de la mise à jour');
+            showError('Erreur lors de la mise à jour');
         }
     });
 }
@@ -528,7 +518,7 @@ if (document.getElementById('edit-password-form')) {
         const confirmPassword = document.getElementById('confirm-password').value;
 
         if (newPassword !== confirmPassword) {
-            alert('❌ Les mots de passe ne correspondent pas');
+            showError('Les mots de passe ne correspondent pas');
             return;
         }
 
@@ -541,10 +531,10 @@ if (document.getElementById('edit-password-form')) {
             await updatePassword(auth.currentUser, newPassword);
 
             editPasswordModal.classList.remove('show');
-            alert('✅ Mot de passe mis à jour !');
+            showSuccess('Mot de passe mis à jour !');
             document.getElementById('edit-password-form').reset();
         } catch (error) {
-            alert('❌ Mot de passe actuel incorrect ou erreur');
+            showError('Mot de passe actuel incorrect ou erreur');
         }
     });
 }

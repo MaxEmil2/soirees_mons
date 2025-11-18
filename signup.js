@@ -19,6 +19,8 @@ import {
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
+import { showSuccess } from './modal-utils.js';
+
 // ========================================
 // CONFIGURATION FIREBASE
 // ========================================
@@ -157,9 +159,7 @@ async function saveUserToFirestore(user, provider) {
         // Enregistrer dans Firestore
         await setDoc(userRef, userData);
 
-        console.log('✅ Utilisateur enregistré dans Firestore:', user.uid);
     } catch (error) {
-        console.error('❌ Erreur lors de l\'enregistrement dans Firestore:', error);
         // On ne bloque pas l'utilisateur même si Firestore échoue
     }
 }
@@ -171,10 +171,8 @@ async function saveUserToFirestore(user, provider) {
 async function sendVerificationEmail(user) {
     try {
         await sendEmailVerification(user);
-        console.log('✅ Email de vérification envoyé à:', user.email);
         return true;
     } catch (error) {
-        console.error('❌ Erreur envoi email de vérification:', error);
         return false;
     }
 }
@@ -185,15 +183,16 @@ async function sendVerificationEmail(user) {
  * @param {boolean} emailSent - Si l'email de vérification a été envoyé
  */
 function redirectToDashboard(user, emailSent = false) {
-    console.log('✅ Inscription réussie:', user.email);
 
     // Afficher message si email envoyé
     if (emailSent) {
-        alert('✅ Inscription réussie ! Un email de vérification vous a été envoyé. Vérifiez votre boîte de réception.');
+        showSuccess('Inscription réussie ! Un email de vérification vous a été envoyé. Vérifiez votre boîte de réception.', () => {
+            window.location.href = 'index.html';
+        });
+    } else {
+        // Redirection vers l'accueil
+        window.location.href = 'index.html';
     }
-
-    // Redirection vers l'accueil
-    window.location.href = 'index.html';
 }
 
 // ========================================
@@ -243,9 +242,6 @@ signupForm.addEventListener('submit', async (e) => {
         redirectToDashboard(userCredential.user, emailSent);
 
     } catch (error) {
-        console.error('❌ Erreur d\'inscription:', error);
-        console.error('📌 Code d\'erreur:', error.code);
-        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur à l'utilisateur
         showError(getErrorMessage(error.code));
@@ -271,13 +267,9 @@ googleSignupBtn.addEventListener('click', async () => {
         await saveUserToFirestore(result.user, 'google');
 
         // Inscription réussie
-        console.log('✅ Inscription Google réussie');
         redirectToDashboard(result.user);
 
     } catch (error) {
-        console.error('❌ Erreur inscription Google:', error);
-        console.error('📌 Code d\'erreur:', error.code);
-        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur
         showError(getErrorMessage(error.code));
@@ -296,7 +288,6 @@ googleSignupBtn.addEventListener('click', async () => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // L'utilisateur est déjà connecté
-        console.log('✅ Utilisateur déjà connecté:', user.email);
 
         // Rediriger vers le dashboard si on est sur la page d'inscription
         if (window.location.pathname.includes('signup.html')) {
@@ -304,7 +295,6 @@ onAuthStateChanged(auth, (user) => {
         }
     } else {
         // L'utilisateur n'est pas connecté
-        console.log('ℹ️ Aucun utilisateur connecté');
     }
 });
 
@@ -312,6 +302,3 @@ onAuthStateChanged(auth, (user) => {
 // LOGS DE DÉMARRAGE
 // ========================================
 
-console.log('🔥 Firebase Authentication & Firestore initialisés');
-console.log('📱 Version Firebase: 10.8.0');
-console.log('🗄️ Base de données: Firestore activée');

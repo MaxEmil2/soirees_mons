@@ -20,6 +20,8 @@ import {
     getDownloadURL
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
+import { showSuccess, showError } from './modal-utils.js';
+
 // Configuration Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
@@ -123,14 +125,14 @@ userImageInput.addEventListener('change', (e) => {
 
     // Vérifier la taille (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-        alert('❌ L\'image ne doit pas dépasser 5MB.');
+        showError('L\'image ne doit pas dépasser 5MB.');
         userImageInput.value = '';
         return;
     }
 
     // Vérifier le type
     if (!file.type.startsWith('image/')) {
-        alert('❌ Veuillez sélectionner une image valide.');
+        showError('Veuillez sélectionner une image valide.');
         userImageInput.value = '';
         return;
     }
@@ -171,7 +173,7 @@ userEventForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     if (!currentUser) {
-        alert('❌ Vous devez être connecté pour ajouter une soirée.');
+        showError('Vous devez être connecté pour ajouter une soirée.');
         window.location.href = 'login.html';
         return;
     }
@@ -190,12 +192,12 @@ userEventForm.addEventListener('submit', async (e) => {
 
     // Validation
     if (!eventData.name || !eventData.date || !eventData.location) {
-        alert('❌ Veuillez remplir tous les champs obligatoires.');
+        showError('Veuillez remplir tous les champs obligatoires.');
         return;
     }
 
     if (!currentUserImageFile) {
-        alert('❌ Veuillez sélectionner une image.');
+        showError('Veuillez sélectionner une image.');
         return;
     }
 
@@ -206,7 +208,6 @@ userEventForm.addEventListener('submit', async (e) => {
 
     try {
         // 1. Upload de l'image
-        console.log('📤 Upload de l\'image...');
         const timestamp = Date.now();
         const sanitizedName = eventData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const fileName = `user_events/${sanitizedName}_${timestamp}.${currentUserImageFile.name.split('.').pop()}`;
@@ -215,7 +216,6 @@ userEventForm.addEventListener('submit', async (e) => {
         const snapshot = await uploadBytes(storageRef, currentUserImageFile);
         const downloadURL = await getDownloadURL(snapshot.ref);
 
-        console.log('✅ Image uploadée:', downloadURL);
 
         // 2. Ajouter les métadonnées
         eventData.imageURL = downloadURL;
@@ -227,7 +227,6 @@ userEventForm.addEventListener('submit', async (e) => {
 
         // 3. Enregistrer dans Firestore
         const docRef = await addDoc(collection(db, 'events'), eventData);
-        console.log('✅ Soirée envoyée:', docRef.id);
 
         // 4. Créer une notification pour l'utilisateur
         await addDoc(collection(db, 'notifications'), {
@@ -245,8 +244,7 @@ userEventForm.addEventListener('submit', async (e) => {
         openConfirmationModal();
 
     } catch (error) {
-        console.error('❌ Erreur:', error);
-        alert('❌ Erreur: ' + error.message);
+        showError('Erreur: ' + error.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Envoyer pour validation';
@@ -281,4 +279,3 @@ function resetUserForm() {
     userPresalesLabel.textContent = 'Désactivé';
 }
 
-console.log('🔥 User Events initialisé');

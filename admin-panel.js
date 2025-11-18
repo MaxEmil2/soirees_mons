@@ -29,6 +29,8 @@ import {
     deleteObject
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
+import { showSuccess, showError, showWarning, showConfirm, showPrompt } from './modal-utils.js';
+
 // ✅ VERIFICATION: Ce fichier a bien l'import 'where' - Version 2.0
 
 // ========================================
@@ -122,8 +124,9 @@ onAuthStateChanged(auth, async (user) => {
 
         if (!userData || userData.isAdmin !== true) {
             // Pas admin - rediriger
-            alert('Accès refusé. Vous devez être administrateur.');
-            window.location.href = 'dashboard.html';
+            showError('Accès refusé. Vous devez être administrateur.', () => {
+                window.location.href = 'dashboard.html';
+            });
             return;
         }
 
@@ -137,8 +140,9 @@ onAuthStateChanged(auth, async (user) => {
         loadPartners();
 
     } catch (error) {
-        alert('Erreur lors de la vérification des droits.');
-        window.location.href = 'dashboard.html';
+        showError('Erreur lors de la vérification des droits.', () => {
+            window.location.href = 'dashboard.html';
+        });
     }
 });
 
@@ -167,14 +171,14 @@ imageInput.addEventListener('change', (e) => {
 
     // Vérifier la taille (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-        alert('❌ L\'image ne doit pas dépasser 5MB.');
+        showError('L\'image ne doit pas dépasser 5MB.');
         imageInput.value = '';
         return;
     }
 
     // Vérifier le type
     if (!file.type.startsWith('image/')) {
-        alert('❌ Veuillez sélectionner une image valide.');
+        showError('Veuillez sélectionner une image valide.');
         imageInput.value = '';
         return;
     }
@@ -242,13 +246,13 @@ eventForm.addEventListener('submit', async (e) => {
 
     // Validation
     if (!eventData.name || !eventData.date || !eventData.location) {
-        alert('❌ Veuillez remplir tous les champs obligatoires.');
+        showError('Veuillez remplir tous les champs obligatoires.');
         return;
     }
 
     // Pour l'ajout, l'image est obligatoire
     if (!editingEventId && !currentImageFile) {
-        alert('❌ Veuillez sélectionner une image.');
+        showError('Veuillez sélectionner une image.');
         return;
     }
 
@@ -274,14 +278,14 @@ eventForm.addEventListener('submit', async (e) => {
                 updatedAt: serverTimestamp()
             });
 
-            alert('✅ Événement modifié avec succès!');
+            showSuccess('Événement modifié avec succès!');
 
         } else {
             // AJOUTER un nouvel événement
             eventData.createdAt = serverTimestamp();
             const docRef = await addDoc(collection(db, 'events'), eventData);
 
-            alert('✅ Événement publié avec succès!');
+            showSuccess('Événement publié avec succès!');
         }
 
         // Réinitialiser le formulaire
@@ -291,7 +295,7 @@ eventForm.addEventListener('submit', async (e) => {
         loadEvents();
 
     } catch (error) {
-        alert('❌ Erreur: ' + error.message);
+        showError('Erreur: ' + error.message);
     } finally {
         setButtonLoading(submitBtn, false);
     }
@@ -400,7 +404,7 @@ window.editEvent = async function(eventId) {
         // Récupérer les données de l'événement
         const eventDoc = await getDoc(doc(db, 'events', eventId));
         if (!eventDoc.exists()) {
-            alert('❌ Événement introuvable.');
+            showError('Événement introuvable.');
             return;
         }
 
@@ -444,7 +448,7 @@ window.editEvent = async function(eventId) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
-        alert('❌ Erreur lors de la modification.');
+        showError('Erreur lors de la modification.');
     }
 };
 
@@ -460,13 +464,13 @@ window.togglePriority = async function(eventId, newPriorityStatus) {
             isPriority: newPriorityStatus
         });
 
-        alert(newPriorityStatus ? '⭐ Soirée marquée comme prioritaire !' : '📌 Soirée revenue à normale !');
+        showSuccess(newPriorityStatus ? 'Soirée marquée comme prioritaire !' : 'Soirée revenue à normale !');
 
         // Recharger la liste des événements
         loadEvents();
 
     } catch (error) {
-        alert('❌ Erreur lors du changement de priorité');
+        showError('Erreur lors du changement de priorité');
     }
 };
 
@@ -475,7 +479,8 @@ window.togglePriority = async function(eventId, newPriorityStatus) {
 // ========================================
 
 window.deleteEvent = async function(eventId, imagePath) {
-    if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette soirée ?')) {
+    const confirmed = await showConfirm('Êtes-vous sûr de vouloir supprimer cette soirée ?');
+    if (!confirmed) {
         return;
     }
 
@@ -493,13 +498,13 @@ window.deleteEvent = async function(eventId, imagePath) {
         // Supprimer le document Firestore
         await deleteDoc(doc(db, 'events', eventId));
 
-        alert('✅ Événement supprimé avec succès!');
+        showSuccess('Événement supprimé avec succès!');
 
         // Recharger la liste
         loadEvents();
 
     } catch (error) {
-        alert('❌ Erreur lors de la suppression.');
+        showError('Erreur lors de la suppression.');
     }
 };
 
@@ -640,7 +645,8 @@ function createPendingEventItem(eventId, event) {
 // ========================================
 
 window.approveEvent = async function(eventId, createdBy, eventName) {
-    if (!confirm(`✅ Accepter la soirée "${eventName}" ?`)) {
+    const confirmed = await showConfirm(`Accepter la soirée "${eventName}" ?`);
+    if (!confirmed) {
         return;
     }
 
@@ -663,14 +669,14 @@ window.approveEvent = async function(eventId, createdBy, eventName) {
             createdAt: serverTimestamp()
         });
 
-        alert('✅ Soirée approuvée avec succès!');
+        showSuccess('Soirée approuvée avec succès!');
 
         // Recharger les listes
         loadEvents();
         loadPendingEvents();
 
     } catch (error) {
-        alert('❌ Erreur lors de l\'approbation.');
+        showError('Erreur lors de l\'approbation.');
     }
 };
 
@@ -679,7 +685,7 @@ window.approveEvent = async function(eventId, createdBy, eventName) {
 // ========================================
 
 window.rejectEvent = async function(eventId, createdBy, eventName) {
-    const reason = prompt(`❌ Refuser la soirée "${eventName}"\n\nVeuillez indiquer la raison du refus (optionnel):`);
+    const reason = await showPrompt(`Refuser la soirée "${eventName}"\n\nVeuillez indiquer la raison du refus (optionnel):`);
 
     if (reason === null) {
         return; // L'utilisateur a annulé
@@ -709,13 +715,13 @@ window.rejectEvent = async function(eventId, createdBy, eventName) {
             createdAt: serverTimestamp()
         });
 
-        alert('✅ Soirée refusée.');
+        showSuccess('Soirée refusée.');
 
         // Recharger la liste
         loadPendingEvents();
 
     } catch (error) {
-        alert('❌ Erreur lors du refus.');
+        showError('Erreur lors du refus.');
     }
 };
 
@@ -734,14 +740,14 @@ partnerImageInput.addEventListener('change', (e) => {
 
     // Vérifier la taille (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-        alert('❌ Le logo ne doit pas dépasser 2MB.');
+        showError('Le logo ne doit pas dépasser 2MB.');
         partnerImageInput.value = '';
         return;
     }
 
     // Vérifier le type
     if (!file.type.startsWith('image/')) {
-        alert('❌ Veuillez sélectionner une image valide.');
+        showError('Veuillez sélectionner une image valide.');
         partnerImageInput.value = '';
         return;
     }
@@ -764,7 +770,7 @@ partnerForm.addEventListener('submit', async (e) => {
 
     // Vérifier qu'une image est sélectionnée
     if (!editingPartnerId && !currentPartnerImageFile) {
-        alert('❌ Veuillez sélectionner un logo.');
+        showError('Veuillez sélectionner un logo.');
         return;
     }
 
@@ -798,7 +804,7 @@ partnerForm.addEventListener('submit', async (e) => {
             updateData.updatedAt = serverTimestamp();
 
             await updateDoc(doc(db, 'partners', editingPartnerId), updateData);
-            alert('✅ Partenaire modifié avec succès!');
+            showSuccess('Partenaire modifié avec succès!');
 
         } else {
             // AJOUTER un nouveau partenaire
@@ -809,7 +815,7 @@ partnerForm.addEventListener('submit', async (e) => {
             };
 
             const docRef = await addDoc(collection(db, 'partners'), partnerData);
-            alert('✅ Partenaire ajouté avec succès!');
+            showSuccess('Partenaire ajouté avec succès!');
         }
 
         // Réinitialiser le formulaire
@@ -819,7 +825,7 @@ partnerForm.addEventListener('submit', async (e) => {
         loadPartners();
 
     } catch (error) {
-        alert('❌ Erreur: ' + error.message);
+        showError('Erreur: ' + error.message);
     } finally {
         setButtonLoading(partnerSubmitBtn, false);
     }
@@ -884,7 +890,8 @@ function createPartnerItem(partnerId, partner) {
 
 // Supprimer un partenaire
 window.deletePartner = async function(partnerId, logoPath) {
-    if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce partenaire ?')) {
+    const confirmed = await showConfirm('Êtes-vous sûr de vouloir supprimer ce partenaire ?');
+    if (!confirmed) {
         return;
     }
 
@@ -902,13 +909,13 @@ window.deletePartner = async function(partnerId, logoPath) {
         // Supprimer le document Firestore
         await deleteDoc(doc(db, 'partners', partnerId));
 
-        alert('✅ Partenaire supprimé avec succès!');
+        showSuccess('Partenaire supprimé avec succès!');
 
         // Recharger la liste
         loadPartners();
 
     } catch (error) {
-        alert('❌ Erreur lors de la suppression.');
+        showError('Erreur lors de la suppression.');
     }
 };
 

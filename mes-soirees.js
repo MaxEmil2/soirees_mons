@@ -24,6 +24,8 @@ import {
     deleteObject
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
+import { showSuccess, showError, showConfirm } from './modal-utils.js';
+
 // Configuration Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
@@ -191,7 +193,8 @@ function createEventItem(eventId, event) {
 // ========================================
 
 window.deleteEvent = async function(eventId, imagePath) {
-    if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette soirée ?')) {
+    const confirmed = await showConfirm('Êtes-vous sûr de vouloir supprimer cette soirée ?');
+    if (!confirmed) {
         return;
     }
 
@@ -209,13 +212,12 @@ window.deleteEvent = async function(eventId, imagePath) {
         // Supprimer le document Firestore
         await deleteDoc(doc(db, 'events', eventId));
 
-        alert('✅ Soirée supprimée avec succès!');
-
-        // Recharger la page
-        window.location.reload();
+        showSuccess('Soirée supprimée avec succès!', () => {
+            window.location.reload();
+        });
 
     } catch (error) {
-        alert('❌ Erreur lors de la suppression.');
+        showError('Erreur lors de la suppression.');
     }
 };
 

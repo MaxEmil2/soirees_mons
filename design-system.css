@@ -1030,3 +1030,119 @@ tbody td {
     font-size: 0.875rem;
     opacity: 0.9;
 }
+
+/* ========================================
+   20. NOTIFICATION MODALS
+   ======================================== */
+
+.notification-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease-out;
+}
+
+.notification-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.notification-modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-2xl);
+    max-width: 400px;
+    width: 100%;
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-modal.show .notification-modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.notification-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-lg);
+    animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-title {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    font-weight: 700;
+}
+
+.notification-message {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: var(--space-xl);
+}
+
+.notification-btn {
+    min-width: 120px;
+}
+
+.notification-buttons {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+}
+
+.notification-buttons .btn {
+    flex: 1;
+    max-width: 150px;
+}
+
+.prompt-input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: var(--space-lg);
+    transition: all var(--transition-base);
+}
+
+.prompt-input:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+}
+
+.prompt-input::placeholder {
+    color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+    .notification-modal-content {
+        padding: var(--space-lg);
+    }
+
+    .notification-buttons {
+        flex-direction: column;
+    }
+
+    .notification-buttons .btn {
+        max-width: 100%;
+    }
+}
