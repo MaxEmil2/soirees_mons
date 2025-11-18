@@ -126,11 +126,13 @@ export async function likeEvent(eventId, isPublic) {
         }
 
         // Ajouter le like
+        // Vérifier aussi les chaînes vides pour userPhotoURL
+        const finalPhotoURL = userPhotoURL && userPhotoURL.trim() ? userPhotoURL : DEFAULT_AVATAR;
         const likeData = {
             eventId: eventId,
             userId: currentUser.uid,
             userEmail: currentUser.email,
-            userPhotoURL: userPhotoURL || DEFAULT_AVATAR,
+            userPhotoURL: finalPhotoURL,
             isPublic: isPublic,
             createdAt: serverTimestamp()
         };
@@ -193,9 +195,11 @@ export async function getRecentPublicLikers(eventId) {
         snapshot.forEach((doc) => {
             const like = doc.data();
             // Inclure tous les likers publics, avec avatar par défaut si pas de photo
+            // Vérifier aussi les chaînes vides
+            const photoURL = like.userPhotoURL && like.userPhotoURL.trim() ? like.userPhotoURL : DEFAULT_AVATAR;
             likers.push({
                 ...like,
-                userPhotoURL: like.userPhotoURL || DEFAULT_AVATAR
+                userPhotoURL: photoURL
             });
         });
 
