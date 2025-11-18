@@ -42,11 +42,16 @@ const notificationDropdown = document.getElementById('notification-dropdown');
 const notificationList = document.getElementById('notification-list');
 const markAllReadBtn = document.getElementById('mark-all-read');
 
+// Éléments DOM mobiles
+const notificationBellMobile = document.getElementById('notification-bell-mobile');
+const notificationBadgeMobile = document.getElementById('notification-badge-mobile');
+
 let currentUser = null;
 let unsubscribeNotifications = null;
 
 // Vérifier si tous les éléments DOM nécessaires existent
 const hasNotificationElements = notificationBell && notificationBadge && notificationDropdown && notificationList;
+const hasMobileNotificationElements = notificationBellMobile && notificationBadgeMobile;
 
 if (!hasNotificationElements) {
     console.log('⚠️ Système de notifications désactivé : éléments DOM manquants sur cette page');
@@ -95,13 +100,23 @@ function listenToNotifications(userId) {
                 }
             });
 
-            // Mettre à jour le badge (avec vérification)
+            // Mettre à jour le badge desktop (avec vérification)
             if (notificationBadge) {
                 if (unreadCount > 0) {
                     notificationBadge.textContent = unreadCount;
                     notificationBadge.style.display = 'flex';
                 } else {
                     notificationBadge.style.display = 'none';
+                }
+            }
+
+            // Mettre à jour le badge mobile (avec vérification)
+            if (notificationBadgeMobile) {
+                if (unreadCount > 0) {
+                    notificationBadgeMobile.textContent = unreadCount;
+                    notificationBadgeMobile.style.display = 'flex';
+                } else {
+                    notificationBadgeMobile.style.display = 'none';
                 }
             }
 
@@ -235,6 +250,20 @@ if (notificationBell && notificationDropdown) {
             notificationDropdown.classList.remove('show');
         }
     });
+}
+
+// ========================================
+// TOGGLE DROPDOWN MOBILE
+// ========================================
+
+// La cloche mobile partage le même dropdown que la version desktop
+if (notificationBellMobile && notificationDropdown) {
+    notificationBellMobile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notificationDropdown.classList.toggle('show');
+    });
+
+    // Fermer en cliquant ailleurs (déjà géré ci-dessus)
 }
 
 console.log('🔔 Système de notifications initialisé');

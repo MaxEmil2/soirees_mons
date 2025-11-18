@@ -238,8 +238,57 @@
                     <a href="dashboard.html" class="btn-login" id="btn-account">Mon compte</a>
                 </div>
             </div>
+
+            <!-- MOBILE/TABLET: Icônes à droite (cloche + hamburger) -->
+            <div class="nav-mobile-right">
+                <!-- Cloche notifications mobile -->
+                <div class="notification-bell-mobile" id="notification-bell-mobile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge-mobile" id="notification-badge-mobile" style="display: none;">0</span>
+                </div>
+
+                <!-- Menu hamburger -->
+                <button class="hamburger-menu" id="hamburger-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- MENU LATÉRAL MOBILE -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <nav class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
+        </div>
+        <div class="mobile-menu-content">
+            <!-- Liens de navigation -->
+            <a href="index.html" class="mobile-menu-item">
+                🎉 Soirées
+            </a>
+            <a href="about.html" class="mobile-menu-item">
+                ℹ️ À propos de nous
+            </a>
+
+            <!-- Affiché si NON connecté -->
+            <a href="signup.html" class="mobile-menu-item" id="mobile-menu-signup">
+                ✨ S'enregistrer
+            </a>
+
+            <!-- Affiché si connecté -->
+            <div id="mobile-menu-connected" style="display: none;">
+                <a href="dashboard.html" class="mobile-menu-item">
+                    👤 Mon compte
+                </a>
+            </div>
+        </div>
+    </nav>
 
     <!-- SECTION À PROPOS -->
     <section class="about-section">
@@ -488,11 +537,75 @@
                 // Utilisateur connecté → afficher notifications + "Mon compte"
                 btnSignup.style.display = 'none';
                 navAuthConnected.style.display = 'flex';
+
+                // Menu mobile : afficher les options connectées
+                const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+                const mobileMenuConnected = document.getElementById('mobile-menu-connected');
+                if (mobileMenuSignup) mobileMenuSignup.style.display = 'none';
+                if (mobileMenuConnected) mobileMenuConnected.style.display = 'block';
             } else {
                 // Utilisateur non connecté → afficher "S'enregistrer"
                 btnSignup.style.display = 'inline-block';
                 navAuthConnected.style.display = 'none';
+
+                // Menu mobile : afficher le bouton inscription
+                const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+                const mobileMenuConnected = document.getElementById('mobile-menu-connected');
+                if (mobileMenuSignup) mobileMenuSignup.style.display = 'block';
+                if (mobileMenuConnected) mobileMenuConnected.style.display = 'none';
             }
+        });
+
+        // ========================================
+        // GESTION DU MENU MOBILE
+        // ========================================
+
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+
+        // Fonction pour ouvrir le menu
+        function openMobileMenu() {
+            if (mobileMenu) mobileMenu.classList.add('open');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.add('show');
+            if (hamburgerMenu) hamburgerMenu.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Bloquer le scroll
+        }
+
+        // Fonction pour fermer le menu
+        function closeMobileMenu() {
+            if (mobileMenu) mobileMenu.classList.remove('open');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('show');
+            if (hamburgerMenu) hamburgerMenu.classList.remove('active');
+            document.body.style.overflow = ''; // Rétablir le scroll
+        }
+
+        // Ouvrir le menu au clic sur hamburger
+        if (hamburgerMenu) {
+            hamburgerMenu.addEventListener('click', () => {
+                if (mobileMenu && mobileMenu.classList.contains('open')) {
+                    closeMobileMenu();
+                } else {
+                    openMobileMenu();
+                }
+            });
+        }
+
+        // Fermer le menu au clic sur le bouton X
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+        }
+
+        // Fermer le menu au clic sur l'overlay
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        }
+
+        // Fermer le menu au clic sur un lien du menu
+        const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+        mobileMenuItems.forEach(item => {
+            item.addEventListener('click', closeMobileMenu);
         });
     </script>
 

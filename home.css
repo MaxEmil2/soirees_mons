@@ -1334,6 +1334,195 @@ body {
             }
         }
 
+        /* ========================================
+           NAVIGATION MOBILE
+           ======================================== */
+
+        /* Conteneur des icônes mobiles (cloche + hamburger) */
+        .nav-mobile-right {
+            display: none; /* Caché sur desktop */
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Cloche notifications mobile */
+        .notification-bell-mobile {
+            position: relative;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: white; /* ✅ Couleur blanche pour visibilité */
+        }
+
+        .notification-bell-mobile:hover {
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .notification-bell-mobile svg {
+            display: block;
+            color: white; /* ✅ SVG en blanc */
+        }
+
+        .notification-badge-mobile {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #ff4757;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            text-align: center;
+            border: 2px solid var(--bg-dark);
+        }
+
+        /* Menu hamburger (3 barres) */
+        .hamburger-menu {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 28px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+
+        .hamburger-menu span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: white; /* ✅ Barres en blanc */
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-menu:hover span {
+            background: var(--primary-color); /* Effet hover violet */
+        }
+
+        /* Animation hamburger → X quand menu ouvert */
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        /* Menu latéral mobile */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -320px; /* Caché par défaut */
+            width: 300px;
+            height: 100vh;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-color);
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.open {
+            right: 0; /* Glisse vers la gauche */
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mobile-menu-header h3 {
+            font-size: 20px;
+            color: white;
+            margin: 0;
+        }
+
+        .mobile-menu-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .mobile-menu-close:hover {
+            color: var(--primary-color);
+            transform: rotate(90deg);
+        }
+
+        .mobile-menu-content {
+            padding: 20px;
+        }
+
+        .mobile-menu-item {
+            display: block;
+            padding: 16px 12px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .mobile-menu-item:hover {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        /* Afficher les icônes mobiles sur mobile/tablette */
+        @media (max-width: 992px) {
+            .nav-mobile-right {
+                display: flex; /* ✅ Afficher sur mobile */
+            }
+
+            /* Cacher les éléments desktop sur mobile */
+            .nav-menu,
+            .nav-auth {
+                display: none;
+            }
+        }
+
         /* Système de Likes */
         .event-image {
             position: relative;
