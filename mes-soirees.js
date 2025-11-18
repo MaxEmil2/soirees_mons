@@ -170,7 +170,9 @@ function createEventItem(eventId, event) {
     }
 
     eventItem.innerHTML = `
-        <img src="${event.imageURL}" alt="${event.name}" class="event-image-thumb">
+        <div class="event-thumbnail">
+            <img src="${event.imageURL}" alt="${event.name}">
+        </div>
         <div class="event-details">
             <h3>${event.name}</h3>
             <p>📅 ${formattedDate}</p>

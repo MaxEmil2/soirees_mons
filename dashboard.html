@@ -389,6 +389,11 @@
             border-top: 1px solid var(--border-subtle);
             padding: var(--space-2xl) 0;
             margin-top: var(--space-3xl);
+            /* Étendre le footer à toute la largeur malgré le padding du body */
+            margin-left: calc(-1 * var(--space-lg));
+            margin-right: calc(-1 * var(--space-lg));
+            padding-left: var(--space-lg);
+            padding-right: var(--space-lg);
         }
 
         .footer-container {

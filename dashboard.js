@@ -72,30 +72,29 @@ const logoutBtn = document.getElementById('logout-btn');
 const adminPanelBtn = document.getElementById('admin-panel-btn');
 
 // ========================================
-// ÉLÉMENTS DOM - PROFIL
+// ÉLÉMENTS DOM - PROFIL (pour compatibilité ancien dashboard)
 // ========================================
 
-// Modification d'email
+// Modification d'email (ancien dashboard)
 const updateEmailForm = document.getElementById('update-email-form');
 const newEmailInput = document.getElementById('new-email');
 const emailPasswordInput = document.getElementById('email-password');
 const updateEmailBtn = document.getElementById('update-email-btn');
 
-// Modification de mot de passe
+// Modification de mot de passe (ancien dashboard)
 const updatePasswordForm = document.getElementById('update-password-form');
 const currentPasswordInput = document.getElementById('current-password');
 const newPasswordInput = document.getElementById('new-password');
 const confirmNewPasswordInput = document.getElementById('confirm-new-password');
 const updatePasswordBtn = document.getElementById('update-password-btn');
 
-// Modification de photo
+// Modification de photo (ancien dashboard)
 const updatePhotoForm = document.getElementById('update-photo-form');
 const photoUrlInput = document.getElementById('photo-url');
 const displayNameInput = document.getElementById('display-name');
 const updatePhotoBtn = document.getElementById('update-photo-btn');
-const userPhoto = document.getElementById('user-photo');
 
-// Bouton de vérification d'email
+// Bouton de vérification d'email (ancien dashboard)
 const verifyEmailBtn = document.getElementById('verify-email-btn');
 
 // ========================================
@@ -157,88 +156,8 @@ async function reauthenticate(password) {
 
 // ========================================
 // AFFICHAGE DES INFORMATIONS UTILISATEUR
+// (Géré par le nouveau onAuthStateChanged plus bas)
 // ========================================
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // L'utilisateur est connecté - afficher les infos
-        console.log('✅ Utilisateur connecté:', user);
-
-        // Vérifier si l'utilisateur est admin
-        try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
-
-            if (userData && userData.isAdmin === true) {
-                // L'utilisateur est admin - afficher le bouton Panel Admin
-                if (adminPanelBtn) {
-                    adminPanelBtn.style.display = 'inline-block';
-                }
-                console.log('🔑 Utilisateur est ADMIN');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la vérification admin:', error);
-        }
-
-        // Remplir les informations
-        if (userEmail) userEmail.textContent = user.email || 'Non disponible';
-        if (userUid) userUid.textContent = user.uid;
-
-        // Vérification d'email (ancien dashboard uniquement)
-        if (userEmailVerified) {
-            userEmailVerified.textContent = user.emailVerified ? '✅ Vérifié' : '❌ Non vérifié';
-            userEmailVerified.style.color = user.emailVerified ? '#52c41a' : '#ff4d4f';
-        }
-
-        // Afficher/masquer le bouton de vérification d'email
-        if (!user.emailVerified && verifyEmailBtn) {
-            verifyEmailBtn.style.display = 'inline-block';
-        }
-
-        // Déterminer le provider (ancien dashboard uniquement)
-        if (userProvider) {
-            const providerData = user.providerData[0];
-            let provider = 'Email/Password';
-            if (providerData) {
-                if (providerData.providerId === 'google.com') {
-                    provider = 'Google';
-                }
-            }
-            userProvider.textContent = provider;
-        }
-
-        // Date de création (ancien dashboard uniquement)
-        if (userCreated) {
-            const createdDate = new Date(user.metadata.creationTime);
-            userCreated.textContent = createdDate.toLocaleDateString('fr-FR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        // Photo de profil
-        if (user.photoURL) {
-            userPhoto.src = user.photoURL;
-            userPhoto.style.display = 'block';
-        }
-
-        // Pré-remplir les champs de profil
-        if (displayNameInput) displayNameInput.value = user.displayName || '';
-        if (photoUrlInput) photoUrlInput.value = user.photoURL || '';
-
-        // Afficher le contenu
-        loading.style.display = 'none';
-        dashboardContent.style.display = 'block';
-
-    } else {
-        // L'utilisateur n'est pas connecté - rediriger
-        console.log('❌ Aucun utilisateur connecté');
-        window.location.href = 'login.html';
-    }
-});
 
 // ========================================
 // DÉCONNEXION
@@ -486,10 +405,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     // Vérifier si admin
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (userDoc.exists() && userDoc.data().isAdmin) {
-        if (adminBtn) adminBtn.style.display = 'inline-block';
-        if (adminPanelBtn) adminPanelBtn.style.display = 'inline-block';
+    try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().isAdmin) {
+            if (adminBtn) adminBtn.style.display = 'inline-block';
+            if (adminPanelBtn) adminPanelBtn.style.display = 'inline-block';
+            console.log('🔑 Utilisateur est ADMIN');
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification admin:', error);
     }
 });
 
@@ -541,7 +465,7 @@ if (photoContainer && photoInput) {
             profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
 
             // Afficher le modal de succès
-            document.getElementById('photo-success-modal').style.display = 'flex';
+            document.getElementById('photo-success-modal').classList.add('show');
 
             // 2. Mettre à jour le document Firestore users avec la nouvelle photo
             try {
@@ -589,7 +513,7 @@ if (photoContainer && photoInput) {
 // Modal édition pseudo
 if (editPseudoBtn) {
     editPseudoBtn.addEventListener('click', () => {
-        editPseudoModal.style.display = 'flex';
+        editPseudoModal.classList.add('show');
         document.getElementById('new-pseudo').value = auth.currentUser.displayName || '';
     });
 }
@@ -602,7 +526,7 @@ if (document.getElementById('edit-pseudo-form')) {
         try {
             await updateProfile(auth.currentUser, { displayName: newPseudo });
             userPseudo.textContent = newPseudo;
-            editPseudoModal.style.display = 'none';
+            editPseudoModal.classList.remove('show');
             alert('✅ Pseudo mis à jour !');
         } catch (error) {
             console.error('Erreur mise à jour pseudo:', error);
@@ -614,7 +538,7 @@ if (document.getElementById('edit-pseudo-form')) {
 // Modal édition mot de passe
 if (editPasswordBtn) {
     editPasswordBtn.addEventListener('click', () => {
-        editPasswordModal.style.display = 'flex';
+        editPasswordModal.classList.add('show');
     });
 }
 
@@ -638,8 +562,8 @@ if (document.getElementById('edit-password-form')) {
             );
             await reauthenticateWithCredential(auth.currentUser, credential);
             await updatePassword(auth.currentUser, newPassword);
-            
-            editPasswordModal.style.display = 'none';
+
+            editPasswordModal.classList.remove('show');
             alert('✅ Mot de passe mis à jour !');
             document.getElementById('edit-password-form').reset();
         } catch (error) {
