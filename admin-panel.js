@@ -30,7 +30,6 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
 // ✅ VERIFICATION: Ce fichier a bien l'import 'where' - Version 2.0
-console.log('✅ admin-panel.js VERSION 2.0 CHARGÉ - where est importé:', typeof where);
 
 // ========================================
 // CONFIGURATION FIREBASE
@@ -112,7 +111,6 @@ let currentPartnerImageURL = null;
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         // Pas connecté - rediriger
-        console.log('❌ Non connecté - redirection...');
         window.location.href = 'login.html';
         return;
     }
@@ -124,14 +122,12 @@ onAuthStateChanged(auth, async (user) => {
 
         if (!userData || userData.isAdmin !== true) {
             // Pas admin - rediriger
-            console.log('❌ Pas admin - redirection...');
             alert('Accès refusé. Vous devez être administrateur.');
             window.location.href = 'dashboard.html';
             return;
         }
 
         // Admin confirmé - afficher le contenu
-        console.log('✅ Admin confirmé:', user.email);
         loading.style.display = 'none';
         adminContent.style.display = 'block';
 
@@ -141,7 +137,6 @@ onAuthStateChanged(auth, async (user) => {
         loadPartners();
 
     } catch (error) {
-        console.error('❌ Erreur vérification admin:', error);
         alert('Erreur lors de la vérification des droits.');
         window.location.href = 'dashboard.html';
     }
@@ -211,12 +206,10 @@ async function uploadImage(file, eventName) {
         const storageRef = ref(storage, fileName);
 
         // Upload le fichier
-        console.log('📤 Upload de l\'image...');
         const snapshot = await uploadBytes(storageRef, file);
 
         // Obtenir l'URL de téléchargement
         const downloadURL = await getDownloadURL(snapshot.ref);
-        console.log('✅ Image uploadée:', downloadURL);
 
         return {
             url: downloadURL,
@@ -224,7 +217,6 @@ async function uploadImage(file, eventName) {
         };
 
     } catch (error) {
-        console.error('❌ Erreur upload image:', error);
         throw new Error('Erreur lors de l\'upload de l\'image.');
     }
 }
@@ -282,7 +274,6 @@ eventForm.addEventListener('submit', async (e) => {
                 updatedAt: serverTimestamp()
             });
 
-            console.log('✅ Événement modifié:', editingEventId);
             alert('✅ Événement modifié avec succès!');
 
         } else {
@@ -290,7 +281,6 @@ eventForm.addEventListener('submit', async (e) => {
             eventData.createdAt = serverTimestamp();
             const docRef = await addDoc(collection(db, 'events'), eventData);
 
-            console.log('✅ Événement ajouté:', docRef.id);
             alert('✅ Événement publié avec succès!');
         }
 
@@ -301,7 +291,6 @@ eventForm.addEventListener('submit', async (e) => {
         loadEvents();
 
     } catch (error) {
-        console.error('❌ Erreur:', error);
         alert('❌ Erreur: ' + error.message);
     } finally {
         setButtonLoading(submitBtn, false);
@@ -314,7 +303,6 @@ eventForm.addEventListener('submit', async (e) => {
 
 async function loadEvents() {
     try {
-        console.log('📥 Chargement des événements approuvés...');
 
         // Récupérer tous les événements approuvés (ou sans status pour compatibilité)
         const querySnapshot = await getDocs(collection(db, 'events'));
@@ -350,10 +338,8 @@ async function loadEvents() {
             eventsList.appendChild(eventItem);
         });
 
-        console.log(`✅ ${querySnapshot.size} événement(s) chargé(s)`);
 
     } catch (error) {
-        console.error('❌ Erreur chargement événements:', error);
         eventsList.innerHTML = `
             <div class="empty-state">
                 <p style="color: #ff4d4f;">❌ Erreur lors du chargement des événements.</p>
@@ -368,7 +354,7 @@ async function loadEvents() {
 
 function createEventItem(eventId, event) {
     const eventItem = document.createElement('div');
-    eventItem.className = 'event-item';
+    eventItem.className = 'item-card';
 
     // Formater la date
     const eventDate = new Date(event.date);
@@ -385,8 +371,8 @@ function createEventItem(eventId, event) {
     const priorityButtonClass = isPriority ? 'btn-warning' : 'btn-primary';
 
     eventItem.innerHTML = `
-        <img src="${event.imageURL}" alt="${event.name}" class="event-image-thumb">
-        <div class="event-details">
+        <img src="${event.imageURL}" alt="${event.name}" class="item-thumbnail">
+        <div class="item-details">
             <h3>${event.name} ${isPriority ? '<span style="color: #ffd700;">⭐</span>' : ''}</h3>
             <p>📅 ${formattedDate}</p>
             <p>📍 ${event.location}</p>
@@ -394,10 +380,10 @@ function createEventItem(eventId, event) {
             <p>🎟️ Préventes: ${event.presales ? '✅ Activées' : '❌ Désactivées'}</p>
             <p>⭐ Prioritaire: ${isPriority ? '✅ Oui' : '❌ Non'}</p>
         </div>
-        <div class="event-actions">
-            <button class="btn ${priorityButtonClass}" onclick="togglePriority('${eventId}', ${!isPriority})">${priorityButtonText}</button>
-            <button class="btn btn-secondary" onclick="editEvent('${eventId}')">✏️ Modifier</button>
-            <button class="btn btn-danger" onclick="deleteEvent('${eventId}', '${event.imagePath || ''}')">🗑️ Supprimer</button>
+        <div class="item-actions">
+            <button class="btn btn-sm ${priorityButtonClass}" onclick="togglePriority('${eventId}', ${!isPriority})">${priorityButtonText}</button>
+            <button class="btn btn-sm btn-secondary" onclick="editEvent('${eventId}')">✏️ Modifier</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${eventId}', '${event.imagePath || ''}')">🗑️ Supprimer</button>
         </div>
     `;
 
@@ -410,7 +396,6 @@ function createEventItem(eventId, event) {
 
 window.editEvent = async function(eventId) {
     try {
-        console.log('✏️ Modification événement:', eventId);
 
         // Récupérer les données de l'événement
         const eventDoc = await getDoc(doc(db, 'events', eventId));
@@ -459,7 +444,6 @@ window.editEvent = async function(eventId) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
-        console.error('❌ Erreur modification:', error);
         alert('❌ Erreur lors de la modification.');
     }
 };
@@ -470,21 +454,18 @@ window.editEvent = async function(eventId) {
 
 window.togglePriority = async function(eventId, newPriorityStatus) {
     try {
-        console.log('⭐ Changement priorité événement:', eventId, '→', newPriorityStatus);
 
         // Mettre à jour le statut prioritaire dans Firestore
         await updateDoc(doc(db, 'events', eventId), {
             isPriority: newPriorityStatus
         });
 
-        console.log('✅ Statut prioritaire mis à jour');
         alert(newPriorityStatus ? '⭐ Soirée marquée comme prioritaire !' : '📌 Soirée revenue à normale !');
 
         // Recharger la liste des événements
         loadEvents();
 
     } catch (error) {
-        console.error('❌ Erreur changement priorité:', error);
         alert('❌ Erreur lors du changement de priorité');
     }
 };
@@ -499,30 +480,25 @@ window.deleteEvent = async function(eventId, imagePath) {
     }
 
     try {
-        console.log('🗑️ Suppression événement:', eventId);
 
         // Supprimer l'image du Storage
         if (imagePath) {
             try {
                 const imageRef = ref(storage, imagePath);
                 await deleteObject(imageRef);
-                console.log('✅ Image supprimée du Storage');
             } catch (error) {
-                console.error('⚠️ Erreur suppression image:', error);
             }
         }
 
         // Supprimer le document Firestore
         await deleteDoc(doc(db, 'events', eventId));
 
-        console.log('✅ Événement supprimé');
         alert('✅ Événement supprimé avec succès!');
 
         // Recharger la liste
         loadEvents();
 
     } catch (error) {
-        console.error('❌ Erreur suppression:', error);
         alert('❌ Erreur lors de la suppression.');
     }
 };
@@ -579,7 +555,6 @@ function setButtonLoading(button, loading) {
 
 async function loadPendingEvents() {
     try {
-        console.log('📥 Chargement des soirées en attente...');
 
         // Récupérer les événements avec status = 'pending'
         const eventsQuery = query(
@@ -611,10 +586,8 @@ async function loadPendingEvents() {
             pendingEventsList.appendChild(eventItem);
         });
 
-        console.log(`✅ ${querySnapshot.size} soirée(s) en attente chargée(s)`);
 
     } catch (error) {
-        console.error('❌ Erreur chargement soirées en attente:', error);
         pendingEventsList.innerHTML = `
             <div class="empty-state">
                 <p style="color: #ff4d4f;">❌ Erreur lors du chargement des soirées en attente.</p>
@@ -629,7 +602,7 @@ async function loadPendingEvents() {
 
 function createPendingEventItem(eventId, event) {
     const eventItem = document.createElement('div');
-    eventItem.className = 'event-item';
+    eventItem.className = 'item-card';
 
     // Formater la date
     const eventDate = new Date(event.date);
@@ -642,8 +615,8 @@ function createPendingEventItem(eventId, event) {
     });
 
     eventItem.innerHTML = `
-        <img src="${event.imageURL}" alt="${event.name}" class="event-image-thumb">
-        <div class="event-details">
+        <img src="${event.imageURL}" alt="${event.name}" class="item-thumbnail">
+        <div class="item-details">
             <h3>${event.name}</h3>
             <p>📅 ${formattedDate}</p>
             <p>📍 ${event.location}</p>
@@ -653,9 +626,9 @@ function createPendingEventItem(eventId, event) {
             ${event.link ? `<p>🔗 <a href="${event.link}" target="_blank" style="color: #6c63ff;">Lien de la soirée</a></p>` : ''}
             ${event.description ? `<p style="margin-top: 8px; color: #b8b8d1;">📝 ${event.description}</p>` : ''}
         </div>
-        <div class="event-actions" style="flex-direction: column;">
-            <button class="btn" style="background: #4caf50;" onclick="approveEvent('${eventId}', '${event.createdBy}', '${event.name}')">✅ Accepter</button>
-            <button class="btn btn-danger" onclick="rejectEvent('${eventId}', '${event.createdBy}', '${event.name}')">❌ Refuser</button>
+        <div class="item-actions">
+            <button class="btn btn-sm btn-success" onclick="approveEvent('${eventId}', '${event.createdBy}', '${event.name}')">✅ Accepter</button>
+            <button class="btn btn-sm btn-danger" onclick="rejectEvent('${eventId}', '${event.createdBy}', '${event.name}')">❌ Refuser</button>
         </div>
     `;
 
@@ -672,7 +645,6 @@ window.approveEvent = async function(eventId, createdBy, eventName) {
     }
 
     try {
-        console.log('✅ Acceptation de la soirée:', eventId);
 
         // Mettre à jour le statut
         await updateDoc(doc(db, 'events', eventId), {
@@ -691,7 +663,6 @@ window.approveEvent = async function(eventId, createdBy, eventName) {
             createdAt: serverTimestamp()
         });
 
-        console.log('✅ Soirée approuvée et notification envoyée');
         alert('✅ Soirée approuvée avec succès!');
 
         // Recharger les listes
@@ -699,7 +670,6 @@ window.approveEvent = async function(eventId, createdBy, eventName) {
         loadPendingEvents();
 
     } catch (error) {
-        console.error('❌ Erreur approbation:', error);
         alert('❌ Erreur lors de l\'approbation.');
     }
 };
@@ -716,7 +686,6 @@ window.rejectEvent = async function(eventId, createdBy, eventName) {
     }
 
     try {
-        console.log('❌ Refus de la soirée:', eventId);
 
         // Mettre à jour le statut
         await updateDoc(doc(db, 'events', eventId), {
@@ -740,14 +709,12 @@ window.rejectEvent = async function(eventId, createdBy, eventName) {
             createdAt: serverTimestamp()
         });
 
-        console.log('✅ Soirée refusée et notification envoyée');
         alert('✅ Soirée refusée.');
 
         // Recharger la liste
         loadPendingEvents();
 
     } catch (error) {
-        console.error('❌ Erreur refus:', error);
         alert('❌ Erreur lors du refus.');
     }
 };
@@ -812,7 +779,6 @@ partnerForm.addEventListener('submit', async (e) => {
             const fileName = `partners/partner_${timestamp}.${currentPartnerImageFile.name.split('.').pop()}`;
             const storageRef = ref(storage, fileName);
 
-            console.log('📤 Upload du logo partenaire...');
             const snapshot = await uploadBytes(storageRef, currentPartnerImageFile);
             const downloadURL = await getDownloadURL(snapshot.ref);
 
@@ -832,7 +798,6 @@ partnerForm.addEventListener('submit', async (e) => {
             updateData.updatedAt = serverTimestamp();
 
             await updateDoc(doc(db, 'partners', editingPartnerId), updateData);
-            console.log('✅ Partenaire modifié');
             alert('✅ Partenaire modifié avec succès!');
 
         } else {
@@ -844,7 +809,6 @@ partnerForm.addEventListener('submit', async (e) => {
             };
 
             const docRef = await addDoc(collection(db, 'partners'), partnerData);
-            console.log('✅ Partenaire ajouté:', docRef.id);
             alert('✅ Partenaire ajouté avec succès!');
         }
 
@@ -855,7 +819,6 @@ partnerForm.addEventListener('submit', async (e) => {
         loadPartners();
 
     } catch (error) {
-        console.error('❌ Erreur:', error);
         alert('❌ Erreur: ' + error.message);
     } finally {
         setButtonLoading(partnerSubmitBtn, false);
@@ -865,7 +828,6 @@ partnerForm.addEventListener('submit', async (e) => {
 // Charger les partenaires
 async function loadPartners() {
     try {
-        console.log('📥 Chargement des partenaires...');
 
         const querySnapshot = await getDocs(collection(db, 'partners'));
 
@@ -891,10 +853,8 @@ async function loadPartners() {
             partnersList.appendChild(partnerItem);
         });
 
-        console.log(`✅ ${querySnapshot.size} partenaire(s) chargé(s)`);
 
     } catch (error) {
-        console.error('❌ Erreur chargement partenaires:', error);
         partnersList.innerHTML = `
             <div class="empty-state">
                 <p style="color: #ff4d4f;">❌ Erreur lors du chargement des partenaires.</p>
@@ -906,12 +866,16 @@ async function loadPartners() {
 // Créer un élément partenaire
 function createPartnerItem(partnerId, partner) {
     const partnerItem = document.createElement('div');
-    partnerItem.className = 'partner-item';
+    partnerItem.className = 'item-card';
 
     partnerItem.innerHTML = `
-        <img src="${partner.logoURL}" alt="Logo partenaire" class="partner-logo-thumb">
-        <div class="partner-actions">
-            <button class="btn btn-danger" onclick="deletePartner('${partnerId}', '${partner.logoPath || ''}')">🗑️ Supprimer</button>
+        <img src="${partner.logoURL}" alt="Logo partenaire" class="item-thumbnail partner-thumbnail">
+        <div class="item-details">
+            <h3>Partenaire</h3>
+            <p>Logo affiché sur la page d'accueil</p>
+        </div>
+        <div class="item-actions">
+            <button class="btn btn-sm btn-danger" onclick="deletePartner('${partnerId}', '${partner.logoPath || ''}')">🗑️ Supprimer</button>
         </div>
     `;
 
@@ -925,30 +889,25 @@ window.deletePartner = async function(partnerId, logoPath) {
     }
 
     try {
-        console.log('🗑️ Suppression partenaire:', partnerId);
 
         // Supprimer le logo du Storage
         if (logoPath) {
             try {
                 const logoRef = ref(storage, logoPath);
                 await deleteObject(logoRef);
-                console.log('✅ Logo supprimé du Storage');
             } catch (error) {
-                console.error('⚠️ Erreur suppression logo:', error);
             }
         }
 
         // Supprimer le document Firestore
         await deleteDoc(doc(db, 'partners', partnerId));
 
-        console.log('✅ Partenaire supprimé');
         alert('✅ Partenaire supprimé avec succès!');
 
         // Recharger la liste
         loadPartners();
 
     } catch (error) {
-        console.error('❌ Erreur suppression:', error);
         alert('❌ Erreur lors de la suppression.');
     }
 };
@@ -973,4 +932,3 @@ function resetPartnerForm() {
     partnerImageInput.setAttribute('required', 'required');
 }
 
-console.log('🔥 Admin Panel initialisé');

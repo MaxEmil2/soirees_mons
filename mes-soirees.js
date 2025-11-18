@@ -67,7 +67,6 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadUserEvents(userId) {
     try {
-        console.log('📥 Chargement des soirées de l\'utilisateur...');
 
         // Récupérer les soirées créées par l'utilisateur
         const eventsQuery = query(
@@ -104,10 +103,8 @@ async function loadUserEvents(userId) {
             eventsList.appendChild(eventItem);
         });
 
-        console.log(`✅ ${querySnapshot.size} soirée(s) chargée(s)`);
 
     } catch (error) {
-        console.error('❌ Erreur chargement soirées:', error);
         loading.style.display = 'none';
         content.style.display = 'block';
         eventsList.innerHTML = `
@@ -199,32 +196,26 @@ window.deleteEvent = async function(eventId, imagePath) {
     }
 
     try {
-        console.log('🗑️ Suppression soirée:', eventId);
 
         // Supprimer l'image du Storage
         if (imagePath) {
             try {
                 const imageRef = ref(storage, imagePath);
                 await deleteObject(imageRef);
-                console.log('✅ Image supprimée du Storage');
             } catch (error) {
-                console.error('⚠️ Erreur suppression image:', error);
             }
         }
 
         // Supprimer le document Firestore
         await deleteDoc(doc(db, 'events', eventId));
 
-        console.log('✅ Soirée supprimée');
         alert('✅ Soirée supprimée avec succès!');
 
         // Recharger la page
         window.location.reload();
 
     } catch (error) {
-        console.error('❌ Erreur suppression:', error);
         alert('❌ Erreur lors de la suppression.');
     }
 };
 
-console.log('📋 Mes Soirées initialisé');

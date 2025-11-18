@@ -142,7 +142,6 @@ async function reauthenticate(password) {
         await reauthenticateWithCredential(user, credential);
         return true;
     } catch (error) {
-        console.error('❌ Erreur de ré-authentification:', error);
         if (error.code === 'auth/wrong-password') {
             showError('Mot de passe actuel incorrect.');
         } else if (error.code === 'auth/too-many-requests') {
@@ -166,10 +165,8 @@ async function reauthenticate(password) {
 logoutBtn.addEventListener('click', async () => {
     try {
         await signOut(auth);
-        console.log('✅ Déconnexion réussie');
         window.location.href = 'login.html';
     } catch (error) {
-        console.error('❌ Erreur lors de la déconnexion:', error);
         showError('Erreur lors de la déconnexion: ' + error.message);
     }
 });
@@ -185,9 +182,7 @@ if (verifyEmailBtn) {
         try {
             await sendEmailVerification(user);
             showSuccess('Email de vérification envoyé! Vérifiez votre boîte de réception.');
-            console.log('✅ Email de vérification envoyé');
         } catch (error) {
-            console.error('❌ Erreur envoi email:', error);
             if (error.code === 'auth/too-many-requests') {
                 showError('Trop de demandes. Veuillez réessayer plus tard.');
             } else {
@@ -228,14 +223,12 @@ if (updateEmailForm) {
             await updateEmail(user, newEmail);
 
             showSuccess('Email modifié avec succès! Veuillez vous reconnecter.');
-            console.log('✅ Email modifié:', newEmail);
 
             // Déconnexion et redirection
             await signOut(auth);
             window.location.href = 'login.html';
 
         } catch (error) {
-            console.error('❌ Erreur modification email:', error);
 
             if (error.code === 'auth/email-already-in-use') {
                 showError('Cet email est déjà utilisé.');
@@ -292,14 +285,12 @@ if (updatePasswordForm) {
             await updatePassword(user, newPassword);
 
             showSuccess('Mot de passe modifié avec succès!');
-            console.log('✅ Mot de passe modifié');
 
             // Vider les champs
             updatePasswordForm.reset();
             setButtonLoading(updatePasswordBtn, false);
 
         } catch (error) {
-            console.error('❌ Erreur modification mot de passe:', error);
 
             if (error.code === 'auth/weak-password') {
                 showError('Le mot de passe est trop faible.');
@@ -340,7 +331,6 @@ if (updatePhotoForm) {
             await updateProfile(user, updates);
 
             showSuccess('Profil modifié avec succès!');
-            console.log('✅ Profil modifié');
 
             // Mettre à jour l'affichage de la photo
             if (photoURL) {
@@ -351,14 +341,12 @@ if (updatePhotoForm) {
             setButtonLoading(updatePhotoBtn, false);
 
         } catch (error) {
-            console.error('❌ Erreur modification profil:', error);
             showError('Erreur lors de la modification du profil.');
             setButtonLoading(updatePhotoBtn, false);
         }
     });
 }
 
-console.log('🔥 Dashboard Firebase initialisé');
 
 
 // ========================================
@@ -410,10 +398,8 @@ onAuthStateChanged(auth, async (user) => {
         if (userDoc.exists() && userDoc.data().isAdmin) {
             if (adminBtn) adminBtn.style.display = 'inline-block';
             if (adminPanelBtn) adminPanelBtn.style.display = 'inline-block';
-            console.log('🔑 Utilisateur est ADMIN');
         }
     } catch (error) {
-        console.error('Erreur lors de la vérification admin:', error);
     }
 });
 
@@ -438,7 +424,6 @@ if (photoContainer && photoInput) {
             // COMPRESSION DE L'IMAGE (PHOTOS DE PROFIL UNIQUEMENT)
             // ========================================
 
-            console.log(`📸 Image originale : ${(file.size / 1024 / 1024).toFixed(2)} MB`);
 
             // Options de compression
             const options = {
@@ -452,8 +437,6 @@ if (photoContainer && photoInput) {
             // Compresser l'image
             const compressedFile = await imageCompression(file, options);
 
-            console.log(`✅ Image compressée : ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
-            console.log(`📊 Réduction : ${((1 - compressedFile.size / file.size) * 100).toFixed(1)}%`);
 
             // 1. Upload de la photo compressée et mise à jour du profil
             const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
@@ -473,9 +456,7 @@ if (photoContainer && photoInput) {
                 await updateDoc(userDocRef, {
                     photoURL: photoURL
                 });
-                console.log('✅ Document Firestore users mis à jour avec photoURL');
             } catch (firestoreError) {
-                console.warn('⚠️ Impossible de mettre à jour Firestore users:', firestoreError);
             }
 
             // 3. Mettre à jour les likes en arrière-plan (ne pas bloquer l'utilisateur)
@@ -497,14 +478,11 @@ if (photoContainer && photoInput) {
                 });
 
                 await Promise.all(updatePromises);
-                console.log(`✅ ${updatePromises.length} likes mis à jour automatiquement`);
             } catch (likesError) {
                 // Si la mise à jour des likes échoue, ce n'est pas grave
-                console.warn('⚠️ Impossible de mettre à jour tous les likes:', likesError);
             }
 
         } catch (error) {
-            console.error('Erreur upload photo:', error);
             alert('❌ Erreur : Impossible de télécharger la photo. Vérifiez votre connexion et réessayez.');
         }
     });
@@ -529,7 +507,6 @@ if (document.getElementById('edit-pseudo-form')) {
             editPseudoModal.classList.remove('show');
             alert('✅ Pseudo mis à jour !');
         } catch (error) {
-            console.error('Erreur mise à jour pseudo:', error);
             alert('❌ Erreur lors de la mise à jour');
         }
     });
@@ -567,10 +544,8 @@ if (document.getElementById('edit-password-form')) {
             alert('✅ Mot de passe mis à jour !');
             document.getElementById('edit-password-form').reset();
         } catch (error) {
-            console.error('Erreur mise à jour mot de passe:', error);
             alert('❌ Mot de passe actuel incorrect ou erreur');
         }
     });
 }
 
-console.log('✅ Dashboard avec soirées likées initialisé');

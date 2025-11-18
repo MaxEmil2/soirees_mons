@@ -132,7 +132,6 @@ function getErrorMessage(errorCode) {
  * @param {object} user - L'utilisateur connecté
  */
 function redirectToHome(user) {
-    console.log('✅ Connexion réussie:', user.email);
     window.location.href = 'index.html';
 }
 
@@ -164,9 +163,6 @@ loginForm.addEventListener('submit', async (e) => {
         redirectToHome(userCredential.user);
 
     } catch (error) {
-        console.error('❌ Erreur de connexion:', error);
-        console.error('📌 Code d\'erreur:', error.code);
-        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur à l'utilisateur
         showError(getErrorMessage(error.code));
@@ -189,13 +185,9 @@ googleLoginBtn.addEventListener('click', async () => {
         const result = await signInWithPopup(auth, googleProvider);
 
         // Connexion réussie
-        console.log('✅ Connexion Google réussie');
         redirectToHome(result.user);
 
     } catch (error) {
-        console.error('❌ Erreur connexion Google:', error);
-        console.error('📌 Code d\'erreur:', error.code);
-        console.error('📌 Message:', error.message);
 
         // Afficher l'erreur
         showError(getErrorMessage(error.code));
@@ -214,7 +206,6 @@ googleLoginBtn.addEventListener('click', async () => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // L'utilisateur est déjà connecté
-        console.log('✅ Utilisateur déjà connecté:', user.email);
 
         // Rediriger vers l'accueil si on est sur la page de connexion
         if (window.location.pathname.includes('login.html')) {
@@ -222,7 +213,6 @@ onAuthStateChanged(auth, (user) => {
         }
     } else {
         // L'utilisateur n'est pas connecté
-        console.log('ℹ️ Aucun utilisateur connecté');
     }
 });
 
@@ -230,5 +220,3 @@ onAuthStateChanged(auth, (user) => {
 // LOGS DE DÉMARRAGE
 // ========================================
 
-console.log('🔥 Firebase Authentication initialisé');
-console.log('📱 Version Firebase: 10.8.0');
