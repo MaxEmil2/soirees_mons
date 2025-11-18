@@ -5,189 +5,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin - Soirées Mons</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="design-system.css">
     <style>
+        /* ========================================
+           LAYOUT
+           ======================================== */
+
         body {
-            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
-            color: white;
+            background: var(--gradient-bg);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: var(--space-2xl) var(--space-lg);
         }
 
         .admin-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            animation: fadeIn 0.6s ease-out;
         }
+
+        /* ========================================
+           HEADER
+           ======================================== */
 
         .admin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 32px;
+            margin-bottom: var(--space-2xl);
+            flex-wrap: wrap;
+            gap: var(--space-lg);
         }
 
-        h1 {
-            font-size: 32px;
-            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
+        .page-title {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
         }
 
-        .btn {
-            background: #6c63ff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 0.875rem 1.5rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
             text-decoration: none;
-            display: inline-block;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            transition: all var(--transition-base);
         }
 
-        .btn:hover {
-            background: #5850db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
+        .btn-back:hover {
+            background: var(--bg-card);
+            border-color: var(--border-medium);
+            transform: translateX(-4px);
         }
 
-        .btn-secondary {
-            background: #2d2d44;
-        }
-
-        .btn-secondary:hover {
-            background: #3a3a54;
-        }
-
-        .btn-danger {
-            background: #ff4d4f;
-        }
-
-        .btn-danger:hover {
-            background: #e03e3e;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #6c63ff 0%, #a29bfe 100%);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5850db 0%, #9188eb 100%);
-        }
-
-        .btn-warning {
-            background: #ff9800;
-        }
-
-        .btn-warning:hover {
-            background: #e68900;
-        }
+        /* ========================================
+           ADMIN CARDS
+           ======================================== */
 
         .admin-card {
-            background: #16213e;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-            border: 1px solid #2d2d44;
-            margin-bottom: 32px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-2xl);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-2xl);
         }
 
-        h2 {
-            font-size: 24px;
-            color: #6c63ff;
-            margin-bottom: 24px;
+        .admin-card h2 {
+            font-size: 1.75rem;
+            color: var(--primary-400);
+            margin-bottom: var(--space-xl);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
         }
+
+        /* ========================================
+           FORMS
+           ======================================== */
 
         .form-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
         }
 
         .form-group.full-width {
             grid-column: 1 / -1;
         }
 
-        .form-group label {
-            display: block;
-            color: #b8b8d1;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            background: #1a1a2e;
-            border: 2px solid #2d2d44;
-            border-radius: 12px;
-            color: white;
-            font-size: 16px;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #6c63ff;
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
+        /* ========================================
+           IMAGE UPLOAD AREA
+           ======================================== */
 
         .image-upload-area {
-            border: 2px dashed #2d2d44;
-            border-radius: 12px;
-            padding: 32px;
+            border: 2px dashed var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
             text-align: center;
-            background: #1a1a2e;
+            background: rgba(255, 255, 255, 0.02);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all var(--transition-base);
         }
 
-        .image-upload-area:hover {
-            border-color: #6c63ff;
-            background: #1f1f35;
-        }
-
+        .image-upload-area:hover,
         .image-upload-area.active {
-            border-color: #6c63ff;
-            background: #1f1f35;
-        }
-
-        #image-input {
-            display: none;
+            border-color: var(--primary-500);
+            background: rgba(108, 99, 255, 0.05);
         }
 
         .upload-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
+            font-size: 3rem;
+            margin-bottom: var(--space-md);
         }
 
         .upload-text {
-            color: #b8b8d1;
-            margin-bottom: 8px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xs);
+            font-weight: 600;
         }
 
         .image-preview {
             display: none;
             max-width: 300px;
-            margin: 16px auto;
-            border-radius: 12px;
+            margin: var(--space-md) auto 0;
+            border-radius: var(--radius-lg);
             overflow: hidden;
+            box-shadow: var(--shadow-md);
         }
 
         .image-preview img {
@@ -196,36 +151,42 @@
             display: block;
         }
 
-        /* Toggle Switch */
+        /* ========================================
+           TOGGLE SWITCH
+           ======================================== */
+
         .toggle-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: var(--space-md);
         }
 
         .toggle-switch {
             position: relative;
             width: 60px;
             height: 30px;
-            background: #2d2d44;
-            border-radius: 15px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-full);
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all var(--transition-base);
         }
 
         .toggle-switch.active {
-            background: #6c63ff;
+            background: var(--primary-500);
+            border-color: var(--primary-500);
         }
 
         .toggle-slider {
             position: absolute;
             top: 3px;
             left: 3px;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             background: white;
             border-radius: 50%;
-            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform var(--transition-base);
         }
 
         .toggle-switch.active .toggle-slider {
@@ -233,131 +194,115 @@
         }
 
         .toggle-label {
-            color: #b8b8d1;
-            font-size: 14px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
         }
 
         .toggle-switch.active + .toggle-label {
-            color: #6c63ff;
+            color: var(--primary-400);
         }
 
-        /* Events List */
-        .events-list {
-            margin-top: 32px;
+        /* ========================================
+           EVENTS & PARTNERS LISTS
+           ======================================== */
+
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
         }
 
-        .event-item {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
+        .item-card {
             display: grid;
-            grid-template-columns: 120px 1fr auto;
-            gap: 20px;
+            grid-template-columns: 140px 1fr auto;
+            gap: var(--space-lg);
             align-items: center;
-            border: 1px solid #2d2d44;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all var(--transition-base);
         }
 
-        .event-image-thumb {
-            width: 120px;
-            height: 120px;
-            border-radius: 12px;
+        .item-card:hover {
+            border-color: var(--border-medium);
+            transform: translateX(4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .item-thumbnail {
+            width: 140px;
+            height: 140px;
+            border-radius: var(--radius-md);
             object-fit: cover;
+            box-shadow: var(--shadow-sm);
         }
 
-        .event-details h3 {
-            color: white;
-            margin-bottom: 8px;
-            font-size: 18px;
-        }
-
-        .event-details p {
-            color: #b8b8d1;
-            font-size: 14px;
-            margin: 4px 0;
-        }
-
-        .event-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px 0;
-            font-size: 18px;
-            color: #b8b8d1;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #b8b8d1;
-        }
-
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        /* Partners List */
-        .partners-list {
-            margin-top: 32px;
-        }
-
-        .partner-item {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid #2d2d44;
-        }
-
-        .partner-logo-thumb {
-            width: 100px;
-            height: 100px;
-            border-radius: 12px;
+        .partner-thumbnail {
             object-fit: contain;
             background: white;
-            padding: 8px;
+            padding: var(--space-sm);
         }
 
-        .partner-actions {
+        .item-details {
+            flex: 1;
+        }
+
+        .item-details h3 {
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            font-size: 1.125rem;
+        }
+
+        .item-details p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin: var(--space-xs) 0;
+        }
+
+        .item-actions {
             display: flex;
-            gap: 8px;
+            flex-direction: column;
+            gap: var(--space-sm);
         }
 
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+        .btn-sm {
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+        }
 
-            .event-item {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(255, 152, 0, 0.4);
+        }
 
-            .event-image-thumb {
-                margin: 0 auto;
-            }
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.5);
+        }
 
-            .event-actions {
-                justify-content: center;
-            }
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: 0 4px 14px rgba(82, 196, 26, 0.4);
+        }
 
-            .partner-item {
-                flex-direction: column;
-                text-align: center;
-            }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(82, 196, 26, 0.5);
+        }
 
-            .partner-actions {
-                justify-content: center;
-            }
+        .btn-danger {
+            background: var(--gradient-danger);
+            color: white;
+            box-shadow: 0 4px 14px rgba(255, 77, 79, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 77, 79, 0.5);
         }
 
         /* ========================================
@@ -365,19 +310,20 @@
            ======================================== */
 
         .footer {
-            background: #000000;
-            padding: 40px 0;
-            margin-top: 60px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid var(--border-subtle);
+            padding: var(--space-2xl) 0;
+            margin-top: var(--space-3xl);
         }
 
         .footer-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 var(--space-lg);
             display: grid;
             grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            gap: 20px;
+            gap: var(--space-lg);
         }
 
         .footer-left {
@@ -385,8 +331,19 @@
         }
 
         .footer-left p {
-            color: #b8b8d1;
-            font-size: 14px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .footer-left a {
+            color: var(--primary-400);
+            text-decoration: none;
+            transition: all var(--transition-base);
+        }
+
+        .footer-left a:hover {
+            color: var(--primary-500);
+            text-decoration: underline;
         }
 
         .footer-center {
@@ -403,18 +360,18 @@
             text-align: right;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: var(--space-md);
             justify-content: flex-end;
         }
 
         .footer-right p {
-            color: #b8b8d1;
-            font-size: 14px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
         }
 
         .social-icons {
             display: flex;
-            gap: 16px;
+            gap: var(--space-md);
         }
 
         .social-icons a {
@@ -423,23 +380,43 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(108, 99, 255, 0.1);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
             border-radius: 50%;
-            color: #6c63ff;
-            transition: all 0.3s;
+            color: var(--primary-400);
+            transition: all var(--transition-base);
         }
 
         .social-icons a:hover {
-            background: #6c63ff;
+            background: var(--primary-500);
             color: white;
+            border-color: var(--primary-500);
             transform: translateY(-2px);
         }
 
-        @media (max-width: 768px) {
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+
+        @media (max-width: 992px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .item-card {
+                grid-template-columns: 120px 1fr;
+                gap: var(--space-md);
+            }
+
+            .item-actions {
+                grid-column: 2;
+                flex-direction: row;
+            }
+
             .footer-container {
                 grid-template-columns: 1fr;
                 text-align: center;
-                gap: 16px;
+                gap: var(--space-xl);
             }
 
             .footer-left,
@@ -447,9 +424,57 @@
                 text-align: center;
                 justify-content: center;
             }
+        }
 
-            .footer-logo {
-                height: 35px;
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-lg);
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .admin-card {
+                padding: var(--space-lg);
+            }
+
+            .item-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .item-thumbnail {
+                margin: 0 auto;
+            }
+
+            .item-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .item-actions .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .admin-card h2 {
+                font-size: 1.25rem;
+            }
+
+            .item-thumbnail {
+                width: 100px;
+                height: 100px;
             }
         }
     </style>
@@ -458,32 +483,44 @@
     <div class="admin-container">
         <!-- Header -->
         <div class="admin-header">
-            <h1>🔑 Panel Admin - Gestion des Soirées</h1>
-            <a href="dashboard.html" class="btn btn-secondary">Retour au Dashboard</a>
+            <h1 class="page-title">
+                <span>🔑</span>
+                Panel Admin
+            </h1>
+            <a href="dashboard.html" class="btn-back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Retour Dashboard
+            </a>
         </div>
 
-        <!-- Loading state -->
-        <div id="loading" class="loading">
-            Vérification des droits d'administration...
+        <!-- Loading State -->
+        <div id="loading" class="loading-container">
+            <div class="spinner spinner-lg"></div>
+            <p class="loading-text">Vérification des droits d'administration...</p>
         </div>
 
-        <!-- Admin content (hidden until auth check) -->
+        <!-- Admin Content -->
         <div id="admin-content" style="display: none;">
 
             <!-- Add/Edit Event Form -->
             <div class="admin-card">
-                <h2 id="form-title">➕ Ajouter une nouvelle soirée</h2>
+                <h2 id="form-title">
+                    <span>➕</span>
+                    Ajouter une nouvelle soirée
+                </h2>
 
                 <form id="event-form">
                     <input type="hidden" id="event-id" value="">
 
                     <!-- Row 1: Name and Date -->
                     <div class="form-row">
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="event-name">Nom de la soirée *</label>
                             <input type="text" id="event-name" placeholder="Ex: Soirée House Music" required>
                         </div>
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="event-date">Date *</label>
                             <input type="datetime-local" id="event-date" required>
                         </div>
@@ -491,11 +528,11 @@
 
                     <!-- Row 2: Location and Price -->
                     <div class="form-row">
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="event-location">Lieu *</label>
                             <input type="text" id="event-location" placeholder="Ex: Le Reflektor, Mons" required>
                         </div>
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="event-price">Prix (€) *</label>
                             <input type="number" id="event-price" placeholder="Ex: 15" step="0.01" min="0" required>
                         </div>
@@ -503,19 +540,19 @@
 
                     <!-- Row 3: Age and Link -->
                     <div class="form-row">
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="event-age">Âge requis *</label>
                             <input type="number" id="event-age" placeholder="Ex: 18" min="0" required>
                         </div>
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="event-link">Lien de la soirée</label>
                             <input type="url" id="event-link" placeholder="https://example.com/tickets">
                         </div>
                     </div>
 
-                    <!-- Row 4: Presales toggle -->
+                    <!-- Row 4: Presales Toggle -->
                     <div class="form-row">
-                        <div class="form-group">
+                        <div class="input-group">
                             <label>Préventes</label>
                             <div class="toggle-container">
                                 <div class="toggle-switch" id="presales-toggle">
@@ -528,77 +565,82 @@
                     </div>
 
                     <!-- Description -->
-                    <div class="form-group full-width">
+                    <div class="input-group full-width">
                         <label for="event-description">Description</label>
                         <textarea id="event-description" placeholder="Décrivez la soirée..."></textarea>
                     </div>
 
                     <!-- Image Upload -->
-                    <div class="form-group full-width">
+                    <div class="input-group full-width">
                         <label>Image de la soirée *</label>
                         <div class="image-upload-area" id="image-upload-area">
                             <div class="upload-icon">📸</div>
                             <div class="upload-text">Cliquez pour uploader une image</div>
-                            <small style="color: #b8b8d1;">JPG, PNG ou WEBP - Max 5MB</small>
+                            <small style="color: var(--text-tertiary);">JPG, PNG ou WEBP - Max 5MB</small>
                         </div>
-                        <input type="file" id="image-input" accept="image/*" required>
+                        <input type="file" id="image-input" accept="image/*" required style="display: none;">
                         <div class="image-preview" id="image-preview">
                             <img id="preview-img" src="" alt="Preview">
                         </div>
                     </div>
 
-                    <!-- Submit buttons -->
-                    <div style="margin-top: 24px; display: flex; gap: 12px;">
-                        <button type="submit" class="btn" id="submit-btn">Publier la soirée</button>
+                    <!-- Submit Buttons -->
+                    <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap;">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">Publier la soirée</button>
                         <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">Annuler</button>
                     </div>
                 </form>
             </div>
 
-            <!-- Events List -->
+            <!-- Published Events List -->
             <div class="admin-card">
-                <h2>📋 Soirées publiées</h2>
-                <div id="events-list" class="events-list">
+                <h2>
+                    <span>📋</span>
+                    Soirées publiées
+                </h2>
+                <div id="events-list" class="items-list">
                     <!-- Events will be loaded here -->
                 </div>
             </div>
 
-            <!-- ========== SOIRÉES EN ATTENTE ========== -->
-
             <!-- Pending Events List -->
             <div class="admin-card">
-                <h2>⏳ Soirées en attente de validation</h2>
-                <div id="pending-events-list" class="events-list">
+                <h2>
+                    <span>⏳</span>
+                    Soirées en attente de validation
+                </h2>
+                <div id="pending-events-list" class="items-list">
                     <!-- Pending events will be loaded here -->
                 </div>
             </div>
 
-            <!-- ========== PARTENAIRES ========== -->
-
             <!-- Add/Edit Partner Form -->
             <div class="admin-card">
-                <h2 id="partner-form-title">🤝 Ajouter un partenaire</h2>
+                <h2 id="partner-form-title">
+                    <span>🤝</span>
+                    Ajouter un partenaire
+                </h2>
 
                 <form id="partner-form">
                     <input type="hidden" id="partner-id" value="">
 
                     <!-- Partner Logo Upload -->
-                    <div class="form-group full-width">
+                    <div class="input-group full-width">
                         <label>Logo du partenaire *</label>
                         <div class="image-upload-area" id="partner-image-upload-area">
                             <div class="upload-icon">🏢</div>
                             <div class="upload-text">Cliquez pour uploader le logo</div>
-                            <small style="color: #b8b8d1;">PNG ou SVG de préférence - Max 2MB</small>
+                            <small style="color: var(--text-tertiary);">PNG ou SVG de préférence - Max 2MB</small>
                         </div>
-                        <input type="file" id="partner-image-input" accept="image/*" required>
+                        <input type="file" id="partner-image-input" accept="image/*" required style="display: none;">
                         <div class="image-preview" id="partner-image-preview">
                             <img id="partner-preview-img" src="" alt="Preview">
                         </div>
                     </div>
 
-                    <!-- Submit buttons -->
-                    <div style="margin-top: 24px; display: flex; gap: 12px;">
-                        <button type="submit" class="btn" id="partner-submit-btn">Ajouter le partenaire</button>
+                    <!-- Submit Buttons -->
+                    <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap;">
+                        <button type="submit" class="btn btn-primary" id="partner-submit-btn">Ajouter le partenaire</button>
                         <button type="button" class="btn btn-secondary" id="partner-cancel-btn" style="display: none;">Annuler</button>
                     </div>
                 </form>
@@ -606,8 +648,11 @@
 
             <!-- Partners List -->
             <div class="admin-card">
-                <h2>🏢 Partenaires publiés</h2>
-                <div id="partners-list" class="partners-list">
+                <h2>
+                    <span>🏢</span>
+                    Partenaires publiés
+                </h2>
+                <div id="partners-list" class="items-list">
                     <!-- Partners will be loaded here -->
                 </div>
             </div>
@@ -615,20 +660,20 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <!-- Gauche: Copyright -->
+            <!-- Left: Copyright -->
             <div class="footer-left">
-                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank" style="color: var(--primary-color); text-decoration: none; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Maxence</a></p>
+                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank">Maxence</a></p>
             </div>
 
-            <!-- Centre: Logo -->
+            <!-- Center: Logo -->
             <div class="footer-center">
                 <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
             </div>
 
-            <!-- Droite: Réseaux sociaux -->
+            <!-- Right: Social -->
             <div class="footer-right">
                 <p>Suivez-nous :</p>
                 <div class="social-icons">
