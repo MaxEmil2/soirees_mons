@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner QR - Soirées Mons</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="stylesheet" href="design-system.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        .scanner-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .event-selector {
+            margin-bottom: 30px;
+        }
+
+        .event-selector select {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .event-selector select option {
+            background: #1a1a2e;
+            color: #ffffff;
+        }
+
+        .scanner-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(108, 99, 255, 0.3);
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #reader video {
+            border-radius: 10px;
+        }
+
+        .result-box {
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-box.valid {
+            background: rgba(82, 196, 26, 0.2);
+            border: 2px solid #52c41a;
+        }
+
+        .result-box.invalid {
+            background: rgba(255, 77, 79, 0.2);
+            border: 2px solid #ff4d4f;
+        }
+
+        .result-box.used {
+            background: rgba(250, 173, 20, 0.2);
+            border: 2px solid #faad14;
+        }
+
+        .result-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .result-status {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-details {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .result-details p {
+            margin: 5px 0;
+        }
+
+        .validate-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 18px;
+            background: linear-gradient(90deg, #52c41a, #73d13d);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .validate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(82, 196, 26, 0.4);
+        }
+
+        .validate-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .scan-again-btn {
+            margin-top: 15px;
+            padding: 10px 30px;
+            font-size: 14px;
+            background: rgba(108, 99, 255, 0.3);
+            border: 1px solid rgba(108, 99, 255, 0.5);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scan-again-btn:hover {
+            background: rgba(108, 99, 255, 0.5);
+        }
+
+        .stats-box {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(108, 99, 255, 0.2);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #6c63ff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        .presales-list {
+            margin-top: 30px;
+        }
+
+        .presales-list h3 {
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+
+        .presale-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(108, 99, 255, 0.2);
+        }
+
+        .presale-info {
+            flex: 1;
+        }
+
+        .presale-name {
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .presale-email {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .presale-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .presale-status.valid {
+            background: rgba(82, 196, 26, 0.2);
+            color: #52c41a;
+        }
+
+        .presale-status.used {
+            background: rgba(250, 173, 20, 0.2);
+            color: #faad14;
+        }
+
+        .no-event-selected {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(108, 99, 255, 0.3);
+            border-top-color: #6c63ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title h1 {
+            background: linear-gradient(90deg, #6c63ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Animation de validation */
+        @keyframes validatePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .result-box.validated {
+            animation: validatePulse 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.svg" alt="Soirées Mons">
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Accueil</a>
+                <a href="dashboard.html">Mon compte</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="scanner-container">
+        <div class="page-title">
+            <h1>Scanner de Préventes</h1>
+            <p>Scannez les QR codes pour valider les entrées</p>
+        </div>
+
+        <div class="event-selector">
+            <label for="eventSelect">Sélectionnez votre événement :</label>
+            <select id="eventSelect">
+                <option value="">Chargement...</option>
+            </select>
+        </div>
+
+        <div id="scannerSection" style="display: none;">
+            <div class="stats-box" id="statsBox">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total vendues</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statUsed">0</div>
+                    <div class="stat-label">Utilisées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statValid">0</div>
+                    <div class="stat-label">Restantes</div>
+                </div>
+            </div>
+
+            <div class="scanner-box">
+                <div id="reader"></div>
+            </div>
+
+            <div class="result-box" id="resultBox">
+                <div class="result-icon" id="resultIcon"></div>
+                <div class="result-status" id="resultStatus"></div>
+                <div class="result-details" id="resultDetails"></div>
+                <button class="validate-btn" id="validateBtn" style="display: none;">
+                    VALIDER L'ENTRÉE
+                </button>
+                <button class="scan-again-btn" id="scanAgainBtn">
+                    Scanner un autre ticket
+                </button>
+            </div>
+
+            <div class="presales-list" id="presalesList">
+                <h3>Liste des préventes</h3>
+                <div id="presalesContainer"></div>
+            </div>
+        </div>
+
+        <div id="noEventSection" class="no-event-selected">
+            <p>Sélectionnez un événement pour commencer à scanner</p>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const functions = getFunctions(app, 'europe-west1');
+
+        let html5QrCode = null;
+        let selectedEventId = null;
+        let currentPresaleData = null;
+        let isScanning = false;
+
+        // Vérifier l'authentification
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html?redirect=scanner';
+                return;
+            }
+
+            await loadUserEvents(user.uid);
+        });
+
+        // Charger les événements de l'utilisateur
+        async function loadUserEvents(userId) {
+            const eventSelect = document.getElementById('eventSelect');
+
+            try {
+                // Vérifier si l'utilisateur est admin
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                const isAdmin = userDoc.exists() && userDoc.data().isAdmin === true;
+
+                let eventsQuery;
+                if (isAdmin) {
+                    // Admin voit tous les événements approuvés avec préventes
+                    eventsQuery = query(
+                        collection(db, 'events'),
+                        where('status', '==', 'approved'),
+                        where('presales', '==', true)
+                    );
+                } else {
+                    // Utilisateur normal voit seulement ses événements
+                    eventsQuery = query(
+                        collection(db, 'events'),
+                        where('createdBy', '==', userId),
+                        where('presales', '==', true)
+                    );
+                }
+
+                const eventsSnapshot = await getDocs(eventsQuery);
+
+                if (eventsSnapshot.empty) {
+                    eventSelect.innerHTML = '<option value="">Aucun événement avec préventes</option>';
+                    return;
+                }
+
+                eventSelect.innerHTML = '<option value="">Sélectionnez un événement</option>';
+                eventsSnapshot.forEach(doc => {
+                    const event = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = `${event.name} - ${new Date(event.date).toLocaleDateString('fr-BE')}`;
+                    eventSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Erreur chargement événements:', error);
+                eventSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            }
+        }
+
+        // Changement d'événement
+        document.getElementById('eventSelect').addEventListener('change', async function() {
+            selectedEventId = this.value;
+
+            if (!selectedEventId) {
+                document.getElementById('scannerSection').style.display = 'none';
+                document.getElementById('noEventSection').style.display = 'block';
+                if (html5QrCode && isScanning) {
+                    await html5QrCode.stop();
+                    isScanning = false;
+                }
+                return;
+            }
+
+            document.getElementById('scannerSection').style.display = 'block';
+            document.getElementById('noEventSection').style.display = 'none';
+
+            await loadPresalesStats();
+            await loadPresalesList();
+            startScanner();
+        });
+
+        // Charger les statistiques des préventes
+        async function loadPresalesStats() {
+            try {
+                const presalesQuery = query(
+                    collection(db, 'presales'),
+                    where('eventId', '==', selectedEventId)
+                );
+                const presalesSnapshot = await getDocs(presalesQuery);
+
+                let total = 0, used = 0, valid = 0;
+                presalesSnapshot.forEach(doc => {
+                    const presale = doc.data();
+                    total++;
+                    if (presale.status === 'used') used++;
+                    if (presale.status === 'valid') valid++;
+                });
+
+                document.getElementById('statTotal').textContent = total;
+                document.getElementById('statUsed').textContent = used;
+                document.getElementById('statValid').textContent = valid;
+
+            } catch (error) {
+                console.error('Erreur chargement stats:', error);
+            }
+        }
+
+        // Charger la liste des préventes
+        async function loadPresalesList() {
+            const container = document.getElementById('presalesContainer');
+            container.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Chargement...</div>';
+
+            try {
+                const presalesQuery = query(
+                    collection(db, 'presales'),
+                    where('eventId', '==', selectedEventId),
+                    orderBy('createdAt', 'desc')
+                );
+                const presalesSnapshot = await getDocs(presalesQuery);
+
+                if (presalesSnapshot.empty) {
+                    container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.5);">Aucune prévente pour cet événement</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                presalesSnapshot.forEach(doc => {
+                    const presale = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'presale-item';
+                    item.innerHTML = `
+                        <div class="presale-info">
+                            <div class="presale-name">${presale.userName}</div>
+                            <div class="presale-email">${presale.userEmail}</div>
+                        </div>
+                        <span class="presale-status ${presale.status}">${presale.status === 'valid' ? 'Valide' : presale.status === 'used' ? 'Utilisé' : presale.status}</span>
+                    `;
+                    container.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error('Erreur chargement liste:', error);
+                container.innerHTML = '<p style="color: #ff4d4f;">Erreur de chargement</p>';
+            }
+        }
+
+        // Démarrer le scanner
+        async function startScanner() {
+            const resultBox = document.getElementById('resultBox');
+            resultBox.style.display = 'none';
+
+            if (html5QrCode && isScanning) {
+                await html5QrCode.stop();
+            }
+
+            html5QrCode = new Html5Qrcode("reader");
+
+            try {
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    onScanSuccess,
+                    onScanError
+                );
+                isScanning = true;
+            } catch (err) {
+                console.error('Erreur démarrage scanner:', err);
+                document.getElementById('reader').innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">
+                        <p>Impossible d'accéder à la caméra</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Vérifiez les permissions de votre navigateur</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Callback quand un QR code est scanné
+        async function onScanSuccess(decodedText, decodedResult) {
+            if (!selectedEventId) return;
+
+            // Arrêter le scanner temporairement
+            if (html5QrCode && isScanning) {
+                await html5QrCode.stop();
+                isScanning = false;
+            }
+
+            // Vérifier le ticket via Cloud Function
+            try {
+                const verifyTicket = httpsCallable(functions, 'verifyTicket');
+                const result = await verifyTicket({
+                    qrCodeData: decodedText,
+                    eventId: selectedEventId
+                });
+
+                displayResult(result.data, decodedText);
+
+            } catch (error) {
+                console.error('Erreur vérification:', error);
+                displayResult({
+                    valid: false,
+                    status: 'error',
+                    message: error.message || 'Erreur lors de la vérification'
+                }, decodedText);
+            }
+        }
+
+        // Callback pour les erreurs de scan (ignoré - c'est normal)
+        function onScanError(errorMessage) {
+            // Ignoré - erreurs normales quand pas de QR code dans le cadre
+        }
+
+        // Afficher le résultat du scan
+        function displayResult(result, qrCodeData) {
+            const resultBox = document.getElementById('resultBox');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultStatus = document.getElementById('resultStatus');
+            const resultDetails = document.getElementById('resultDetails');
+            const validateBtn = document.getElementById('validateBtn');
+
+            resultBox.style.display = 'block';
+            resultBox.classList.remove('valid', 'invalid', 'used', 'validated');
+
+            if (result.valid) {
+                resultBox.classList.add('valid');
+                resultIcon.textContent = '✓';
+                resultStatus.textContent = 'TICKET VALIDE';
+                resultDetails.innerHTML = `
+                    <p><strong>Nom:</strong> ${result.userName}</p>
+                    <p><strong>Email:</strong> ${result.userEmail}</p>
+                `;
+
+                // Stocker les données pour la validation
+                currentPresaleData = {
+                    presaleId: result.presaleId,
+                    qrCodeData: qrCodeData
+                };
+
+                validateBtn.style.display = 'inline-block';
+                validateBtn.disabled = false;
+
+            } else if (result.status === 'already_used') {
+                resultBox.classList.add('used');
+                resultIcon.textContent = '⚠';
+                resultStatus.textContent = 'DÉJÀ UTILISÉ';
+                resultDetails.innerHTML = `
+                    <p><strong>Nom:</strong> ${result.userName || 'N/A'}</p>
+                    <p>Ce ticket a déjà été utilisé</p>
+                    ${result.usedAt ? `<p>Le ${new Date(result.usedAt).toLocaleString('fr-BE')}</p>` : ''}
+                `;
+                validateBtn.style.display = 'none';
+                currentPresaleData = null;
+
+            } else {
+                resultBox.classList.add('invalid');
+                resultIcon.textContent = '✗';
+                resultStatus.textContent = 'INVALIDE';
+                resultDetails.innerHTML = `<p>${result.message}</p>`;
+                validateBtn.style.display = 'none';
+                currentPresaleData = null;
+            }
+        }
+
+        // Valider l'entrée
+        document.getElementById('validateBtn').addEventListener('click', async function() {
+            if (!currentPresaleData || !selectedEventId) return;
+
+            this.disabled = true;
+            this.textContent = 'Validation...';
+
+            try {
+                const markTicketUsed = httpsCallable(functions, 'markTicketUsed');
+                const result = await markTicketUsed({
+                    presaleId: currentPresaleData.presaleId,
+                    eventId: selectedEventId
+                });
+
+                if (result.data.success) {
+                    const resultBox = document.getElementById('resultBox');
+                    const resultStatus = document.getElementById('resultStatus');
+
+                    resultBox.classList.remove('valid');
+                    resultBox.classList.add('used', 'validated');
+                    resultStatus.textContent = 'ENTRÉE VALIDÉE !';
+                    this.style.display = 'none';
+
+                    // Mettre à jour les stats
+                    await loadPresalesStats();
+                    await loadPresalesList();
+                }
+
+            } catch (error) {
+                console.error('Erreur validation:', error);
+                alert('Erreur lors de la validation: ' + (error.message || 'Erreur inconnue'));
+                this.disabled = false;
+            }
+
+            this.textContent = 'VALIDER L\'ENTRÉE';
+        });
+
+        // Scanner un autre ticket
+        document.getElementById('scanAgainBtn').addEventListener('click', function() {
+            document.getElementById('resultBox').style.display = 'none';
+            currentPresaleData = null;
+            startScanner();
+        });
+    </script>
+</body>
+</html>
