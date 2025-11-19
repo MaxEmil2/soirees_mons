@@ -292,10 +292,6 @@
         <div id="scannerSection" style="display: none;">
             <div class="stats-box" id="statsBox">
                 <div class="stat-card">
-                    <div class="stat-value" id="statTotal">0</div>
-                    <div class="stat-label">Total vendues</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-value" id="statUsed">0</div>
                     <div class="stat-label">Utilisées</div>
                 </div>
@@ -455,7 +451,6 @@
                     if (presale.status === 'valid') valid++;
                 });
 
-                document.getElementById('statTotal').textContent = total;
                 document.getElementById('statUsed').textContent = used;
                 document.getElementById('statValid').textContent = valid;
 
@@ -487,10 +482,13 @@
                     const presale = doc.data();
                     const item = document.createElement('div');
                     item.className = 'presale-item';
+                    const nom = presale.buyerNom || 'N/A';
+                    const prenom = presale.buyerPrenom || 'N/A';
+                    const age = presale.buyerAge ? `${presale.buyerAge} ans` : 'N/A';
                     item.innerHTML = `
                         <div class="presale-info">
-                            <div class="presale-name">${presale.userName}</div>
-                            <div class="presale-email">${presale.userEmail}</div>
+                            <div class="presale-name">${nom} ${prenom}</div>
+                            <div class="presale-email">${age} • ${presale.userEmail}</div>
                         </div>
                         <span class="presale-status ${presale.status}">${presale.status === 'valid' ? 'Valide' : presale.status === 'used' ? 'Utilisé' : presale.status}</span>
                     `;

@@ -758,6 +758,8 @@
                                style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
                     </div>
                 </form>
+                <div id="presale-age-error" style="display: none; background: rgba(255, 77, 79, 0.1); border: 1px solid rgba(255, 77, 79, 0.5); border-radius: 8px; padding: 12px; margin-top: 15px; color: #ff4d4f; font-size: 14px; text-align: center;">
+                </div>
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="modal-btn modal-btn-secondary" onclick="closePresaleQuestionnaireModal()">Annuler</button>
@@ -1204,20 +1206,27 @@
             const nom = document.getElementById('presale-nom').value.trim();
             const prenom = document.getElementById('presale-prenom').value.trim();
             const age = document.getElementById('presale-age').value;
+            const errorDiv = document.getElementById('presale-age-error');
+
+            // Cacher l'erreur précédente
+            errorDiv.style.display = 'none';
 
             if (!nom || !prenom || !age) {
-                alert('Veuillez remplir tous les champs.');
+                errorDiv.textContent = 'Veuillez remplir tous les champs.';
+                errorDiv.style.display = 'block';
                 return;
             }
 
             if (parseInt(age) < 1 || parseInt(age) > 120) {
-                alert('Veuillez entrer un âge valide.');
+                errorDiv.textContent = 'Veuillez entrer un âge valide.';
+                errorDiv.style.display = 'block';
                 return;
             }
 
             // Vérifier l'âge minimum requis pour la soirée
             if (currentPresaleMinAge && parseInt(age) < currentPresaleMinAge) {
-                alert(`❌ Vous devez avoir au moins ${currentPresaleMinAge} ans pour acheter une prévente pour cette soirée.`);
+                errorDiv.textContent = `Vous devez avoir au moins ${currentPresaleMinAge} ans pour acheter une prévente pour cette soirée.`;
+                errorDiv.style.display = 'block';
                 return;
             }
 
