@@ -145,18 +145,20 @@
                 opacity: 0;
             }
         }
+        /* Animation de succès */
+        .success-icon {
+            animation: bounce 0.6s ease-out;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <a href="index.html" class="logo">
-                <img src="assets/logo.svg" alt="Soirées Mons">
-            </a>
-        </div>
-    </nav>
-
-    <main class="success-container">
+    <main class="success-container" style="margin-top: 50px;">
         <div id="loadingState" class="loading-state">
             <div class="loading-spinner"></div>
             <p>Confirmation du paiement...</p>

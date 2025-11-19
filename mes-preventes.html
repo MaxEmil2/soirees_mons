@@ -210,13 +210,74 @@
             font-size: 12px;
             color: #faad14;
         }
+
+        .prevente-qr {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .prevente-qr:hover {
+            transform: scale(1.05);
+        }
+
+        .buyer-info {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .buyer-info-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 4px;
+        }
+
+        .buyer-info-label {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .buyer-info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin: 30px 0 15px;
+            color: #6c63ff;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        /* Modal QR Code agrandi */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .qr-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 15px;
+        }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-content">
             <a href="index.html" class="logo">
-                <img src="assets/logo.svg" alt="Soirées Mons">
+                <img src="assets/logo.png" alt="Soirées Mons" style="height: 40px;">
             </a>
             <div class="nav-links">
                 <a href="index.html">Accueil</a>
@@ -238,6 +299,11 @@
 
         <div id="contentState" style="display: none;"></div>
     </main>
+
+    <!-- Modal QR Code agrandi -->
+    <div id="qrModal" class="qr-modal" onclick="closeQrModal()">
+        <img id="qrModalImage" src="" alt="QR Code">
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -303,7 +369,12 @@
 
                 const presalesWithEvents = await Promise.all(eventPromises);
 
-                contentState.innerHTML = presalesWithEvents.map(presale => {
+                // Séparer les préventes valides et utilisées
+                const validPresales = presalesWithEvents.filter(p => p.status === 'valid');
+                const usedPresales = presalesWithEvents.filter(p => p.status === 'used');
+                const refundedPresales = presalesWithEvents.filter(p => p.status === 'refunded');
+
+                const renderPresale = (presale) => {
                     const eventDate = presale.eventData
                         ? new Date(presale.eventData.date).toLocaleDateString('fr-BE', {
                             weekday: 'long',
@@ -316,14 +387,48 @@
                         : 'Date inconnue';
 
                     const location = presale.eventData?.location || 'Lieu inconnu';
-                    const purchaseDate = presale.createdAt
-                        ? new Date(presale.createdAt).toLocaleDateString('fr-BE')
-                        : '';
+
+                    // Corriger le problème de date Invalid
+                    let purchaseDate = '';
+                    if (presale.createdAt) {
+                        // Si c'est un timestamp Firestore
+                        if (presale.createdAt.seconds) {
+                            purchaseDate = new Date(presale.createdAt.seconds * 1000).toLocaleDateString('fr-BE');
+                        } else if (presale.createdAt.toDate) {
+                            purchaseDate = presale.createdAt.toDate().toLocaleDateString('fr-BE');
+                        } else {
+                            purchaseDate = new Date(presale.createdAt).toLocaleDateString('fr-BE');
+                        }
+                    }
 
                     let usedInfo = '';
                     if (presale.status === 'used' && presale.usedAt) {
-                        const usedDate = new Date(presale.usedAt).toLocaleString('fr-BE');
+                        let usedDate = '';
+                        if (presale.usedAt.seconds) {
+                            usedDate = new Date(presale.usedAt.seconds * 1000).toLocaleString('fr-BE');
+                        } else if (presale.usedAt.toDate) {
+                            usedDate = presale.usedAt.toDate().toLocaleString('fr-BE');
+                        } else {
+                            usedDate = new Date(presale.usedAt).toLocaleString('fr-BE');
+                        }
                         usedInfo = `<div class="used-info">Utilisé le ${usedDate}</div>`;
+                    }
+
+                    // Infos acheteur
+                    let buyerInfo = '';
+                    if (presale.buyerNom || presale.buyerPrenom || presale.buyerAge) {
+                        buyerInfo = `
+                            <div class="buyer-info">
+                                <div class="buyer-info-row">
+                                    <span class="buyer-info-label">Nom:</span>
+                                    <span class="buyer-info-value">${presale.buyerNom || '-'} ${presale.buyerPrenom || '-'}</span>
+                                </div>
+                                <div class="buyer-info-row">
+                                    <span class="buyer-info-label">Âge:</span>
+                                    <span class="buyer-info-value">${presale.buyerAge || '-'} ans</span>
+                                </div>
+                            </div>
+                        `;
                     }
 
                     return `
@@ -338,7 +443,7 @@
                                 </span>
                             </div>
                             <div class="prevente-qr-section">
-                                <div class="prevente-qr">
+                                <div class="prevente-qr" onclick="showQrModal('${presale.qrCode}')">
                                     <img src="${presale.qrCode}" alt="QR Code">
                                 </div>
                                 <div class="prevente-info">
@@ -352,8 +457,9 @@
                                     </div>
                                     <div class="prevente-info-row">
                                         <span class="prevente-info-label">Acheté le</span>
-                                        <span class="prevente-info-value">${purchaseDate}</span>
+                                        <span class="prevente-info-value">${purchaseDate || '-'}</span>
                                     </div>
+                                    ${buyerInfo}
                                     <div class="prevente-id">ID: ${presale.id}</div>
                                     ${usedInfo}
                                     ${presale.status === 'valid' ? `
@@ -365,7 +471,26 @@
                             </div>
                         </div>
                     `;
-                }).join('');
+                };
+
+                let html = '';
+
+                if (validPresales.length > 0) {
+                    html += '<h2 class="section-title">🎟️ Préventes valides</h2>';
+                    html += validPresales.map(renderPresale).join('');
+                }
+
+                if (usedPresales.length > 0) {
+                    html += '<h2 class="section-title">✅ Préventes utilisées</h2>';
+                    html += usedPresales.map(renderPresale).join('');
+                }
+
+                if (refundedPresales.length > 0) {
+                    html += '<h2 class="section-title">💸 Préventes remboursées</h2>';
+                    html += refundedPresales.map(renderPresale).join('');
+                }
+
+                contentState.innerHTML = html;
 
             } catch (error) {
                 console.error('Erreur chargement préventes:', error);
@@ -389,6 +514,19 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        };
+
+        // Fonction pour afficher le QR code en grand
+        window.showQrModal = function(qrCodeBase64) {
+            const modal = document.getElementById('qrModal');
+            const img = document.getElementById('qrModalImage');
+            img.src = qrCodeBase64;
+            modal.style.display = 'flex';
+        };
+
+        // Fonction pour fermer le modal QR
+        window.closeQrModal = function() {
+            document.getElementById('qrModal').style.display = 'none';
         };
     </script>
 </body>

@@ -163,7 +163,24 @@ function createEventItem(eventId, event) {
     // Boutons d'action selon le statut
     let actionButtons = '';
     if (status === 'pending' || status === 'approved') {
+        // Bouton stop préventes si préventes activées
+        let stopPresalesBtn = '';
+        if (event.presales && status === 'approved') {
+            const isSoldOut = event.maxPresales && event.presalesSold >= event.maxPresales;
+            if (!isSoldOut) {
+                stopPresalesBtn = `
+                    <button class="btn btn-warning" onclick="stopPresales('${eventId}')" style="background: linear-gradient(90deg, #faad14, #ffc53d); margin-bottom: 8px;">
+                        🛑 Stop préventes
+                    </button>
+                `;
+            } else {
+                stopPresalesBtn = `
+                    <span style="color: #ff4d4f; font-weight: bold; display: block; margin-bottom: 8px;">🔥 SOLD OUT</span>
+                `;
+            }
+        }
         actionButtons = `
+            ${stopPresalesBtn}
             <button class="btn btn-danger" onclick="deleteEvent('${eventId}', '${event.imagePath || ''}')">🗑️ Supprimer</button>
         `;
     }
@@ -218,6 +235,37 @@ window.deleteEvent = async function(eventId, imagePath) {
 
     } catch (error) {
         showError('Erreur lors de la suppression.');
+    }
+};
+
+// ========================================
+// STOP PRÉVENTES (marquer comme sold out)
+// ========================================
+
+window.stopPresales = async function(eventId) {
+    const confirmed = await showConfirm('Êtes-vous sûr de vouloir arrêter les préventes ? Cela marquera l\'événement comme SOLD OUT.');
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        // Récupérer l'événement pour obtenir maxPresales
+        const eventRef = doc(db, 'events', eventId);
+
+        // Mettre presalesSold = maxPresales pour marquer comme sold out
+        // Ou si pas de maxPresales, ajouter un flag
+        await updateDoc(eventRef, {
+            presalesStopped: true,
+            presalesSold: 9999999 // Valeur haute pour s'assurer que c'est sold out
+        });
+
+        showSuccess('Préventes arrêtées ! L\'événement est maintenant SOLD OUT.', () => {
+            window.location.reload();
+        });
+
+    } catch (error) {
+        console.error('Erreur stop préventes:', error);
+        showError('Erreur lors de l\'arrêt des préventes.');
     }
 };
 
