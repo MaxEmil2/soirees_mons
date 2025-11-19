@@ -66,11 +66,13 @@ service cloud.firestore {
       // Création uniquement par les Cloud Functions (via admin SDK)
       allow create: if false;
 
-      // Mise à jour: uniquement pour marquer comme utilisé (par le créateur ou admin)
+      // Mise à jour: uniquement pour marquer comme utilisé (par le créateur, admin ou scanner)
       allow update: if isAuthenticated() && (
         isAdmin() ||
         // Le créateur de l'événement peut marquer les tickets comme utilisés
-        get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid
+        get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid ||
+        // Les scanners peuvent aussi marquer les tickets comme utilisés
+        request.auth.uid in get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.scanners
       ) && (
         // Seuls ces champs peuvent être modifiés
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'usedAt', 'scannedBy'])

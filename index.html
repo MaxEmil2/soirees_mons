@@ -1061,8 +1061,14 @@
                 let presalesAvailable = true;
                 let infoText = '';
 
-                // Vérifier si sold out
-                if (event.maxPresales && event.presalesSold >= event.maxPresales) {
+                // Vérifier si les préventes ont été stoppées manuellement
+                if (event.presalesStopped) {
+                    presalesAvailable = false;
+                    infoText = '🔥 SOLD OUT - Préventes terminées !';
+                }
+
+                // Vérifier si sold out (quota atteint)
+                if (presalesAvailable && event.maxPresales && event.presalesSold >= event.maxPresales) {
                     presalesAvailable = false;
                     infoText = '🔥 SOLD OUT - Toutes les préventes ont été vendues !';
                 }
@@ -1103,7 +1109,7 @@
                     presalesButton.dataset.ticketPrice = ticketPriceEuros;
                 } else {
                     // Sold out ou terminé
-                    if (event.maxPresales && event.presalesSold >= event.maxPresales) {
+                    if (event.presalesStopped || (event.maxPresales && event.presalesSold >= event.maxPresales)) {
                         presalesButton.textContent = '🔥 SOLD OUT';
                         presalesButton.style.background = 'linear-gradient(90deg, #ff4d4f, #ff7875)';
                     } else {

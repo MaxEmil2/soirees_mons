@@ -172,6 +172,11 @@ exports.createCheckoutSession = functions.region('europe-west1').https.onCall(as
             throw new functions.https.HttpsError('failed-precondition', 'Les préventes ne sont pas activées pour cet événement');
         }
 
+        // Vérifier si les préventes ont été stoppées manuellement
+        if (event.presalesStopped) {
+            throw new functions.https.HttpsError('failed-precondition', 'Sold out ! Les préventes ont été arrêtées.');
+        }
+
         // Vérifier si sold out (quota atteint)
         if (event.maxPresales && event.presalesSold >= event.maxPresales) {
             throw new functions.https.HttpsError('failed-precondition', 'Sold out ! Toutes les préventes ont été vendues.');
@@ -795,8 +800,9 @@ exports.markTicketUsed = functions.region('europe-west1').https.onCall(async (da
         const event = eventDoc.data();
         const userDoc = await db.collection('users').doc(scannerId).get();
         const isAdmin = userDoc.exists && userDoc.data().isAdmin === true;
+        const isScanner = event.scanners && event.scanners.includes(scannerId);
 
-        if (event.createdBy !== scannerId && !isAdmin) {
+        if (event.createdBy !== scannerId && !isAdmin && !isScanner) {
             throw new functions.https.HttpsError('permission-denied', 'Vous n\'êtes pas autorisé à scanner les tickets pour cet événement');
         }
 

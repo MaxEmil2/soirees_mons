@@ -13,6 +13,7 @@ import {
     query,
     where,
     getDocs,
+    getDoc,
     doc,
     deleteDoc,
     updateDoc,
@@ -166,7 +167,7 @@ function createEventItem(eventId, event) {
         // Bouton stop préventes si préventes activées
         let stopPresalesBtn = '';
         if (event.presales && status === 'approved') {
-            const isSoldOut = event.maxPresales && event.presalesSold >= event.maxPresales;
+            const isSoldOut = event.presalesStopped || (event.maxPresales && event.presalesSold >= event.maxPresales);
             if (!isSoldOut) {
                 stopPresalesBtn = `
                     <button class="btn btn-warning" onclick="stopPresales('${eventId}')" style="background: linear-gradient(90deg, #faad14, #ffc53d); margin-bottom: 8px;">
@@ -179,8 +180,21 @@ function createEventItem(eventId, event) {
                 `;
             }
         }
+
+        // Bouton gérer les scanners
+        let scannersBtn = '';
+        if (status === 'approved' && event.presales) {
+            const scannerCount = event.scanners ? event.scanners.length : 0;
+            scannersBtn = `
+                <button class="btn btn-secondary" onclick="manageScanners('${eventId}')" style="margin-bottom: 8px;">
+                    👥 Scanners (${scannerCount}/7)
+                </button>
+            `;
+        }
+
         actionButtons = `
             ${stopPresalesBtn}
+            ${scannersBtn}
             <button class="btn btn-danger" onclick="deleteEvent('${eventId}', '${event.imagePath || ''}')">🗑️ Supprimer</button>
         `;
     }
@@ -255,8 +269,7 @@ window.stopPresales = async function(eventId) {
         // Mettre presalesSold = maxPresales pour marquer comme sold out
         // Ou si pas de maxPresales, ajouter un flag
         await updateDoc(eventRef, {
-            presalesStopped: true,
-            presalesSold: 9999999 // Valeur haute pour s'assurer que c'est sold out
+            presalesStopped: true
         });
 
         showSuccess('Préventes arrêtées ! L\'événement est maintenant SOLD OUT.', () => {
@@ -266,6 +279,155 @@ window.stopPresales = async function(eventId) {
     } catch (error) {
         console.error('Erreur stop préventes:', error);
         showError('Erreur lors de l\'arrêt des préventes.');
+    }
+};
+
+// ========================================
+// GÉRER LES SCANNERS
+// ========================================
+
+window.manageScanners = async function(eventId) {
+    // Créer un modal pour gérer les scanners
+    const modalHtml = `
+        <div id="scanners-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div style="background: #1a1a2e; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                <h3 style="color: #6c63ff; margin-bottom: 20px;">👥 Gérer les Scanners</h3>
+                <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 20px;">
+                    Les scanners peuvent vérifier les tickets à l'entrée mais ne peuvent pas modifier ou supprimer l'événement.
+                </p>
+
+                <div id="scanners-list" style="margin-bottom: 20px;">
+                    <p style="color: rgba(255,255,255,0.5);">Chargement...</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="scanner-uid-input" placeholder="UID du scanner à ajouter"
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: white; margin-bottom: 10px;">
+                    <button onclick="addScanner('${eventId}')" style="width: 100%; padding: 12px; background: linear-gradient(90deg, #6c63ff, #00d4ff); border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">
+                        ➕ Ajouter un scanner
+                    </button>
+                </div>
+
+                <button onclick="closeScannerModal()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer;">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Charger les scanners actuels
+    await loadScanners(eventId);
+};
+
+async function loadScanners(eventId) {
+    const scannersList = document.getElementById('scanners-list');
+
+    try {
+        const eventDocRef = doc(db, 'events', eventId);
+        const eventDocSnap = await getDoc(eventDocRef);
+
+        if (!eventDocSnap.exists()) {
+            scannersList.innerHTML = '<p style="color: #ff4d4f;">Événement non trouvé</p>';
+            return;
+        }
+
+        const event = eventDocSnap.data();
+        const scanners = event.scanners || [];
+
+        if (scanners.length === 0) {
+            scannersList.innerHTML = '<p style="color: rgba(255,255,255,0.5);">Aucun scanner ajouté</p>';
+        } else {
+            scannersList.innerHTML = scanners.map((uid, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px;">
+                    <span style="font-family: monospace; font-size: 12px; color: white;">${uid}</span>
+                    <button onclick="removeScanner('${eventId}', '${uid}')" style="background: #ff4d4f; border: none; padding: 5px 10px; border-radius: 5px; color: white; cursor: pointer; font-size: 12px;">
+                        ❌
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        scannersList.innerHTML += `<p style="color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 10px;">${scanners.length}/7 scanners</p>`;
+
+    } catch (error) {
+        console.error('Erreur chargement scanners:', error);
+        scannersList.innerHTML = '<p style="color: #ff4d4f;">Erreur lors du chargement</p>';
+    }
+}
+
+window.addScanner = async function(eventId) {
+    const input = document.getElementById('scanner-uid-input');
+    const uid = input.value.trim();
+
+    if (!uid) {
+        showError('Veuillez entrer un UID');
+        return;
+    }
+
+    try {
+        const eventRef = doc(db, 'events', eventId);
+        const eventDocSnap = await getDoc(eventRef);
+
+        if (!eventDocSnap.exists()) {
+            showError('Événement non trouvé');
+            return;
+        }
+
+        const event = eventDocSnap.data();
+        const scanners = event.scanners || [];
+
+        if (scanners.length >= 7) {
+            showError('Maximum 7 scanners autorisés');
+            return;
+        }
+
+        if (scanners.includes(uid)) {
+            showError('Ce scanner est déjà ajouté');
+            return;
+        }
+
+        scanners.push(uid);
+        await updateDoc(eventRef, { scanners });
+
+        input.value = '';
+        await loadScanners(eventId);
+        showSuccess('Scanner ajouté !');
+
+    } catch (error) {
+        console.error('Erreur ajout scanner:', error);
+        showError('Erreur lors de l\'ajout du scanner');
+    }
+};
+
+window.removeScanner = async function(eventId, uid) {
+    try {
+        const eventRef = doc(db, 'events', eventId);
+        const eventDocSnap = await getDoc(eventRef);
+
+        if (!eventDocSnap.exists()) {
+            showError('Événement non trouvé');
+            return;
+        }
+
+        const event = eventDocSnap.data();
+        const scanners = (event.scanners || []).filter(s => s !== uid);
+
+        await updateDoc(eventRef, { scanners });
+        await loadScanners(eventId);
+        showSuccess('Scanner supprimé !');
+
+    } catch (error) {
+        console.error('Erreur suppression scanner:', error);
+        showError('Erreur lors de la suppression du scanner');
+    }
+};
+
+window.closeScannerModal = function() {
+    const modal = document.getElementById('scanners-modal');
+    if (modal) {
+        modal.remove();
     }
 };
 
