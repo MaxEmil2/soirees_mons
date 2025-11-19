@@ -121,16 +121,6 @@
       ]
     },
     {
-      "collectionGroup": "suggestions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "presales",
       "queryScope": "COLLECTION",
       "fields": [
