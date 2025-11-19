@@ -158,7 +158,7 @@ exports.createCheckoutSession = functions.region('europe-west1').https.onCall(as
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté pour acheter une prévente');
     }
 
-    const { eventId, baseUrl } = data;
+    const { eventId, baseUrl, buyerInfo } = data;
     const userId = context.auth.uid;
     const userEmail = context.auth.token.email;
 
@@ -178,6 +178,11 @@ exports.createCheckoutSession = functions.region('europe-west1').https.onCall(as
 
         if (!event.presales) {
             throw new functions.https.HttpsError('failed-precondition', 'Les préventes ne sont pas activées pour cet événement');
+        }
+
+        // Vérifier si sold out (quota atteint)
+        if (event.maxPresales && event.presalesSold >= event.maxPresales) {
+            throw new functions.https.HttpsError('failed-precondition', 'Sold out ! Toutes les préventes ont été vendues.');
         }
 
         // Vérifier la date de fin des préventes
@@ -244,7 +249,10 @@ exports.createCheckoutSession = functions.region('europe-west1').https.onCall(as
                 eventName: event.name,
                 creatorId: event.createdBy,
                 platformFee: platformFee.toString(),
-                creatorAmount: creatorAmount.toString()
+                creatorAmount: creatorAmount.toString(),
+                buyerNom: buyerInfo?.nom || '',
+                buyerPrenom: buyerInfo?.prenom || '',
+                buyerAge: buyerInfo?.age?.toString() || ''
             },
             success_url: `${baseUrl}/presale-success.html?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${baseUrl}/index.html?presale=cancelled`,
@@ -316,7 +324,7 @@ exports.stripeWebhook = functions.region('europe-west1').https.onRequest(async (
  * Gère le paiement réussi
  */
 async function handleCheckoutCompleted(session) {
-    const { eventId, userId, userEmail, eventName, platformFee, creatorAmount } = session.metadata;
+    const { eventId, userId, userEmail, eventName, platformFee, creatorAmount, buyerNom, buyerPrenom, buyerAge } = session.metadata;
 
     try {
         // Générer un ID unique pour la prévente
@@ -354,6 +362,10 @@ async function handleCheckoutCompleted(session) {
             userId: userId,
             userEmail: userEmail,
             userName: userName,
+            // Infos de l'acheteur
+            buyerNom: buyerNom || '',
+            buyerPrenom: buyerPrenom || '',
+            buyerAge: buyerAge ? parseInt(buyerAge) : null,
             amount: prixTotal, // Prix total en euros (pour compatibilité)
             prix_total: prixTotal, // Prix total payé par l'acheteur
             commission: commission, // Commission plateforme (12%)
@@ -371,6 +383,11 @@ async function handleCheckoutCompleted(session) {
         };
 
         await db.collection('presales').doc(presaleId).set(presaleData);
+
+        // Incrémenter le compteur de préventes vendues
+        await db.collection('events').doc(eventId).update({
+            presalesSold: admin.firestore.FieldValue.increment(1)
+        });
 
         // Envoyer l'email avec le QR code
         await sendPresaleEmail(presaleData);

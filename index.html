@@ -286,7 +286,6 @@
             <nav class="nav-menu">
                 <a href="#evenements">Soirées</a>
                 <a href="about.html">À propos de nous</a>
-                <a href="#" id="btn-suggestions">Suggestions</a>
             </nav>
 
             <!-- Bouton Auth dynamique à droite -->
@@ -536,6 +535,11 @@
                     <div class="form-group">
                         <label for="user-event-price">Prix (€) *</label>
                         <input type="number" id="user-event-price" placeholder="Ex: 15" step="0.01" min="0" required>
+                        <div id="price-commission-info" style="display: none; margin-top: 8px; padding: 8px; background: rgba(108, 99, 255, 0.1); border-radius: 6px;">
+                            <small style="color: #b8b8d1;">
+                                En cas de prévente: Vous recevrez 88% du prix. Commission Soirées Mons: 12%
+                            </small>
+                        </div>
                     </div>
                 </div>
 
@@ -572,10 +576,15 @@
                         <label for="user-presales-end-date">Date de fin des préventes</label>
                         <input type="datetime-local" id="user-presales-end-date">
                     </div>
-                    <div id="user-presales-info" style="display: none; margin-top: 10px; padding: 10px; background: rgba(108, 99, 255, 0.1); border-radius: 8px;">
-                        <small style="color: #b8b8d1;">
-                            Le prix de la prévente sera celui indiqué dans "Prix (€)" ci-dessus.<br>
-                            Vous recevrez 88% du prix. Commission Soirées Mons: 12%
+                </div>
+
+                <!-- Row 5: Max presales (shown when presales enabled) -->
+                <div class="form-row" id="user-max-presales-container" style="display: none;">
+                    <div class="form-group">
+                        <label for="user-max-presales">Nombre maximum de préventes *</label>
+                        <input type="number" id="user-max-presales" placeholder="Ex: 200" min="1" required>
+                        <small style="color: #b8b8d1; margin-top: 5px; display: block;">
+                            Quand ce quota est atteint, la soirée affichera "Sold Out"
                         </small>
                     </div>
                 </div>
@@ -719,6 +728,40 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="modal-btn modal-btn-secondary" onclick="closeSuggestionsModal()">Annuler</button>
                 <button class="modal-btn modal-btn-primary" id="submit-suggestion-btn">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QUESTIONNAIRE PRÉVENTE -->
+    <div id="presale-questionnaire-modal" class="info-presales-modal" style="display: none;">
+        <div class="info-modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closePresaleQuestionnaireModal()">✕</button>
+            <h2>🎟️ Informations pour la prévente</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <p style="margin-bottom: 15px; color: #b8b8d1;">
+                    Ces informations apparaîtront sur votre ticket et seront vérifiées à l'entrée.
+                </p>
+                <form id="presale-questionnaire-form">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-nom" style="display: block; margin-bottom: 5px; color: #fff;">Nom *</label>
+                        <input type="text" id="presale-nom" placeholder="Votre nom"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-prenom" style="display: block; margin-bottom: 5px; color: #fff;">Prénom *</label>
+                        <input type="text" id="presale-prenom" placeholder="Votre prénom"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-age" style="display: block; margin-bottom: 5px; color: #fff;">Âge *</label>
+                        <input type="number" id="presale-age" placeholder="Votre âge" min="1" max="120"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                </form>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="modal-btn modal-btn-secondary" onclick="closePresaleQuestionnaireModal()">Annuler</button>
+                <button class="modal-btn modal-btn-primary" id="submit-presale-questionnaire-btn">Continuer vers le paiement</button>
             </div>
         </div>
     </div>
@@ -1018,7 +1061,14 @@
                 let presalesAvailable = true;
                 let infoText = '';
 
-                if (event.presalesEndDate) {
+                // Vérifier si sold out
+                if (event.maxPresales && event.presalesSold >= event.maxPresales) {
+                    presalesAvailable = false;
+                    infoText = '🔥 SOLD OUT - Toutes les préventes ont été vendues !';
+                }
+
+                // Vérifier la date de fin
+                if (presalesAvailable && event.presalesEndDate) {
                     const endDate = new Date(event.presalesEndDate);
                     if (new Date() > endDate) {
                         presalesAvailable = false;
@@ -1030,8 +1080,17 @@
                             hour: '2-digit',
                             minute: '2-digit'
                         });
-                        infoText = `Préventes disponibles jusqu'au ${formattedEndDate}`;
+                        // Afficher aussi le nombre restant
+                        if (event.maxPresales) {
+                            const remaining = event.maxPresales - (event.presalesSold || 0);
+                            infoText = `${remaining} préventes restantes - Jusqu'au ${formattedEndDate}`;
+                        } else {
+                            infoText = `Préventes disponibles jusqu'au ${formattedEndDate}`;
+                        }
                     }
+                } else if (presalesAvailable && event.maxPresales) {
+                    const remaining = event.maxPresales - (event.presalesSold || 0);
+                    infoText = `${remaining} préventes restantes`;
                 }
 
                 if (presalesAvailable) {
@@ -1043,7 +1102,13 @@
                     presalesButton.dataset.eventId = eventId;
                     presalesButton.dataset.ticketPrice = ticketPriceEuros;
                 } else {
-                    presalesButton.textContent = '🚫 Préventes terminées';
+                    // Sold out ou terminé
+                    if (event.maxPresales && event.presalesSold >= event.maxPresales) {
+                        presalesButton.textContent = '🔥 SOLD OUT';
+                        presalesButton.style.background = 'linear-gradient(90deg, #ff4d4f, #ff7875)';
+                    } else {
+                        presalesButton.textContent = '🚫 Préventes terminées';
+                    }
                     presalesButton.className = 'modal-btn modal-btn-secondary';
                     presalesButton.style.cursor = 'not-allowed';
                     presalesButton.disabled = true;
@@ -1068,6 +1133,10 @@
             document.body.style.overflow = 'hidden';
         };
 
+        // Variables pour le questionnaire prévente
+        let currentPresaleEventId = null;
+        let currentPresalePrice = null;
+
         // Gestionnaire de clic pour le bouton préventes
         document.getElementById('modal-presales-button').addEventListener('click', async function() {
             const eventId = this.dataset.eventId;
@@ -1080,12 +1149,12 @@
                 return;
             }
 
-            // Désactiver le bouton pendant le traitement
-            this.disabled = true;
-            this.textContent = '⏳ Chargement...';
+            // Stocker l'eventId et le prix
+            currentPresaleEventId = eventId;
+            currentPresalePrice = this.dataset.ticketPrice || '8.00';
 
+            // Vérifier si l'utilisateur a déjà une prévente pour cet événement
             try {
-                // Vérifier si l'utilisateur a déjà une prévente pour cet événement
                 const presalesQuery = query(
                     collection(db, 'presales'),
                     where('eventId', '==', eventId),
@@ -1096,17 +1165,60 @@
 
                 if (!existingPresales.empty) {
                     alert('Vous avez déjà une prévente pour cet événement !');
-                    const price = this.dataset.ticketPrice || '8.00';
-                    this.textContent = `🎟️ Acheter une prévente (${price}€)`;
-                    this.disabled = false;
                     return;
                 }
 
-                // Créer la session de checkout
+                // Ouvrir le modal questionnaire
+                document.getElementById('presale-questionnaire-modal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                // Réinitialiser le formulaire
+                document.getElementById('presale-questionnaire-form').reset();
+
+            } catch (error) {
+                console.error('Erreur vérification prévente:', error);
+                alert('Erreur: ' + (error.message || 'Impossible de vérifier vos préventes'));
+            }
+        });
+
+        // Fermer le modal questionnaire
+        window.closePresaleQuestionnaireModal = function() {
+            document.getElementById('presale-questionnaire-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentPresaleEventId = null;
+            currentPresalePrice = null;
+        };
+
+        // Soumettre le questionnaire et procéder au paiement
+        document.getElementById('submit-presale-questionnaire-btn').addEventListener('click', async function() {
+            const nom = document.getElementById('presale-nom').value.trim();
+            const prenom = document.getElementById('presale-prenom').value.trim();
+            const age = document.getElementById('presale-age').value;
+
+            if (!nom || !prenom || !age) {
+                alert('Veuillez remplir tous les champs.');
+                return;
+            }
+
+            if (parseInt(age) < 1 || parseInt(age) > 120) {
+                alert('Veuillez entrer un âge valide.');
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = '⏳ Chargement...';
+
+            try {
+                // Créer la session de checkout avec les infos utilisateur
                 const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
                 const result = await createCheckoutSession({
-                    eventId: eventId,
-                    baseUrl: window.location.origin
+                    eventId: currentPresaleEventId,
+                    baseUrl: window.location.origin,
+                    buyerInfo: {
+                        nom: nom,
+                        prenom: prenom,
+                        age: parseInt(age)
+                    }
                 });
 
                 if (result.data.url) {
@@ -1119,9 +1231,8 @@
             } catch (error) {
                 console.error('Erreur achat prévente:', error);
                 alert('Erreur: ' + (error.message || 'Impossible de procéder au paiement'));
-                const price = this.dataset.ticketPrice || '8.00';
-                this.textContent = `🎟️ Acheter une prévente (${price}€)`;
                 this.disabled = false;
+                this.textContent = 'Continuer vers le paiement';
             }
         });
 

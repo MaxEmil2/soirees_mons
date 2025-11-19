@@ -52,7 +52,9 @@ const userPresalesLabel = document.getElementById('user-presales-label');
 const userPresalesInput = document.getElementById('user-event-presales');
 const userPresalesEndContainer = document.getElementById('user-presales-end-container');
 const userPresalesEndDateInput = document.getElementById('user-presales-end-date');
-const userPresalesInfo = document.getElementById('user-presales-info');
+const userMaxPresalesContainer = document.getElementById('user-max-presales-container');
+const userMaxPresalesInput = document.getElementById('user-max-presales');
+const priceCommissionInfo = document.getElementById('price-commission-info');
 const userImageUploadArea = document.getElementById('user-image-upload-area');
 const userImageInput = document.getElementById('user-image-input');
 const userImagePreview = document.getElementById('user-image-preview');
@@ -116,8 +118,16 @@ userPresalesToggle.addEventListener('click', () => {
     if (userPresalesEndContainer) {
         userPresalesEndContainer.style.display = isActive ? 'block' : 'none';
     }
-    if (userPresalesInfo) {
-        userPresalesInfo.style.display = isActive ? 'block' : 'none';
+    if (userMaxPresalesContainer) {
+        userMaxPresalesContainer.style.display = isActive ? 'block' : 'none';
+        // Rendre le champ requis uniquement quand visible
+        if (userMaxPresalesInput) {
+            userMaxPresalesInput.required = isActive;
+        }
+    }
+    // Afficher l'info commission sous le prix
+    if (priceCommissionInfo) {
+        priceCommissionInfo.style.display = isActive ? 'block' : 'none';
     }
 });
 
@@ -198,7 +208,9 @@ userEventForm.addEventListener('submit', async (e) => {
         link: document.getElementById('user-event-link').value.trim(),
         description: document.getElementById('user-event-description').value.trim(),
         presales: userPresalesInput.value === 'true',
-        presalesEndDate: userPresalesEndDateInput && userPresalesEndDateInput.value ? userPresalesEndDateInput.value : null
+        presalesEndDate: userPresalesEndDateInput && userPresalesEndDateInput.value ? userPresalesEndDateInput.value : null,
+        maxPresales: userMaxPresalesInput && userMaxPresalesInput.value ? parseInt(userMaxPresalesInput.value) : null,
+        presalesSold: 0 // Compteur de préventes vendues
     };
 
     // Le prix du ticket pour les préventes = le prix de l'événement (en centimes)
@@ -220,6 +232,12 @@ userEventForm.addEventListener('submit', async (e) => {
     // Validation du prix si préventes activées
     if (eventData.presales && (!eventData.price || eventData.price < 1)) {
         showError('Veuillez entrer un prix valide (minimum 1€) pour activer les préventes.');
+        return;
+    }
+
+    // Validation du nombre max de préventes
+    if (eventData.presales && (!eventData.maxPresales || eventData.maxPresales < 1)) {
+        showError('Veuillez entrer le nombre maximum de préventes.');
         return;
     }
 
@@ -301,6 +319,11 @@ function resetUserForm() {
     userPresalesLabel.textContent = 'Désactivé';
     if (userPresalesEndContainer) userPresalesEndContainer.style.display = 'none';
     if (userPresalesEndDateInput) userPresalesEndDateInput.value = '';
-    if (userPresalesInfo) userPresalesInfo.style.display = 'none';
+    if (userMaxPresalesContainer) userMaxPresalesContainer.style.display = 'none';
+    if (userMaxPresalesInput) {
+        userMaxPresalesInput.value = '';
+        userMaxPresalesInput.required = false;
+    }
+    if (priceCommissionInfo) priceCommissionInfo.style.display = 'none';
 }
 
