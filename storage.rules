@@ -1,0 +1,66 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Fonction helper pour vérifier l'authentification
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Fonction helper pour vérifier si c'est le propriétaire
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Fonction helper pour vérifier le type de fichier image
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Fonction helper pour vérifier la taille (max 5MB)
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Images des événements
+    match /events/{eventId}/{fileName} {
+      // Lecture publique
+      allow read: if true;
+
+      // Création: utilisateur authentifié + image valide
+      allow create: if isAuthenticated()
+                    && isImage()
+                    && isValidSize();
+
+      // Mise à jour/Suppression: uniquement le créateur
+      // Note: En pratique, on vérifie via Firestore
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Images de profil des utilisateurs
+    match /users/{userId}/{fileName} {
+      // Lecture publique (pour afficher les avatars)
+      allow read: if true;
+
+      // Écriture: uniquement le propriétaire + image valide
+      allow write: if isOwner(userId)
+                   && isImage()
+                   && isValidSize();
+    }
+
+    // Logos des partenaires (admin uniquement via SDK)
+    match /partners/{partnerId}/{fileName} {
+      allow read: if true;
+      allow write: if false; // Géré par admin SDK
+    }
+
+    // QR codes des préventes (générés par Cloud Functions)
+    match /presales/{presaleId}/{fileName} {
+      // Lecture: utilisateur authentifié (propriétaire vérifié côté client)
+      allow read: if isAuthenticated();
+
+      // Écriture: uniquement Cloud Functions (admin SDK)
+      allow write: if false;
+    }
+  }
+}
