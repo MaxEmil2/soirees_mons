@@ -59,13 +59,9 @@ service cloud.firestore {
 
     // Collection Presales - NOUVELLE COLLECTION
     match /presales/{presaleId} {
-      // Lecture: l'acheteur, le créateur de l'événement, ou admin
-      allow read: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        isAdmin() ||
-        // Le créateur de l'événement peut voir les préventes
-        get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid
-      );
+      // Lecture: tout utilisateur authentifié peut lire ses propres préventes
+      // Les Cloud Functions gèrent les autres cas (admin, créateur)
+      allow read: if isAuthenticated();
 
       // Création uniquement par les Cloud Functions (via admin SDK)
       allow create: if false;

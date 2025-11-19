@@ -589,7 +589,8 @@ function displayStripeStatus(status) {
         stripeStatus.style.color = '#52c41a';
         stripeStatus.innerHTML = '✅ Compte configuré - Vous pouvez recevoir des paiements';
         setupStripeBtn.textContent = '📊 Gérer mon compte Stripe';
-    } else if (status.status === 'pending') {
+    } else if (status.status === 'pending' || status.status === 'active') {
+        // Active mais pas encore capable de recevoir des paiements = en cours de vérification
         stripeStatus.style.background = 'rgba(250, 173, 20, 0.2)';
         stripeStatus.style.color = '#faad14';
         stripeStatus.innerHTML = '⏳ Configuration en cours - Terminez la configuration pour recevoir des paiements';
@@ -599,10 +600,17 @@ function displayStripeStatus(status) {
         stripeStatus.style.color = '#ff4d4f';
         stripeStatus.innerHTML = '❌ Compte non configuré - Configurez votre compte pour recevoir des paiements';
         setupStripeBtn.textContent = '⚙️ Configurer mon compte';
+    } else if (status.status === 'error') {
+        stripeStatus.style.background = 'rgba(255, 77, 79, 0.2)';
+        stripeStatus.style.color = '#ff4d4f';
+        stripeStatus.innerHTML = '⚠️ Erreur de vérification - Réessayez ou configurez votre compte';
+        setupStripeBtn.textContent = '⚙️ Configurer mon compte';
     } else {
-        stripeStatus.style.background = 'rgba(255, 255, 255, 0.1)';
-        stripeStatus.style.color = 'var(--text-secondary)';
-        stripeStatus.innerHTML = 'Statut inconnu';
+        // Fallback pour les utilisateurs sans compte Stripe
+        stripeStatus.style.background = 'rgba(255, 77, 79, 0.2)';
+        stripeStatus.style.color = '#ff4d4f';
+        stripeStatus.innerHTML = '❌ Compte non configuré - Configurez votre compte pour recevoir des paiements';
+        setupStripeBtn.textContent = '⚙️ Configurer mon compte';
     }
 }
 
