@@ -938,8 +938,13 @@ exports.getMyPresales = functions.region('europe-west1').https.onCall(async (dat
                 amount: data.amount,
                 status: data.status,
                 qrCode: data.qrCode,
-                createdAt: data.createdAt?.toDate?.() || data.createdAt,
-                usedAt: data.usedAt?.toDate?.() || data.usedAt
+                // Infos acheteur
+                buyerNom: data.buyerNom || '',
+                buyerPrenom: data.buyerPrenom || '',
+                buyerAge: data.buyerAge || null,
+                // Convertir les dates en ISO string pour éviter les problèmes de sérialisation
+                createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+                usedAt: data.usedAt?.toDate?.()?.toISOString() || null
             });
         });
 

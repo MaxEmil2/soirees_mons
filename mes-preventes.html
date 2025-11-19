@@ -388,30 +388,34 @@
 
                     const location = presale.eventData?.location || 'Lieu inconnu';
 
-                    // Corriger le problème de date Invalid
+                    // Formater la date d'achat
                     let purchaseDate = '';
                     if (presale.createdAt) {
-                        // Si c'est un timestamp Firestore
-                        if (presale.createdAt.seconds) {
-                            purchaseDate = new Date(presale.createdAt.seconds * 1000).toLocaleDateString('fr-BE');
-                        } else if (presale.createdAt.toDate) {
-                            purchaseDate = presale.createdAt.toDate().toLocaleDateString('fr-BE');
-                        } else {
-                            purchaseDate = new Date(presale.createdAt).toLocaleDateString('fr-BE');
+                        const date = new Date(presale.createdAt);
+                        if (!isNaN(date.getTime())) {
+                            purchaseDate = date.toLocaleDateString('fr-BE', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
                         }
                     }
 
                     let usedInfo = '';
                     if (presale.status === 'used' && presale.usedAt) {
-                        let usedDate = '';
-                        if (presale.usedAt.seconds) {
-                            usedDate = new Date(presale.usedAt.seconds * 1000).toLocaleString('fr-BE');
-                        } else if (presale.usedAt.toDate) {
-                            usedDate = presale.usedAt.toDate().toLocaleString('fr-BE');
-                        } else {
-                            usedDate = new Date(presale.usedAt).toLocaleString('fr-BE');
+                        const usedDate = new Date(presale.usedAt);
+                        if (!isNaN(usedDate.getTime())) {
+                            const formattedUsedDate = usedDate.toLocaleString('fr-BE', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            usedInfo = `<div class="used-info">Utilisé le ${formattedUsedDate}</div>`;
                         }
-                        usedInfo = `<div class="used-info">Utilisé le ${usedDate}</div>`;
                     }
 
                     // Infos acheteur
