@@ -52,6 +52,8 @@ const userPresalesLabel = document.getElementById('user-presales-label');
 const userPresalesInput = document.getElementById('user-event-presales');
 const userPresalesEndContainer = document.getElementById('user-presales-end-container');
 const userPresalesEndDateInput = document.getElementById('user-presales-end-date');
+const userTicketPriceContainer = document.getElementById('user-ticket-price-container');
+const userTicketPriceInput = document.getElementById('user-ticket-price');
 const userImageUploadArea = document.getElementById('user-image-upload-area');
 const userImageInput = document.getElementById('user-image-input');
 const userImagePreview = document.getElementById('user-image-preview');
@@ -111,9 +113,12 @@ userPresalesToggle.addEventListener('click', () => {
     const isActive = userPresalesToggle.classList.contains('active');
     userPresalesInput.value = isActive ? 'true' : 'false';
     userPresalesLabel.textContent = isActive ? 'Activé' : 'Désactivé';
-    // Afficher/masquer le champ de date de fin des préventes
+    // Afficher/masquer les champs de préventes
     if (userPresalesEndContainer) {
         userPresalesEndContainer.style.display = isActive ? 'block' : 'none';
+    }
+    if (userTicketPriceContainer) {
+        userTicketPriceContainer.style.display = isActive ? 'block' : 'none';
     }
 });
 
@@ -194,7 +199,8 @@ userEventForm.addEventListener('submit', async (e) => {
         link: document.getElementById('user-event-link').value.trim(),
         description: document.getElementById('user-event-description').value.trim(),
         presales: userPresalesInput.value === 'true',
-        presalesEndDate: userPresalesEndDateInput && userPresalesEndDateInput.value ? userPresalesEndDateInput.value : null
+        presalesEndDate: userPresalesEndDateInput && userPresalesEndDateInput.value ? userPresalesEndDateInput.value : null,
+        ticketPrice: userTicketPriceInput && userTicketPriceInput.value ? Math.round(parseFloat(userTicketPriceInput.value) * 100) : null // Prix en centimes
     };
 
     // Validation
@@ -206,6 +212,18 @@ userEventForm.addEventListener('submit', async (e) => {
     if (!currentUserImageFile) {
         showError('Veuillez sélectionner une image.');
         return;
+    }
+
+    // Validation du prix du ticket si préventes activées
+    if (eventData.presales) {
+        if (!eventData.ticketPrice || eventData.ticketPrice < 100) {
+            showError('Veuillez entrer un prix de ticket valide (minimum 1€).');
+            return;
+        }
+        if (eventData.ticketPrice > 50000) {
+            showError('Le prix du ticket ne peut pas dépasser 500€.');
+            return;
+        }
     }
 
     // Désactiver le bouton pendant l'envoi
@@ -286,5 +304,7 @@ function resetUserForm() {
     userPresalesLabel.textContent = 'Désactivé';
     if (userPresalesEndContainer) userPresalesEndContainer.style.display = 'none';
     if (userPresalesEndDateInput) userPresalesEndDateInput.value = '';
+    if (userTicketPriceContainer) userTicketPriceContainer.style.display = 'none';
+    if (userTicketPriceInput) userTicketPriceInput.value = '';
 }
 
