@@ -233,59 +233,457 @@ firebase deploy --only functions
 
 ---
 
-## 6. Configuration Stripe
+## 6. Configuration Stripe (Complete)
 
 ### Etape 6.1 : Creer un compte Stripe
 1. Allez sur [Stripe Dashboard](https://dashboard.stripe.com/)
 2. Creez un compte ou connectez-vous
-3. Completez la verification d'identite
+3. **Completez la verification d'identite** :
+   - Informations personnelles
+   - Document d'identite
+   - Informations bancaires (IBAN)
+   - Adresse de l'entreprise
 
-### Etape 6.2 : Activer Connect
-1. Dashboard > Connect > Settings
-2. Activez les comptes Express
-3. Configurez :
-   - Pays : Belgique
-   - Type de business : Plateforme de ticketing
+### Etape 6.2 : Activer Stripe Connect
 
-### Etape 6.3 : Recuperer les cles API
+Stripe Connect permet de payer les organisateurs de soirees automatiquement.
+
+1. Dashboard > **Connect** > Settings
+2. Cliquez sur **Get started with Connect**
+3. Configurez le profil de la plateforme :
+   - **Platform type** : Marketplace or platform
+   - **Business type** : Event ticketing
+   - **Country** : Belgium
+
+4. **Types de comptes Connect** :
+   - Selectionnez **Express** (recommande)
+   - Les organisateurs creent leur compte simplement
+   - Stripe gere la verification KYC
+
+5. **Branding Connect** :
+   - Dashboard > Connect > Settings > Branding
+   - Uploadez votre logo
+   - Couleur primaire : `#6c63ff`
+   - Nom de la plateforme : `Soirees Mons`
+
+### Etape 6.3 : Configurer les paiements
+
+1. **Methodes de paiement** :
+   - Dashboard > Settings > Payment methods
+   - Activez :
+     - Cards (Visa, Mastercard)
+     - Bancontact (Belgique)
+     - iDEAL (Pays-Bas, optionnel)
+
+2. **Devise** :
+   - Devise par defaut : EUR
+
+3. **Commission de la plateforme** :
+   - Le code applique 12% de commission
+   - Organisateur recoit 88%
+   - Vous recevez 12%
+
+### Etape 6.4 : Recuperer les cles API
+
 1. Dashboard > Developers > API keys
-2. Copiez :
-   - **Secret key** : `sk_live_xxx` (production) ou `sk_test_xxx` (test)
-   - **Publishable key** : `pk_live_xxx` ou `pk_test_xxx`
 
-### Etape 6.4 : Configurer le webhook
+**Mode Test (pour developpement)** :
+- Secret key : `sk_test_xxxxxxxxxxxx`
+- Publishable key : `pk_test_xxxxxxxxxxxx`
+
+**Mode Live (pour production)** :
+- Secret key : `sk_live_xxxxxxxxxxxx`
+- Publishable key : `pk_live_xxxxxxxxxxxx`
+
+> **IMPORTANT** : Ne jamais exposer la secret key cote client !
+
+### Etape 6.5 : Configurer le Webhook
+
+Le webhook recoit les notifications de paiement de Stripe.
+
 1. Dashboard > Developers > Webhooks
-2. Cliquez "Add endpoint"
-3. URL : `https://europe-west1-votre-projet.cloudfunctions.net/stripeWebhook`
-4. Evenements a ecouter :
-   - `checkout.session.completed`
-   - `payment_intent.succeeded`
-   - `payment_intent.payment_failed`
-   - `charge.refunded`
-5. Copiez le **Signing secret** : `whsec_xxx`
+2. Cliquez **Add endpoint**
+3. **URL de l'endpoint** :
+   ```
+   https://europe-west1-VOTRE-PROJET.cloudfunctions.net/stripeWebhook
+   ```
+   Remplacez `VOTRE-PROJET` par votre ID de projet Firebase.
 
-### Etape 6.5 : Configurer dans Firebase
+4. **Evenements a ecouter** (cliquez "Select events") :
+   - `checkout.session.completed` - Paiement reussi
+   - `payment_intent.succeeded` - Intent confirme
+   - `payment_intent.payment_failed` - Echec de paiement
+   - `charge.refunded` - Remboursement effectue
+
+5. Cliquez **Add endpoint**
+
+6. **Copiez le Signing secret** : `whsec_xxxxxxxxxxxx`
+   - Cliquez sur l'endpoint cree
+   - Section "Signing secret" > Reveal
+
+### Etape 6.6 : Configurer dans Firebase
+
 ```bash
-firebase functions:config:set stripe.secret_key="sk_live_xxx"
-firebase functions:config:set stripe.webhook_secret="whsec_xxx"
+# Mode Test
+firebase functions:config:set stripe.secret_key="sk_test_xxxxxxxxxxxx"
+firebase functions:config:set stripe.webhook_secret="whsec_xxxxxxxxxxxx"
+
+# Mode Production (quand pret)
+firebase functions:config:set stripe.secret_key="sk_live_xxxxxxxxxxxx"
+firebase functions:config:set stripe.webhook_secret="whsec_xxxxxxxxxxxx"
 ```
+
+### Etape 6.7 : Tester les paiements
+
+**Cartes de test Stripe** :
+
+| Carte | Numero | Resultat |
+|-------|--------|----------|
+| Visa | 4242 4242 4242 4242 | Succes |
+| Visa (auth) | 4000 0025 0000 3155 | Authentification 3D Secure |
+| Declined | 4000 0000 0000 0002 | Refuse |
+| Insufficient | 4000 0000 0000 9995 | Fonds insuffisants |
+
+- Date d'expiration : n'importe quelle date future (ex: 12/34)
+- CVC : n'importe quels 3 chiffres (ex: 123)
+
+**Tester Bancontact** :
+- Utilisez le test card: `pm_card_be`
+- Ou simulez via le mode test
+
+### Etape 6.8 : Checklist avant production
+
+- [ ] Verification d'identite complete
+- [ ] Informations bancaires ajoutees
+- [ ] Branding Connect configure
+- [ ] Webhook endpoint en mode Live cree
+- [ ] Secret key Live configuree dans Firebase
+- [ ] Webhook secret Live configure dans Firebase
+- [ ] Tests effectues avec vraies cartes (petits montants)
+- [ ] Politique de remboursement definie
+
+### Etape 6.9 : Gestion des organisateurs (Connect)
+
+Quand un organisateur active les preventes :
+1. Il clique "Configurer Stripe" dans son dashboard
+2. La function `createStripeConnectAccount` cree un compte Express
+3. Il est redirige vers l'onboarding Stripe
+4. Il complete ses infos (identite, IBAN)
+5. Son `stripeAccountId` est sauvegarde dans Firestore
+6. Les paiements sont automatiquement repartis (88% organisateur, 12% plateforme)
+
+### Etape 6.10 : Monitoring et Rapports
+
+- **Dashboard Stripe** > Payments : Voir tous les paiements
+- **Dashboard Stripe** > Connect > Accounts : Voir les organisateurs
+- **Dashboard Stripe** > Balance : Voir vos revenus de commission
+- **Firebase Console** > Functions > Logs : Debug des webhooks
 
 ---
 
 ## 7. Configuration Email
 
-### Option A : Mailtrap (Test/Dev)
+### Option A : Mailtrap (Test/Developpement)
+
+Mailtrap intercepte les emails pour les tester sans envoyer de vrais emails.
 
 1. Creez un compte sur [Mailtrap](https://mailtrap.io/)
-2. Allez dans Inboxes > SMTP Settings
-3. Copiez Username et Password
+2. Allez dans **Email Testing** > **Inboxes**
+3. Cliquez sur votre inbox > **SMTP Settings**
+4. Selectionnez **Nodemailer** dans le dropdown
+5. Copiez les credentials
 
 ```bash
-firebase functions:config:set email.user="votre_username"
-firebase functions:config:set email.pass="votre_password"
+firebase functions:config:set email.user="votre_username_mailtrap"
+firebase functions:config:set email.pass="votre_password_mailtrap"
 ```
 
-### Option B : Gmail (Production)
+Le code actuel utilise deja Mailtrap par defaut.
+
+---
+
+### Option B : SendGrid (Recommande pour Production)
+
+SendGrid est le service d'email recommande pour la production. Plan gratuit : 100 emails/jour.
+
+#### Etape 7.1 : Creer un compte SendGrid
+
+1. Allez sur [SendGrid](https://sendgrid.com/)
+2. Cliquez **Start for Free**
+3. Creez votre compte avec votre email
+4. Verifiez votre email
+
+#### Etape 7.2 : Configurer l'authentification de l'expediteur
+
+**IMPORTANT** : SendGrid requiert une verification de l'expediteur.
+
+1. Dashboard > **Settings** > **Sender Authentication**
+2. Choisissez une methode :
+
+**Option 1 : Single Sender (Simple, pour commencer)**
+- Cliquez **Verify a Single Sender**
+- Remplissez :
+  - From Email : `noreply@soireesmons.be`
+  - From Name : `Soirees Mons`
+  - Reply To : `contact@soireesmons.be`
+  - Company Address : Votre adresse
+- Verifiez l'email recu
+
+**Option 2 : Domain Authentication (Recommande pour production)**
+- Cliquez **Authenticate Your Domain**
+- Entrez votre domaine : `soireesmons.be`
+- Ajoutez les enregistrements DNS fournis chez votre registrar
+- Attendez la propagation DNS (jusqu'a 48h)
+
+#### Etape 7.3 : Creer une API Key
+
+1. Dashboard > **Settings** > **API Keys**
+2. Cliquez **Create API Key**
+3. Nom : `Soirees Mons Functions`
+4. Permissions : **Restricted Access**
+   - Mail Send : **Full Access**
+   - (Laissez le reste en No Access)
+5. Cliquez **Create & View**
+6. **COPIEZ LA CLE** (elle ne sera plus visible apres !)
+
+Format : `SG.xxxxxxxxxxxxxxxxxxxx.yyyyyyyyyyyyyyyyyy`
+
+#### Etape 7.4 : Installer SendGrid dans les Functions
+
+```bash
+cd functions
+npm install @sendgrid/mail
+```
+
+Mettez a jour `package.json` :
+```json
+{
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.0",
+    // ... autres dependances
+  }
+}
+```
+
+#### Etape 7.5 : Modifier le code des Functions
+
+Remplacez la fonction `getEmailTransporter` et `sendPresaleEmail` dans `functions/index.js` :
+
+```javascript
+const sgMail = require('@sendgrid/mail');
+
+// Configuration SendGrid
+const initSendGrid = () => {
+    const apiKey = functions.config().sendgrid?.api_key;
+    if (!apiKey) {
+        throw new Error('SendGrid API key not configured. Run: firebase functions:config:set sendgrid.api_key="SG.xxx"');
+    }
+    sgMail.setApiKey(apiKey);
+};
+
+/**
+ * Envoie l'email avec le QR code via SendGrid
+ */
+async function sendPresaleEmail(presaleData) {
+    initSendGrid();
+
+    const eventDoc = await db.collection('events').doc(presaleData.eventId).get();
+    const eventData = eventDoc.data();
+    const eventDate = new Date(eventData.date).toLocaleDateString('fr-BE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    // Contenu HTML de l'email (gardez le meme HTML que dans le code actuel)
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #0a0a12;
+                color: #ffffff;
+                margin: 0;
+                padding: 20px;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(0, 212, 255, 0.1));
+                border-radius: 20px;
+                padding: 40px;
+                border: 1px solid rgba(108, 99, 255, 0.3);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .logo {
+                font-size: 28px;
+                font-weight: bold;
+                background: linear-gradient(90deg, #6c63ff, #00d4ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .title {
+                font-size: 24px;
+                color: #00d4ff;
+                margin: 20px 0;
+            }
+            .event-name {
+                font-size: 28px;
+                font-weight: bold;
+                color: #ffffff;
+                margin: 10px 0;
+            }
+            .qr-container {
+                text-align: center;
+                background: #ffffff;
+                border-radius: 15px;
+                padding: 30px;
+                margin: 30px 0;
+            }
+            .qr-code {
+                max-width: 250px;
+            }
+            .warning {
+                background: rgba(250, 173, 20, 0.2);
+                border: 1px solid rgba(250, 173, 20, 0.5);
+                border-radius: 10px;
+                padding: 15px;
+                margin: 20px 0;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo">SOIREES MONS</div>
+                <div class="title">Votre prevente est confirmee !</div>
+            </div>
+            <div class="event-name">${presaleData.eventName}</div>
+            <p><strong>Date :</strong> ${eventDate}</p>
+            <p><strong>Lieu :</strong> ${eventData.location}</p>
+            <p><strong>Prix paye :</strong> ${presaleData.amount} EUR</p>
+            <div class="qr-container">
+                <img src="cid:qrcode" alt="QR Code" class="qr-code">
+                <p style="color: #333;">Presentez ce QR code a l'entree</p>
+                <p style="color: #666; font-size: 12px;">ID: ${presaleData.id}</p>
+            </div>
+            <div class="warning">
+                <strong>Important :</strong> Ce QR code est unique et personnel.
+                Ne le partagez pas. Il ne peut etre utilise qu'une seule fois.
+            </div>
+            <p style="text-align: center; color: #a0a0a0; font-size: 12px;">
+                Merci d'avoir choisi Soirees Mons !<br>
+                Contact : @soireesmons sur Instagram
+            </p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    // Extraire le base64 du QR code
+    const qrBase64 = presaleData.qrCode.split(',')[1];
+
+    const msg = {
+        to: presaleData.userEmail,
+        from: {
+            email: functions.config().sendgrid?.from_email || 'noreply@soireesmons.be',
+            name: 'Soirees Mons'
+        },
+        subject: `🎉 Votre prevente pour ${presaleData.eventName}`,
+        html: htmlContent,
+        attachments: [
+            {
+                content: qrBase64,
+                filename: 'qrcode.png',
+                type: 'image/png',
+                disposition: 'inline',
+                content_id: 'qrcode'
+            }
+        ]
+    };
+
+    try {
+        await sgMail.send(msg);
+        console.log(`Email envoye a ${presaleData.userEmail} via SendGrid`);
+    } catch (error) {
+        console.error('Erreur SendGrid:', error);
+        if (error.response) {
+            console.error('SendGrid response body:', error.response.body);
+        }
+        throw error;
+    }
+}
+```
+
+#### Etape 7.6 : Configurer dans Firebase
+
+```bash
+# API Key SendGrid
+firebase functions:config:set sendgrid.api_key="SG.xxxxxxxxxxxx"
+
+# Email expediteur (doit etre verifie dans SendGrid)
+firebase functions:config:set sendgrid.from_email="noreply@soireesmons.be"
+```
+
+#### Etape 7.7 : Deployer et tester
+
+```bash
+# Deployer les functions
+firebase deploy --only functions
+
+# Verifier la configuration
+firebase functions:config:get
+
+# Tester un email
+# Faites un achat de prevente test et verifiez la reception
+```
+
+#### Etape 7.8 : Monitoring SendGrid
+
+1. Dashboard SendGrid > **Activity** : Voir les emails envoyes
+2. Dashboard SendGrid > **Statistics** : Metriques de delivrabilite
+3. Dashboard SendGrid > **Suppressions** : Emails bloques/bounces
+
+#### Etape 7.9 : Templates SendGrid (Optionnel)
+
+Vous pouvez creer des templates dans SendGrid pour faciliter la maintenance :
+
+1. Dashboard > **Email API** > **Dynamic Templates**
+2. Creez un template avec le design de l'email
+3. Utilisez l'ID du template dans le code :
+
+```javascript
+const msg = {
+    to: presaleData.userEmail,
+    from: 'noreply@soireesmons.be',
+    templateId: 'd-xxxxxxxxxxxx',
+    dynamicTemplateData: {
+        eventName: presaleData.eventName,
+        eventDate: eventDate,
+        location: eventData.location,
+        amount: presaleData.amount,
+        qrCode: presaleData.qrCode,
+        presaleId: presaleData.id
+    }
+};
+```
+
+---
+
+### Option C : Gmail (Alternative simple)
+
+Pour les petits volumes (< 500 emails/jour).
 
 1. Activez l'authentification 2FA sur votre compte Google
 2. Creez un mot de passe d'application :
@@ -312,16 +710,18 @@ firebase functions:config:set email.user="votre@gmail.com"
 firebase functions:config:set email.pass="mot_de_passe_app"
 ```
 
-### Option C : SendGrid (Recommande pour production)
+> **Limitation** : Gmail limite a 500 emails/jour et peut bloquer les envois en masse.
 
-1. Creez un compte sur [SendGrid](https://sendgrid.com/)
-2. Recuperez votre API key
-3. Modifiez le transporter :
+---
 
-```javascript
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(functions.config().sendgrid.api_key);
-```
+### Comparaison des options email
+
+| Service | Gratuit | Limite | Recommande pour |
+|---------|---------|--------|-----------------|
+| Mailtrap | Oui | Test uniquement | Developpement |
+| SendGrid | 100/jour | 100 emails/jour | Production |
+| Gmail | Oui | 500/jour | Petits volumes |
+| SendGrid Pro | $19.95/mois | 50,000/mois | Gros volumes |
 
 ---
 
