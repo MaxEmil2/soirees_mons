@@ -632,9 +632,9 @@
 
                 <h3 style="color: #6c63ff; margin-bottom: 10px;">Prix et commissions</h3>
                 <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>Prix de la prévente : <strong>8€</strong></li>
-                    <li>Vous recevez : <strong>7.04€</strong> sur votre compte (88%)</li>
-                    <li>Commission Soirées Mons : <strong>0.96€</strong> (12%)</li>
+                    <li>Prix de la prévente : <strong>Vous choisissez le prix</strong></li>
+                    <li>Vous recevez : <strong>88%</strong> du prix sur votre compte</li>
+                    <li>Commission Soirées Mons : <strong>12%</strong></li>
                 </ul>
 
                 <h3 style="color: #6c63ff; margin-bottom: 10px;">Ce que reçoit l'acheteur</h3>
@@ -995,11 +995,13 @@
                 }
 
                 if (presalesAvailable) {
-                    presalesButton.textContent = '🎟️ Acheter une prévente (8€)';
+                    const ticketPriceEuros = event.ticketPrice ? (event.ticketPrice / 100).toFixed(2) : '8.00';
+                    presalesButton.textContent = `🎟️ Acheter une prévente (${ticketPriceEuros}€)`;
                     presalesButton.className = 'modal-btn modal-btn-primary';
                     presalesButton.style.cursor = 'pointer';
                     presalesButton.disabled = false;
                     presalesButton.dataset.eventId = eventId;
+                    presalesButton.dataset.ticketPrice = ticketPriceEuros;
                 } else {
                     presalesButton.textContent = '🚫 Préventes terminées';
                     presalesButton.className = 'modal-btn modal-btn-secondary';
@@ -1054,7 +1056,8 @@
 
                 if (!existingPresales.empty) {
                     alert('Vous avez déjà une prévente pour cet événement !');
-                    this.textContent = '🎟️ Acheter une prévente (8€)';
+                    const price = this.dataset.ticketPrice || '8.00';
+                    this.textContent = `🎟️ Acheter une prévente (${price}€)`;
                     this.disabled = false;
                     return;
                 }
@@ -1076,7 +1079,8 @@
             } catch (error) {
                 console.error('Erreur achat prévente:', error);
                 alert('Erreur: ' + (error.message || 'Impossible de procéder au paiement'));
-                this.textContent = '🎟️ Acheter une prévente (8€)';
+                const price = this.dataset.ticketPrice || '8.00';
+                this.textContent = `🎟️ Acheter une prévente (${price}€)`;
                 this.disabled = false;
             }
         });
