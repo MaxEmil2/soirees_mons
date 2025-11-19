@@ -1107,6 +1107,7 @@
                     presalesButton.disabled = false;
                     presalesButton.dataset.eventId = eventId;
                     presalesButton.dataset.ticketPrice = ticketPriceEuros;
+                    presalesButton.dataset.minAge = event.age || 0;
                 } else {
                     // Sold out ou terminé
                     if (event.presalesStopped || (event.maxPresales && event.presalesSold >= event.maxPresales)) {
@@ -1142,6 +1143,7 @@
         // Variables pour le questionnaire prévente
         let currentPresaleEventId = null;
         let currentPresalePrice = null;
+        let currentPresaleMinAge = null;
 
         // Gestionnaire de clic pour le bouton préventes
         document.getElementById('modal-presales-button').addEventListener('click', async function() {
@@ -1155,9 +1157,10 @@
                 return;
             }
 
-            // Stocker l'eventId et le prix
+            // Stocker l'eventId, le prix et l'âge minimum
             currentPresaleEventId = eventId;
             currentPresalePrice = this.dataset.ticketPrice || '8.00';
+            currentPresaleMinAge = parseInt(this.dataset.minAge) || 0;
 
             // Vérifier si l'utilisateur a déjà une prévente pour cet événement
             try {
@@ -1193,6 +1196,7 @@
             document.body.style.overflow = 'auto';
             currentPresaleEventId = null;
             currentPresalePrice = null;
+            currentPresaleMinAge = null;
         };
 
         // Soumettre le questionnaire et procéder au paiement
@@ -1208,6 +1212,12 @@
 
             if (parseInt(age) < 1 || parseInt(age) > 120) {
                 alert('Veuillez entrer un âge valide.');
+                return;
+            }
+
+            // Vérifier l'âge minimum requis pour la soirée
+            if (currentPresaleMinAge && parseInt(age) < currentPresaleMinAge) {
+                alert(`❌ Vous devez avoir au moins ${currentPresaleMinAge} ans pour acheter une prévente pour cette soirée.`);
                 return;
             }
 

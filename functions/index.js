@@ -887,6 +887,9 @@ exports.getPresalesForEvent = functions.region('europe-west1').https.onCall(asyn
                 id: data.id,
                 userName: data.userName,
                 userEmail: data.userEmail,
+                buyerNom: data.buyerNom || '',
+                buyerPrenom: data.buyerPrenom || '',
+                buyerAge: data.buyerAge || null,
                 amount: data.amount,
                 prix_total: data.prix_total || data.amount,
                 commission: data.commission || data.amount * 0.12,
@@ -1088,3 +1091,51 @@ exports.refundPresale = functions.region('europe-west1').https.onCall(async (dat
         throw new functions.https.HttpsError('internal', error.message);
     }
 });
+
+// ============================================
+// FONCTION PLANIFIÉE - Nettoyage des préventes utilisées
+// ============================================
+
+// Supprime automatiquement les préventes utilisées depuis plus de 3 jours
+// Exécution quotidienne à 3h du matin (Europe/Brussels)
+exports.cleanupUsedPresales = functions.region('europe-west1')
+    .pubsub
+    .schedule('0 3 * * *')
+    .timeZone('Europe/Brussels')
+    .onRun(async (context) => {
+        console.log('Début du nettoyage des préventes utilisées...');
+
+        try {
+            // Calculer la date limite (3 jours avant maintenant)
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+            // Récupérer les préventes utilisées depuis plus de 3 jours
+            const presalesSnapshot = await db.collection('presales')
+                .where('status', '==', 'used')
+                .where('usedAt', '<=', threeDaysAgo)
+                .get();
+
+            if (presalesSnapshot.empty) {
+                console.log('Aucune prévente à supprimer.');
+                return null;
+            }
+
+            // Supprimer par lots de 500 (limite Firestore)
+            const batch = db.batch();
+            let count = 0;
+
+            presalesSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+                count++;
+            });
+
+            await batch.commit();
+            console.log(`${count} prévente(s) utilisée(s) supprimée(s) avec succès.`);
+
+            return null;
+        } catch (error) {
+            console.error('Erreur lors du nettoyage des préventes:', error);
+            throw error;
+        }
+    });

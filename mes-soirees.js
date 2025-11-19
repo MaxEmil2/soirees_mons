@@ -192,9 +192,20 @@ function createEventItem(eventId, event) {
             `;
         }
 
+        // Bouton statistiques
+        let statsBtn = '';
+        if (status === 'approved' && event.presales) {
+            statsBtn = `
+                <button class="btn btn-info" onclick="window.location.href='stats.html?eventId=${eventId}'" style="background: linear-gradient(90deg, #00d4ff, #6c63ff); margin-bottom: 8px;">
+                    📊 Statistiques
+                </button>
+            `;
+        }
+
         actionButtons = `
             ${stopPresalesBtn}
             ${scannersBtn}
+            ${statsBtn}
             <button class="btn btn-danger" onclick="deleteEvent('${eventId}', '${event.imagePath || ''}')">🗑️ Supprimer</button>
         `;
     }
