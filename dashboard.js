@@ -687,5 +687,145 @@ onAuthStateChanged(auth, async (user) => {
         setTimeout(() => {
             initStripeSection(user.uid);
         }, 500);
+
+        // Initialiser les stats
+        setTimeout(() => {
+            initStatsSection(user.uid);
+        }, 600);
     }
 });
+
+// ========================================
+// STATS SECTION
+// ========================================
+
+async function initStatsSection(userId) {
+    try {
+        // Vérifier si l'utilisateur a des événements avec préventes
+        const eventsQuery = query(
+            collection(db, 'events'),
+            where('createdBy', '==', userId),
+            where('presales', '==', true)
+        );
+        const eventsSnapshot = await getDocs(eventsQuery);
+
+        if (eventsSnapshot.empty) {
+            return; // Pas d'événements avec préventes
+        }
+
+        // Afficher la section stats
+        const statsSection = document.getElementById('stats-section');
+        if (statsSection) {
+            statsSection.style.display = 'block';
+        }
+
+        // Récupérer les IDs des événements
+        const eventIds = [];
+        const eventNames = {};
+        eventsSnapshot.forEach((docSnap) => {
+            eventIds.push(docSnap.id);
+            eventNames[docSnap.id] = docSnap.data().name;
+        });
+
+        // Récupérer toutes les préventes pour ces événements
+        let allPresales = [];
+
+        // Firestore limite les requêtes "in" à 10 éléments, donc on doit faire plusieurs requêtes si nécessaire
+        for (let i = 0; i < eventIds.length; i += 10) {
+            const batchIds = eventIds.slice(i, i + 10);
+            const presalesQuery = query(
+                collection(db, 'presales'),
+                where('eventId', 'in', batchIds)
+            );
+            const presalesSnapshot = await getDocs(presalesQuery);
+            presalesSnapshot.forEach((docSnap) => {
+                allPresales.push({
+                    id: docSnap.id,
+                    ...docSnap.data(),
+                    eventName: eventNames[docSnap.data().eventId]
+                });
+            });
+        }
+
+        // Calculer les stats
+        const totalSold = allPresales.length;
+        const usedPresales = allPresales.filter(p => p.status === 'used').length;
+        const validPresales = allPresales.filter(p => p.status === 'valid').length;
+
+        // Calculer les gains (88% du prix total)
+        let totalEarnings = 0;
+        allPresales.forEach(presale => {
+            if (presale.creatorAmount) {
+                totalEarnings += presale.creatorAmount / 100; // Convertir centimes en euros
+            } else if (presale.amount) {
+                totalEarnings += (presale.amount * 0.88) / 100; // 88% du montant
+            }
+        });
+
+        // Afficher les stats
+        document.getElementById('stat-total').textContent = totalSold;
+        document.getElementById('stat-used').textContent = usedPresales;
+        document.getElementById('stat-remaining').textContent = validPresales;
+        document.getElementById('stat-earnings').textContent = totalEarnings.toFixed(2) + '€';
+
+        // Afficher la liste des préventes (les 10 dernières)
+        const presalesListContainer = document.getElementById('presales-list-container');
+
+        if (allPresales.length === 0) {
+            presalesListContainer.innerHTML = '<div class="stats-empty">Aucune prévente pour le moment</div>';
+            return;
+        }
+
+        // Trier par date (plus récentes en premier)
+        allPresales.sort((a, b) => {
+            const dateA = a.createdAt?.seconds || 0;
+            const dateB = b.createdAt?.seconds || 0;
+            return dateB - dateA;
+        });
+
+        // Afficher les 10 dernières
+        const recentPresales = allPresales.slice(0, 10);
+        let presalesHTML = '';
+
+        recentPresales.forEach(presale => {
+            const buyerName = presale.buyerPrenom && presale.buyerNom
+                ? `${presale.buyerPrenom} ${presale.buyerNom}`
+                : presale.userEmail || 'Anonyme';
+
+            let purchaseDate = '';
+            if (presale.createdAt) {
+                if (presale.createdAt.seconds) {
+                    purchaseDate = new Date(presale.createdAt.seconds * 1000).toLocaleDateString('fr-BE');
+                } else if (presale.createdAt.toDate) {
+                    purchaseDate = presale.createdAt.toDate().toLocaleDateString('fr-BE');
+                }
+            }
+
+            const statusClass = presale.status === 'used' ? 'used' : 'valid';
+            const statusText = presale.status === 'used' ? 'Utilisée' : 'Valide';
+
+            const amount = presale.creatorAmount
+                ? (presale.creatorAmount / 100).toFixed(2)
+                : presale.amount
+                    ? ((presale.amount * 0.88) / 100).toFixed(2)
+                    : '0.00';
+
+            presalesHTML += `
+                <div class="presale-item">
+                    <div class="presale-info">
+                        <div class="presale-buyer">${buyerName}</div>
+                        <div class="presale-details">
+                            ${presale.eventName} • ${purchaseDate} • ${amount}€
+                        </div>
+                    </div>
+                    <span class="presale-status ${statusClass}">${statusText}</span>
+                </div>
+            `;
+        });
+
+        presalesListContainer.innerHTML = presalesHTML;
+
+    } catch (error) {
+        console.error('Erreur chargement stats:', error);
+    }
+}
