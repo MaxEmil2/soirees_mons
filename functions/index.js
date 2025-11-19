@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const stripe = require('stripe');
 const QRCode = require('qrcode');
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const { v4: uuidv4 } = require('uuid');
 const cors = require('cors')({ origin: true });
 
@@ -11,7 +11,7 @@ const db = admin.firestore();
 
 // Configuration - À définir dans Firebase Config
 // firebase functions:config:set stripe.secret_key="sk_live_xxx" stripe.webhook_secret="whsec_xxx"
-// stripe.platform_account="acct_xxx" email.user="xxx" email.pass="xxx"
+// sendgrid.api_key="SG.xxx"
 
 const getStripe = () => {
     const secretKey = functions.config().stripe?.secret_key;
@@ -21,21 +21,13 @@ const getStripe = () => {
     return stripe(secretKey);
 };
 
-// Configuration email transporter
-const getEmailTransporter = () => {
-    const emailConfig = functions.config().email;
-    if (!emailConfig?.user || !emailConfig?.pass) {
-        throw new Error('Email not configured. Run: firebase functions:config:set email.user="xxx" email.pass="xxx"');
+// Configuration SendGrid
+const initSendGrid = () => {
+    const apiKey = functions.config().sendgrid?.api_key;
+    if (!apiKey) {
+        throw new Error('SendGrid not configured. Run: firebase functions:config:set sendgrid.api_key="SG.xxx"');
     }
-
-    return nodemailer.createTransport({
-        host: "sandbox.smtp.mailtrap.io",
-        port: 2525,
-        auth: {
-            user: functions.config().email.user,
-            pass: functions.config().email.pass
-        }
-    });
+    sgMail.setApiKey(apiKey);
 };
 
 // ============================================
@@ -476,8 +468,7 @@ async function handleRefund(charge) {
  * Envoie l'email avec le QR code
  */
 async function sendPresaleEmail(presaleData) {
-    const transporter = getEmailTransporter();
-    const emailConfig = functions.config().email;
+    initSendGrid();
 
     const eventDoc = await db.collection('events').doc(presaleData.eventId).get();
     const eventData = eventDoc.data();
@@ -645,20 +636,23 @@ async function sendPresaleEmail(presaleData) {
     </html>
     `;
 
-    const mailOptions = {
-        from: `"Soirées Mons" <${emailConfig.user}>`,
+    const msg = {
         to: presaleData.userEmail,
-        subject: `🎉 Votre prévente pour ${presaleData.eventName}`,
+        from: {
+            email: 'noreply@soirees-mons.be',
+            name: 'Soirées Mons'
+        },
+        subject: `Votre prévente pour ${presaleData.eventName}`,
         html: htmlContent,
         attachments: [{
             filename: 'qrcode.png',
             content: presaleData.qrCode.split(',')[1],
-            encoding: 'base64',
-            cid: 'qrcode'
+            type: 'image/png',
+            disposition: 'attachment'
         }]
     };
 
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     console.log(`Email envoyé à ${presaleData.userEmail}`);
 }
 
