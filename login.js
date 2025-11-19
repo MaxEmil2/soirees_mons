@@ -1,0 +1,222 @@
+// ========================================
+// IMPORTS FIREBASE V10 (ES MODULES)
+// ========================================
+
+// Import des fonctions Firebase nécessaires depuis le CDN
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider,
+    onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+// ========================================
+// CONFIGURATION FIREBASE
+// ========================================
+
+// Configuration Firebase - Soirées Mons
+const firebaseConfig = {
+    apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+    authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+    projectId: "soirees-mons-6ce3e",
+    storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+    messagingSenderId: "3405335068",
+    appId: "1:3405335068:web:394c536d95a33069d66dd9",
+    measurementId: "G-526CPT4LQ8"
+};
+
+// Initialiser Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialiser Firebase Authentication
+const auth = getAuth(app);
+
+// ========================================
+// PROVIDERS D'AUTHENTIFICATION
+// ========================================
+
+// Provider Google
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+    prompt: 'select_account' // Force l'utilisateur à choisir un compte
+});
+
+// ========================================
+// ÉLÉMENTS DOM
+// ========================================
+
+const loginForm = document.getElementById('login-form');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const loginBtn = document.getElementById('login-btn');
+const googleLoginBtn = document.getElementById('google-login-btn');
+const errorMessageDiv = document.getElementById('error-message');
+
+// ========================================
+// FONCTIONS UTILITAIRES
+// ========================================
+
+/**
+ * Affiche un message d'erreur à l'utilisateur
+ * @param {string} message - Le message d'erreur à afficher
+ */
+function showError(message) {
+    errorMessageDiv.textContent = message;
+    errorMessageDiv.classList.add('show');
+
+    // Masquer automatiquement après 5 secondes
+    setTimeout(() => {
+        hideError();
+    }, 5000);
+}
+
+/**
+ * Masque le message d'erreur
+ */
+function hideError() {
+    errorMessageDiv.classList.remove('show');
+}
+
+/**
+ * Active l'état de chargement sur un bouton
+ * @param {HTMLElement} button - Le bouton à modifier
+ * @param {boolean} loading - État de chargement
+ */
+function setButtonLoading(button, loading) {
+    const btnText = button.querySelector('.btn-text') || button.querySelector('span');
+    const btnLoader = button.querySelector('.btn-loader');
+
+    if (loading) {
+        button.disabled = true;
+        if (btnText) btnText.style.display = 'none';
+        if (btnLoader) {
+            btnLoader.style.display = 'inline-block';
+        } else {
+            // Si pas de loader dans le bouton, on change juste le texte
+            button.textContent = 'Connexion...';
+        }
+    } else {
+        button.disabled = false;
+        if (btnText) btnText.style.display = 'inline';
+        if (btnLoader) btnLoader.style.display = 'none';
+    }
+}
+
+/**
+ * Traduit les codes d'erreur Firebase en messages français
+ * @param {string} errorCode - Code d'erreur Firebase
+ * @returns {string} Message d'erreur en français
+ */
+function getErrorMessage(errorCode) {
+    const errorMessages = {
+        'auth/invalid-email': 'Adresse email invalide.',
+        'auth/user-disabled': 'Ce compte a été désactivé.',
+        'auth/user-not-found': 'Aucun compte trouvé avec cet email.',
+        'auth/wrong-password': 'Mot de passe incorrect.',
+        'auth/invalid-credential': 'Email ou mot de passe incorrect.',
+        'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard.',
+        'auth/network-request-failed': 'Erreur de connexion. Vérifiez votre connexion internet.',
+        'auth/popup-closed-by-user': 'Connexion annulée.',
+        'auth/popup-blocked': 'Popup bloquée. Autorisez les popups pour ce site.',
+        'auth/account-exists-with-different-credential': 'Un compte existe déjà avec cet email via une autre méthode.',
+        'auth/cancelled-popup-request': 'Connexion annulée.'
+    };
+
+    return errorMessages[errorCode] || 'Une erreur est survenue. Veuillez réessayer.';
+}
+
+/**
+ * Redirige vers la page d'accueil après connexion réussie
+ * @param {object} user - L'utilisateur connecté
+ */
+function redirectToHome(user) {
+    window.location.href = 'index.html';
+}
+
+// ========================================
+// CONNEXION EMAIL/MOT DE PASSE
+// ========================================
+
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    // Validation: champs vides
+    if (!email || !password) {
+        showError('Veuillez remplir tous les champs.');
+        return;
+    }
+
+    // Activer le loader
+    setButtonLoading(loginBtn, true);
+
+    try {
+        // Connexion avec Firebase
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        // Connexion réussie - redirection
+        redirectToHome(userCredential.user);
+
+    } catch (error) {
+
+        // Afficher l'erreur à l'utilisateur
+        showError(getErrorMessage(error.code));
+
+        // Désactiver le loader
+        setButtonLoading(loginBtn, false);
+    }
+});
+
+// ========================================
+// CONNEXION GOOGLE
+// ========================================
+
+googleLoginBtn.addEventListener('click', async () => {
+    hideError();
+    setButtonLoading(googleLoginBtn, true);
+
+    try {
+        // Ouvrir popup de connexion Google
+        const result = await signInWithPopup(auth, googleProvider);
+
+        // Connexion réussie
+        redirectToHome(result.user);
+
+    } catch (error) {
+
+        // Afficher l'erreur
+        showError(getErrorMessage(error.code));
+
+        // Désactiver le loader
+        setButtonLoading(googleLoginBtn, false);
+    }
+});
+
+// ========================================
+// VÉRIFICATION DE L'ÉTAT D'AUTHENTIFICATION
+// ========================================
+
+// Surveiller l'état de connexion
+// Si l'utilisateur est déjà connecté, rediriger automatiquement
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // L'utilisateur est déjà connecté
+
+        // Rediriger vers l'accueil si on est sur la page de connexion
+        if (window.location.pathname.includes('login.html')) {
+            redirectToHome(user);
+        }
+    } else {
+        // L'utilisateur n'est pas connecté
+    }
+});
+
+// ========================================
+// LOGS DE DÉMARRAGE
+// ========================================
+

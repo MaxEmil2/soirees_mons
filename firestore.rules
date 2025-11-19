@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Fonction helper pour vérifier si l'utilisateur est admin
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Fonction helper pour vérifier si l'utilisateur est authentifié
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Fonction helper pour vérifier si c'est le propriétaire
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Collection Users
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Collection Events
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin());
+    }
+
+    // Collection Likes
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Collection Notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Collection Partners
+    match /partners/{partnerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Collection Presales - NOUVELLE COLLECTION
+    match /presales/{presaleId} {
+      // Lecture: tout utilisateur authentifié peut lire ses propres préventes
+      // Les Cloud Functions gèrent les autres cas (admin, créateur)
+      allow read: if isAuthenticated();
+
+      // Création uniquement par les Cloud Functions (via admin SDK)
+      allow create: if false;
+
+      // Mise à jour: uniquement pour marquer comme utilisé (par le créateur ou admin)
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        // Le créateur de l'événement peut marquer les tickets comme utilisés
+        get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid
+      ) && (
+        // Seuls ces champs peuvent être modifiés
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'usedAt', 'scannedBy'])
+      );
+
+      // Suppression interdite (seul l'admin via SDK)
+      allow delete: if false;
+    }
+
+    // Collection Suggestions
+    match /suggestions/{suggestionId} {
+      // Lecture: admin seulement ou l'auteur de la suggestion
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid
+      );
+
+      // Création: utilisateur authentifié
+      allow create: if isAuthenticated();
+
+      // Mise à jour: admin seulement (pour accepter/refuser)
+      allow update: if isAdmin();
+
+      // Suppression: admin seulement
+      allow delete: if isAdmin();
+    }
+  }
+}

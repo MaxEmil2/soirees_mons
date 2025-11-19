@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À propos de nous - Soirées Mons</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="design-system.css">
+    <link rel="stylesheet" href="home.css">
+    <style>
+        /* Styles spécifiques pour la page À propos */
+        .about-section {
+            padding: 80px 0;
+            min-height: calc(100vh - 200px);
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-secondary) 100%);
+        }
+
+        .about-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .about-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .about-header h1 {
+            font-size: 42px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .about-header .subtitle {
+            font-size: 18px;
+            color: var(--text-gray);
+            font-weight: 300;
+        }
+
+        .about-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 48px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .about-text {
+            font-size: 18px;
+            line-height: 1.8;
+            color: var(--text-white);
+            text-align: justify;
+        }
+
+        .about-creators {
+            margin-top: 48px;
+            padding-top: 48px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .creators-title {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a29bfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .creators-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .creator-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .creator-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .creator-photo-wrapper {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+        }
+
+        .creator-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .creator-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 8px;
+        }
+
+        .creator-role {
+            font-size: 14px;
+            color: var(--text-gray);
+            margin-top: 8px;
+        }
+
+        .creator-instagram {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .creator-instagram:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(188, 24, 136, 0.4);
+        }
+
+        .creator-instagram svg {
+            flex-shrink: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .about-header h1 {
+                font-size: 32px;
+            }
+
+            .about-content {
+                padding: 32px 24px;
+            }
+
+            .about-text {
+                font-size: 16px;
+                text-align: left;
+            }
+
+            .creators-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .creators-title {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .about-section {
+                padding: 40px 0;
+            }
+
+            .about-header h1 {
+                font-size: 28px;
+            }
+
+            .about-content {
+                padding: 24px 20px;
+            }
+
+            .about-text {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BARRE DE NAVIGATION -->
+    <header class="navbar">
+        <div class="nav-container">
+            <!-- Logo à gauche -->
+            <div class="logo">
+                <h1>Soirées Mons</h1>
+            </div>
+
+            <!-- Menu au centre -->
+            <nav class="nav-menu">
+                <a href="index.html">Soirées</a>
+                <a href="about.html">À propos de nous</a>
+            </nav>
+
+            <!-- Bouton Auth dynamique à droite -->
+            <div class="nav-auth">
+                <!-- Affiché si NON connecté -->
+                <a href="signup.html" class="btn-signup" id="btn-signup">S'enregistrer</a>
+
+                <!-- Affiché si connecté -->
+                <div class="nav-auth-connected" id="nav-auth-connected" style="display: none;">
+                    <!-- Cloche notifications -->
+                    <div class="notification-bell" id="notification-bell">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+
+                        <!-- Dropdown notifications -->
+                        <div class="notification-dropdown" id="notification-dropdown">
+                            <div class="notification-header">
+                                <h3>Notifications</h3>
+                                <button class="mark-all-read" id="mark-all-read">Tout marquer lu</button>
+                            </div>
+                            <div class="notification-list" id="notification-list">
+                                <!-- Les notifications seront chargées ici -->
+                                <div class="notification-empty">Aucune notification</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bouton Mon compte -->
+                    <a href="dashboard.html" class="btn-login" id="btn-account">Mon compte</a>
+                </div>
+            </div>
+
+            <!-- MOBILE/TABLET: Icônes à droite (cloche + hamburger) -->
+            <div class="nav-mobile-right">
+                <!-- Cloche notifications mobile -->
+                <div class="notification-bell-mobile" id="notification-bell-mobile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge-mobile" id="notification-badge-mobile" style="display: none;">0</span>
+                </div>
+
+                <!-- Menu hamburger -->
+                <button class="hamburger-menu" id="hamburger-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MENU LATÉRAL MOBILE -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <nav class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
+        </div>
+        <div class="mobile-menu-content">
+            <!-- Liens de navigation -->
+            <a href="index.html" class="mobile-menu-item">
+                🎉 Soirées
+            </a>
+            <a href="about.html" class="mobile-menu-item">
+                ℹ️ À propos de nous
+            </a>
+
+            <!-- Affiché si NON connecté -->
+            <a href="signup.html" class="mobile-menu-item" id="mobile-menu-signup">
+                ✨ S'enregistrer
+            </a>
+
+            <!-- Affiché si connecté -->
+            <div id="mobile-menu-connected" style="display: none;">
+                <a href="dashboard.html" class="mobile-menu-item">
+                    👤 Mon compte
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SECTION À PROPOS -->
+    <section class="about-section">
+        <div class="about-container">
+            <div class="about-header">
+                <h1>À propos de nous</h1>
+                <p class="subtitle">Découvrez l'histoire et la mission de Soirées Mons</p>
+            </div>
+
+            <div class="about-content">
+                <div class="about-text">
+                    <p style="margin-bottom: 24px;">
+                        ✨ Soirées Mons, lancé le 7 octobre 2024 par Maxence et Emilien, est un projet qui vise à mettre en avant les événements de Mons.
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        Notre but est de créer une plateforme moderne, fiable et accessible, pour que tout le monde puisse facilement découvrir les soirées, concerts et activités à ne pas rater dans la région 🎉.
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        Nous soutenons aussi les organisateurs locaux en leur offrant une visibilité professionnelle, un bon relais de communication et une mise en valeur cohérente de leurs événements 📣.
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        Avec une approche sérieuse et dynamique orientée vers la communauté, on s'assure que les infos publiées et l'expérience utilisateur restent de haute qualité ⭐.
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        Soirées Mons souhaite devenir une référence locale des événements, tout en alliant transparence, rigueur et proximité avec son public 🤝.
+                    </p>
+
+                    <p style="margin-bottom: 24px;">
+                        Chaque jour, on développe de nouvelles fonctionnalités, on renforce nos partenariats et on crée un espace où les jeunes peuvent se rencontrer, échanger et s'amuser dans la vie nocturne de Mons 🔥.
+                    </p>
+                </div>
+
+                <div class="about-creators">
+                    <h3 class="creators-title">🌟 Les Créateurs 🌟</h3>
+                    <div class="creators-grid">
+                        <div class="creator-card" id="creator-maxence">
+                            <div class="creator-photo-wrapper">
+                                <img src="assets/default-avatar.png" alt="Maxence" class="creator-photo" id="photo-maxence">
+                            </div>
+                            <h4 class="creator-name">Maxence</h4>
+                            <a href="https://www.instagram.com/7.maxncs/" target="_blank" class="creator-instagram">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                                <span>@7.maxncs</span>
+                            </a>
+                        </div>
+
+                        <div class="creator-card" id="creator-emilien">
+                            <div class="creator-photo-wrapper">
+                                <img src="assets/default-avatar.png" alt="Emilien" class="creator-photo" id="photo-emilien">
+                            </div>
+                            <h4 class="creator-name">Emilien</h4>
+                            <a href="https://www.instagram.com/_e.dl._/" target="_blank" class="creator-instagram">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                                <span>@_e.dl._</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Gauche: Copyright -->
+            <div class="footer-left">
+                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank" style="color: var(--primary-color); text-decoration: none; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Maxence</a></p>
+            </div>
+
+            <!-- Centre: Logo -->
+            <div class="footer-center">
+                <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
+            </div>
+
+            <!-- Droite: Réseaux sociaux -->
+            <div class="footer-right">
+                <p>Suivez-nous :</p>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/soirees_mons/" target="_blank" aria-label="Instagram">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@soirees_mons" target="_blank" aria-label="TikTok">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase Auth pour navbar dynamique et photos créateurs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Éléments DOM
+        const btnSignup = document.getElementById('btn-signup');
+        const navAuthConnected = document.getElementById('nav-auth-connected');
+
+        // Charger les photos des créateurs depuis Firebase
+        async function loadCreatorPhotos() {
+            // Map des créateurs avec leurs IDs et fallback
+            const creators = {
+                'maxence': {
+                    imgId: 'photo-maxence',
+                    fallbackUrl: 'assets/default-avatar.svg'
+                },
+                'emilien': {
+                    imgId: 'photo-emilien',
+                    fallbackUrl: 'assets/default-avatar.svg'
+                }
+            };
+
+            console.log('🔄 Tentative de chargement des photos créateurs...');
+
+            for (const [name, data] of Object.entries(creators)) {
+                try {
+                    // MÉTHODE 1 : Collection publique "creators" (RECOMMANDÉE) ⭐
+                    // Cette collection est accessible par tous, même sans authentification
+                    console.log(`🔍 Recherche de ${name} dans la collection publique "creators"...`);
+
+                    try {
+                        const creatorDoc = await getDoc(doc(db, 'creators', name));
+
+                        if (creatorDoc.exists()) {
+                            const creatorData = creatorDoc.data();
+                            const imageURL = creatorData.photoURL || creatorData.imageURL;
+
+                            if (imageURL) {
+                                updateCreatorImage(data.imgId, imageURL, name);
+                                console.log(`✅ Photo de ${name} chargée depuis collection "creators"`);
+                                continue; // Passer au créateur suivant
+                            }
+                        } else {
+                            console.log(`ℹ️ Document "${name}" non trouvé dans collection "creators"`);
+                        }
+                    } catch (creatorsError) {
+                        console.log(`ℹ️ Collection "creators" non accessible pour ${name}:`, creatorsError.code);
+                    }
+
+                    // MÉTHODE 2 : Collection "users" (nécessite permissions) 🔐
+                    // Seulement si l'utilisateur est connecté ET a les permissions
+                    const currentUser = auth.currentUser;
+
+                    if (currentUser) {
+                        console.log(`🔍 Tentative collection "users" pour ${name}...`);
+
+                        try {
+                            // Essayer de trouver par email dans la collection users
+                            const email = `${name}@soirees-mons.com`;
+                            const usersQuery = query(
+                                collection(db, 'users'),
+                                where('email', '==', email)
+                            );
+
+                            const snapshot = await getDocs(usersQuery);
+
+                            if (!snapshot.empty) {
+                                const userData = snapshot.docs[0].data();
+                                const imageURL = userData.photoURL || userData.imageURL;
+
+                                if (imageURL) {
+                                    updateCreatorImage(data.imgId, imageURL, name);
+                                    console.log(`✅ Photo de ${name} chargée depuis collection "users"`);
+                                    continue;
+                                }
+                            }
+                        } catch (usersError) {
+                            if (usersError.code === 'permission-denied') {
+                                console.log(`🔒 Permissions insuffisantes pour collection "users"`);
+                            }
+                        }
+                    }
+
+                    // MÉTHODE 3 : Utiliser l'avatar par défaut (fallback final)
+                    console.log(`ℹ️ Utilisation de l'avatar par défaut pour ${name}`);
+                    updateCreatorImage(data.imgId, data.fallbackUrl, name);
+
+                } catch (error) {
+                    console.error(`❌ Erreur lors du chargement de ${name}:`, error);
+                    // En cas d'erreur, utiliser le fallback
+                    updateCreatorImage(data.imgId, data.fallbackUrl, name);
+                }
+            }
+
+            // Afficher les instructions pour créer la collection "creators"
+            console.log('\n📋 POUR AFFICHER LES VRAIES PHOTOS DES CRÉATEURS :');
+            console.log('👉 Créez une collection "creators" dans Firestore avec :');
+            console.log('   - Document ID : "maxence"');
+            console.log('   - Champs : { photoURL: "URL_PHOTO_MAXENCE", name: "Maxence", instagram: "@7.maxncs" }');
+            console.log('   - Document ID : "emilien"');
+            console.log('   - Champs : { photoURL: "URL_PHOTO_EMILIEN", name: "Emilien", instagram: "@_e.dl._" }');
+            console.log('   - Règles Firestore : allow read: if true; (lecture publique)');
+        }
+
+        // Fonction helper pour mettre à jour l'image d'un créateur
+        function updateCreatorImage(imgId, imageURL, creatorName) {
+            const imgElement = document.getElementById(imgId);
+            if (imgElement) {
+                imgElement.src = imageURL;
+                imgElement.style.objectFit = 'cover';
+                console.log(`✅ Photo de ${creatorName} chargée avec succès`);
+            } else {
+                console.warn(`⚠️ Element img #${imgId} non trouvé dans le DOM`);
+            }
+        }
+
+        // Charger les photos des créateurs dès le chargement de la page
+        // (la fonction gère automatiquement les permissions)
+        loadCreatorPhotos().catch(error => {
+            console.error('❌ Erreur globale loadCreatorPhotos:', error);
+        });
+
+        // Gérer l'affichage de la navbar selon l'état de connexion
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Utilisateur connecté → afficher notifications + "Mon compte"
+                btnSignup.style.display = 'none';
+                navAuthConnected.style.display = 'flex';
+
+                // Menu mobile : afficher les options connectées
+                const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+                const mobileMenuConnected = document.getElementById('mobile-menu-connected');
+                if (mobileMenuSignup) mobileMenuSignup.style.display = 'none';
+                if (mobileMenuConnected) mobileMenuConnected.style.display = 'block';
+            } else {
+                // Utilisateur non connecté → afficher "S'enregistrer"
+                btnSignup.style.display = 'inline-block';
+                navAuthConnected.style.display = 'none';
+
+                // Menu mobile : afficher le bouton inscription
+                const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+                const mobileMenuConnected = document.getElementById('mobile-menu-connected');
+                if (mobileMenuSignup) mobileMenuSignup.style.display = 'block';
+                if (mobileMenuConnected) mobileMenuConnected.style.display = 'none';
+            }
+        });
+
+        // ========================================
+        // GESTION DU MENU MOBILE
+        // ========================================
+
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+
+        // Fonction pour ouvrir le menu
+        function openMobileMenu() {
+            if (mobileMenu) mobileMenu.classList.add('open');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.add('show');
+            if (hamburgerMenu) hamburgerMenu.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Bloquer le scroll
+        }
+
+        // Fonction pour fermer le menu
+        function closeMobileMenu() {
+            if (mobileMenu) mobileMenu.classList.remove('open');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('show');
+            if (hamburgerMenu) hamburgerMenu.classList.remove('active');
+            document.body.style.overflow = ''; // Rétablir le scroll
+        }
+
+        // Ouvrir le menu au clic sur hamburger
+        if (hamburgerMenu) {
+            hamburgerMenu.addEventListener('click', () => {
+                if (mobileMenu && mobileMenu.classList.contains('open')) {
+                    closeMobileMenu();
+                } else {
+                    openMobileMenu();
+                }
+            });
+        }
+
+        // Fermer le menu au clic sur le bouton X
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+        }
+
+        // Fermer le menu au clic sur l'overlay
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        }
+
+        // Fermer le menu au clic sur un lien du menu
+        const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+        mobileMenuItems.forEach(item => {
+            item.addEventListener('click', closeMobileMenu);
+        });
+    </script>
+
+    <!-- Import du système de notifications -->
+    <script type="module" src="notifications.js"></script>
+</body>
+</html>
