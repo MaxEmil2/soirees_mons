@@ -45,7 +45,7 @@ const getEmailTransporter = () => {
 /**
  * Crée un compte Stripe Connect pour un créateur de soirée
  */
-exports.createStripeConnectAccount = functions.https.onCall(async (data, context) => {
+exports.createStripeConnectAccount = functions.region('europe-west1').https.onCall(async (data, context) => {
     // Vérifier l'authentification
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
@@ -109,7 +109,7 @@ exports.createStripeConnectAccount = functions.https.onCall(async (data, context
 /**
  * Vérifie le statut du compte Stripe Connect d'un utilisateur
  */
-exports.checkStripeAccountStatus = functions.https.onCall(async (data, context) => {
+exports.checkStripeAccountStatus = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
     }
@@ -153,7 +153,7 @@ exports.checkStripeAccountStatus = functions.https.onCall(async (data, context) 
 /**
  * Crée une session Stripe Checkout pour l'achat d'une prévente
  */
-exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
+exports.createCheckoutSession = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté pour acheter une prévente');
     }
@@ -268,7 +268,7 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
 /**
  * Webhook pour recevoir les événements Stripe
  */
-exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
+exports.stripeWebhook = functions.region('europe-west1').https.onRequest(async (req, res) => {
     const stripeClient = getStripe();
     const webhookSecret = functions.config().stripe?.webhook_secret;
 
@@ -669,7 +669,7 @@ async function sendPresaleEmail(presaleData) {
 /**
  * Vérifie un ticket (QR code) - retourne le statut
  */
-exports.verifyTicket = functions.https.onCall(async (data, context) => {
+exports.verifyTicket = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
     }
@@ -752,7 +752,7 @@ exports.verifyTicket = functions.https.onCall(async (data, context) => {
 /**
  * Marque un ticket comme utilisé
  */
-exports.markTicketUsed = functions.https.onCall(async (data, context) => {
+exports.markTicketUsed = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
     }
@@ -820,7 +820,7 @@ exports.markTicketUsed = functions.https.onCall(async (data, context) => {
 /**
  * Récupère toutes les préventes pour un événement (pour le créateur)
  */
-exports.getPresalesForEvent = functions.https.onCall(async (data, context) => {
+exports.getPresalesForEvent = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
     }
@@ -890,7 +890,7 @@ exports.getPresalesForEvent = functions.https.onCall(async (data, context) => {
 /**
  * Récupère les préventes de l'utilisateur
  */
-exports.getMyPresales = functions.https.onCall(async (data, context) => {
+exports.getMyPresales = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
     }
@@ -933,7 +933,7 @@ exports.getMyPresales = functions.https.onCall(async (data, context) => {
 /**
  * Récupère toutes les préventes (admin uniquement)
  */
-exports.getAllPresales = functions.https.onCall(async (data, context) => {
+exports.getAllPresales = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
     }
@@ -997,7 +997,7 @@ exports.getAllPresales = functions.https.onCall(async (data, context) => {
 /**
  * Rembourse une prévente (admin uniquement)
  */
-exports.refundPresale = functions.https.onCall(async (data, context) => {
+exports.refundPresale = functions.region('europe-west1').https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');
     }
