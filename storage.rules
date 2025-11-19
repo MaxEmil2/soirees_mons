@@ -22,7 +22,7 @@ service firebase.storage {
       return request.resource.size < 5 * 1024 * 1024;
     }
 
-    // Images des événements
+    // Images des événements (chemin /events/)
     match /events/{eventId}/{fileName} {
       // Lecture publique
       allow read: if true;
@@ -34,6 +34,20 @@ service firebase.storage {
 
       // Mise à jour/Suppression: uniquement le créateur
       // Note: En pratique, on vérifie via Firestore
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Images des événements utilisateurs (chemin /user_events/)
+    match /user_events/{fileName} {
+      // Lecture publique
+      allow read: if true;
+
+      // Création: utilisateur authentifié + image valide
+      allow create: if isAuthenticated()
+                    && isImage()
+                    && isValidSize();
+
+      // Mise à jour/Suppression: utilisateur authentifié
       allow update, delete: if isAuthenticated();
     }
 

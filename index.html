@@ -1932,8 +1932,23 @@
 
     <!-- Script Suggestions -->
     <script type="module">
-        import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { auth, db } from './app.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // Bouton pour ouvrir le modal suggestions
         document.getElementById('btn-suggestions').addEventListener('click', (e) => {
