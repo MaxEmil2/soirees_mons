@@ -5,7 +5,7 @@ Ce guide explique comment configurer le système complet de préventes pour Soir
 ## Architecture du Système
 
 Le système de préventes utilise :
-- **Stripe Connect** : Pour les paiements et le split automatique (7€ créateur + 1€ commission)
+- **Stripe Connect** : Pour les paiements et le split automatique (88% organisateur + 12% commission)
 - **Firebase Cloud Functions** : Pour le backend (webhooks, génération QR, emails)
 - **Firebase Firestore** : Pour stocker les préventes
 - **Nodemailer** : Pour l'envoi des emails avec QR code
@@ -128,7 +128,10 @@ Cartes de test :
   userId: "uid-acheteur",      // UID Firebase de l'acheteur
   userEmail: "email@test.com", // Email de l'acheteur
   userName: "Nom Acheteur",    // Nom de l'acheteur
-  amount: 8,                   // Montant payé en euros
+  amount: 8,                   // Montant payé en euros (compatibilité)
+  prix_total: 8,               // Prix total payé par l'acheteur
+  commission: 0.96,            // Commission plateforme (12%)
+  montant_recu: 7.04,          // Montant reçu par l'organisateur (88%)
   currency: "eur",             // Devise
   status: "valid",             // valid | used | refunded
   qrCode: "data:image/png...", // QR code en base64
@@ -167,8 +170,8 @@ Cartes de test :
    - Envoie l'email avec le QR code
    - Notifie l'acheteur et le créateur
 6. **Transfert automatique** :
-   - 7€ vers le compte du créateur
-   - 1€ commission Soirées Mons
+   - 88% vers le compte de l'organisateur (7.04€ pour un ticket à 8€)
+   - 12% commission Soirées Mons (0.96€ pour un ticket à 8€)
 
 ## Pages Créées
 

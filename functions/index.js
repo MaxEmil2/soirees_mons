@@ -197,10 +197,11 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
 
         const stripeClient = getStripe();
 
-        // Prix fixe : 8€ (7€ créateur + 1€ commission)
-        const totalAmount = 800; // En centimes
-        const creatorAmount = 700; // 7€ pour le créateur
-        const platformFee = 100; // 1€ commission Soirées Mons
+        // Prix du ticket et calcul de la commission (12% plateforme, 88% organisateur)
+        const ticketPrice = event.ticketPrice || 800; // Prix en centimes (défaut: 8€)
+        const totalAmount = ticketPrice;
+        const platformFee = Math.round(totalAmount * 0.12); // 12% commission Soirées Mons
+        const creatorAmount = totalAmount - platformFee; // 88% pour l'organisateur
 
         // Créer la session Checkout avec split payment
         const session = await stripeClient.checkout.sessions.create({
@@ -230,7 +231,9 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
                     userEmail: userEmail,
                     eventName: event.name,
                     eventDate: event.date,
-                    creatorId: event.createdBy
+                    creatorId: event.createdBy,
+                    platformFee: platformFee.toString(),
+                    creatorAmount: creatorAmount.toString()
                 }
             },
             metadata: {
@@ -238,7 +241,9 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
                 userId: userId,
                 userEmail: userEmail,
                 eventName: event.name,
-                creatorId: event.createdBy
+                creatorId: event.createdBy,
+                platformFee: platformFee.toString(),
+                creatorAmount: creatorAmount.toString()
             },
             success_url: `${baseUrl}/presale-success.html?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${baseUrl}/index.html?presale=cancelled`,
@@ -310,7 +315,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
  * Gère le paiement réussi
  */
 async function handleCheckoutCompleted(session) {
-    const { eventId, userId, userEmail, eventName } = session.metadata;
+    const { eventId, userId, userEmail, eventName, platformFee, creatorAmount } = session.metadata;
 
     try {
         // Générer un ID unique pour la prévente
@@ -335,6 +340,11 @@ async function handleCheckoutCompleted(session) {
         const userDoc = await db.collection('users').doc(userId).get();
         const userName = userDoc.exists ? (userDoc.data().displayName || userEmail.split('@')[0]) : userEmail.split('@')[0];
 
+        // Calculer les montants en euros
+        const prixTotal = session.amount_total / 100;
+        const commission = parseInt(platformFee) / 100;
+        const montantRecu = parseInt(creatorAmount) / 100;
+
         // Créer le document de prévente dans Firestore
         const presaleData = {
             id: presaleId,
@@ -343,7 +353,10 @@ async function handleCheckoutCompleted(session) {
             userId: userId,
             userEmail: userEmail,
             userName: userName,
-            amount: session.amount_total / 100, // Convertir en euros
+            amount: prixTotal, // Prix total en euros (pour compatibilité)
+            prix_total: prixTotal, // Prix total payé par l'acheteur
+            commission: commission, // Commission plateforme (12%)
+            montant_recu: montantRecu, // Montant reçu par l'organisateur (88%)
             currency: session.currency,
             status: 'valid', // valid, used, refunded
             qrCode: qrCodeBase64,
@@ -389,7 +402,7 @@ async function handleCheckoutCompleted(session) {
                 eventId: eventId,
                 eventName: eventName,
                 presaleId: presaleId,
-                message: `Nouvelle prévente vendue pour "${eventName}" ! Vous recevrez 7€.`,
+                message: `Nouvelle prévente vendue pour "${eventName}" ! Vous recevrez ${montantRecu.toFixed(2)}€.`,
                 read: false,
                 createdAt: admin.firestore.FieldValue.serverTimestamp()
             });
@@ -843,19 +856,23 @@ exports.getPresalesForEvent = functions.https.onCall(async (data, context) => {
                 userName: data.userName,
                 userEmail: data.userEmail,
                 amount: data.amount,
+                prix_total: data.prix_total || data.amount,
+                commission: data.commission || data.amount * 0.12,
+                montant_recu: data.montant_recu || data.amount * 0.88,
                 status: data.status,
                 createdAt: data.createdAt?.toDate?.() || data.createdAt,
                 usedAt: data.usedAt?.toDate?.() || data.usedAt
             });
         });
 
-        // Statistiques
+        // Statistiques - calculer les revenus réels basés sur les données Firestore
+        const activePresales = presales.filter(p => p.status !== 'refunded');
         const stats = {
             total: presales.length,
             valid: presales.filter(p => p.status === 'valid').length,
             used: presales.filter(p => p.status === 'used').length,
             refunded: presales.filter(p => p.status === 'refunded').length,
-            totalRevenue: presales.filter(p => p.status !== 'refunded').length * 7 // 7€ par prévente pour le créateur
+            totalRevenue: activePresales.reduce((sum, p) => sum + (p.montant_recu || p.amount * 0.88), 0) // Montant reçu par l'organisateur (88%)
         };
 
         return { presales, stats };
@@ -944,21 +961,25 @@ exports.getAllPresales = functions.https.onCall(async (data, context) => {
                 userName: data.userName,
                 userEmail: data.userEmail,
                 amount: data.amount,
+                prix_total: data.prix_total || data.amount,
+                commission: data.commission || data.amount * 0.12,
+                montant_recu: data.montant_recu || data.amount * 0.88,
                 status: data.status,
                 createdAt: data.createdAt?.toDate?.() || data.createdAt,
                 usedAt: data.usedAt?.toDate?.() || data.usedAt
             });
         });
 
-        // Statistiques globales
+        // Statistiques globales - calculer les revenus réels basés sur les données Firestore
+        const activePresales = presales.filter(p => p.status !== 'refunded');
         const stats = {
             total: presales.length,
             valid: presales.filter(p => p.status === 'valid').length,
             used: presales.filter(p => p.status === 'used').length,
             refunded: presales.filter(p => p.status === 'refunded').length,
-            totalRevenue: presales.filter(p => p.status !== 'refunded').length * 8,
-            platformCommission: presales.filter(p => p.status !== 'refunded').length * 1,
-            creatorsRevenue: presales.filter(p => p.status !== 'refunded').length * 7
+            totalRevenue: activePresales.reduce((sum, p) => sum + (p.prix_total || p.amount), 0),
+            platformCommission: activePresales.reduce((sum, p) => sum + (p.commission || p.amount * 0.12), 0),
+            creatorsRevenue: activePresales.reduce((sum, p) => sum + (p.montant_recu || p.amount * 0.88), 0)
         };
 
         return { presales, stats };
