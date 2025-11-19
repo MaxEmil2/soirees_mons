@@ -136,10 +136,11 @@ onAuthStateChanged(auth, async (user) => {
         loading.style.display = 'none';
         adminContent.style.display = 'block';
 
-        // Charger les événements, soirées en attente et partenaires
+        // Charger les événements, soirées en attente, partenaires et suggestions
         loadEvents();
         loadPendingEvents();
         loadPartners();
+        loadSuggestions();
 
     } catch (error) {
         showError('Erreur lors de la vérification des droits.', () => {
@@ -952,4 +953,148 @@ function resetPartnerForm() {
     partnerCancelBtn.style.display = 'none';
     partnerImageInput.setAttribute('required', 'required');
 }
+
+// ========================================
+// GESTION DES SUGGESTIONS
+// ========================================
+
+// Charger les suggestions
+async function loadSuggestions() {
+    const suggestionsList = document.getElementById('suggestions-list');
+    if (!suggestionsList) return;
+
+    try {
+        const q = query(collection(db, 'suggestions'), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            suggestionsList.innerHTML = '<p class="text-secondary">Aucune suggestion pour le moment.</p>';
+            return;
+        }
+
+        suggestionsList.innerHTML = '';
+
+        querySnapshot.forEach((docSnap) => {
+            const suggestion = docSnap.data();
+            const suggestionId = docSnap.id;
+            const createdAt = suggestion.createdAt?.toDate?.()
+                ? suggestion.createdAt.toDate().toLocaleDateString('fr-BE', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                : 'Date inconnue';
+
+            const statusBadge = getStatusBadge(suggestion.status);
+            const categoryLabel = getCategoryLabel(suggestion.category);
+
+            const suggestionDiv = document.createElement('div');
+            suggestionDiv.className = 'item-card';
+            suggestionDiv.innerHTML = `
+                <div class="item-info" style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <h3 style="margin: 0; font-size: 1.1rem;">${suggestion.title}</h3>
+                        ${statusBadge}
+                    </div>
+                    <p style="margin: 0 0 8px 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        ${suggestion.description}
+                    </p>
+                    <div style="display: flex; gap: 15px; font-size: 0.8rem; color: var(--text-tertiary);">
+                        <span>📂 ${categoryLabel}</span>
+                        <span>👤 ${suggestion.userName} (${suggestion.userEmail})</span>
+                        <span>📅 ${createdAt}</span>
+                    </div>
+                </div>
+                <div class="item-actions" style="display: flex; gap: 8px;">
+                    ${suggestion.status === 'pending' ? `
+                        <button class="btn btn-small btn-success" onclick="acceptSuggestion('${suggestionId}')">
+                            ✓ Accepter
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="refuseSuggestion('${suggestionId}')">
+                            ✕ Refuser
+                        </button>
+                    ` : ''}
+                    <button class="btn btn-small btn-secondary" onclick="deleteSuggestion('${suggestionId}')">
+                        🗑️
+                    </button>
+                </div>
+            `;
+            suggestionsList.appendChild(suggestionDiv);
+        });
+
+    } catch (error) {
+        console.error('Erreur chargement suggestions:', error);
+        suggestionsList.innerHTML = '<p style="color: var(--error-500);">Erreur lors du chargement des suggestions.</p>';
+    }
+}
+
+// Obtenir le badge de statut
+function getStatusBadge(status) {
+    switch (status) {
+        case 'pending':
+            return '<span style="background: rgba(250, 173, 20, 0.2); color: #faad14; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">En attente</span>';
+        case 'accepted':
+            return '<span style="background: rgba(82, 196, 26, 0.2); color: #52c41a; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">Acceptée</span>';
+        case 'refused':
+            return '<span style="background: rgba(255, 77, 79, 0.2); color: #ff4d4f; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">Refusée</span>';
+        default:
+            return '';
+    }
+}
+
+// Obtenir le label de catégorie
+function getCategoryLabel(category) {
+    const labels = {
+        'feature': 'Nouvelle fonctionnalité',
+        'improvement': 'Amélioration',
+        'bug': 'Bug',
+        'design': 'Design',
+        'other': 'Autre'
+    };
+    return labels[category] || category;
+}
+
+// Accepter une suggestion
+window.acceptSuggestion = async function(suggestionId) {
+    try {
+        await updateDoc(doc(db, 'suggestions', suggestionId), {
+            status: 'accepted'
+        });
+        showSuccess('Suggestion acceptée !');
+        loadSuggestions();
+    } catch (error) {
+        console.error('Erreur:', error);
+        showError('Erreur lors de l\'acceptation.');
+    }
+};
+
+// Refuser une suggestion
+window.refuseSuggestion = async function(suggestionId) {
+    try {
+        await updateDoc(doc(db, 'suggestions', suggestionId), {
+            status: 'refused'
+        });
+        showSuccess('Suggestion refusée.');
+        loadSuggestions();
+    } catch (error) {
+        console.error('Erreur:', error);
+        showError('Erreur lors du refus.');
+    }
+};
+
+// Supprimer une suggestion
+window.deleteSuggestion = async function(suggestionId) {
+    showConfirm('Êtes-vous sûr de vouloir supprimer cette suggestion ?', async () => {
+        try {
+            await deleteDoc(doc(db, 'suggestions', suggestionId));
+            showSuccess('Suggestion supprimée.');
+            loadSuggestions();
+        } catch (error) {
+            console.error('Erreur:', error);
+            showError('Erreur lors de la suppression.');
+        }
+    });
+};
 

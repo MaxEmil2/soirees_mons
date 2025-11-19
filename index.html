@@ -286,6 +286,7 @@
             <nav class="nav-menu">
                 <a href="#evenements">Soirées</a>
                 <a href="about.html">À propos de nous</a>
+                <a href="#" id="btn-suggestions">Suggestions</a>
             </nav>
 
             <!-- Bouton Auth dynamique à droite -->
@@ -680,6 +681,46 @@
             </button>
 
             <button class="like-choice-cancel" onclick="closeLikeChoiceModal()">Annuler</button>
+        </div>
+    </div>
+
+    <!-- MODAL SUGGESTIONS -->
+    <div id="suggestions-modal" class="info-presales-modal" style="display: none;">
+        <div class="info-modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeSuggestionsModal()">✕</button>
+            <h2>💡 Envoyer une suggestion</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <p style="margin-bottom: 15px; color: #b8b8d1;">
+                    Vous avez une idée pour améliorer Soirées Mons ? Partagez-la avec nous !
+                </p>
+                <form id="suggestions-form">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="suggestion-title" style="display: block; margin-bottom: 5px; color: #fff;">Titre *</label>
+                        <input type="text" id="suggestion-title" placeholder="Ex: Nouvelle fonctionnalité..."
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="suggestion-description" style="display: block; margin-bottom: 5px; color: #fff;">Description *</label>
+                        <textarea id="suggestion-description" placeholder="Décrivez votre suggestion en détail..."
+                                  style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff; min-height: 120px; resize: vertical;" required></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="suggestion-category" style="display: block; margin-bottom: 5px; color: #fff;">Catégorie</label>
+                        <select id="suggestion-category"
+                                style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;">
+                            <option value="feature">Nouvelle fonctionnalité</option>
+                            <option value="improvement">Amélioration</option>
+                            <option value="bug">Bug à corriger</option>
+                            <option value="design">Design/Interface</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="modal-btn modal-btn-secondary" onclick="closeSuggestionsModal()">Annuler</button>
+                <button class="modal-btn modal-btn-primary" id="submit-suggestion-btn">Envoyer</button>
+            </div>
         </div>
     </div>
 
@@ -1761,6 +1802,81 @@
         }, 500);
 
         console.log('📱 Menu mobile initialisé');
+    </script>
+
+    <!-- Script Suggestions -->
+    <script type="module">
+        import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { auth, db } from './app.js';
+
+        // Bouton pour ouvrir le modal suggestions
+        document.getElementById('btn-suggestions').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('suggestions-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Fermer le modal suggestions
+        window.closeSuggestionsModal = function() {
+            document.getElementById('suggestions-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            // Réinitialiser le formulaire
+            document.getElementById('suggestions-form').reset();
+        };
+
+        // Fermer en cliquant en dehors
+        document.getElementById('suggestions-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'suggestions-modal') {
+                closeSuggestionsModal();
+            }
+        });
+
+        // Soumettre la suggestion
+        document.getElementById('submit-suggestion-btn').addEventListener('click', async () => {
+            const title = document.getElementById('suggestion-title').value.trim();
+            const description = document.getElementById('suggestion-description').value.trim();
+            const category = document.getElementById('suggestion-category').value;
+
+            if (!title || !description) {
+                alert('Veuillez remplir le titre et la description.');
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Vous devez être connecté pour envoyer une suggestion.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-suggestion-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Envoi...';
+
+            try {
+                await addDoc(collection(db, 'suggestions'), {
+                    title: title,
+                    description: description,
+                    category: category,
+                    userId: user.uid,
+                    userEmail: user.email,
+                    userName: user.displayName || user.email.split('@')[0],
+                    status: 'pending', // pending, accepted, refused
+                    createdAt: serverTimestamp()
+                });
+
+                alert('Merci ! Votre suggestion a été envoyée.');
+                closeSuggestionsModal();
+            } catch (error) {
+                console.error('Erreur envoi suggestion:', error);
+                alert('Erreur lors de l\'envoi. Veuillez réessayer.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Envoyer';
+            }
+        });
+
+        console.log('💡 Suggestions initialisé');
     </script>
 </body>
 </html>

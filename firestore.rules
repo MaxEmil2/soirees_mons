@@ -83,5 +83,23 @@ service cloud.firestore {
       // Suppression interdite (seul l'admin via SDK)
       allow delete: if false;
     }
+
+    // Collection Suggestions
+    match /suggestions/{suggestionId} {
+      // Lecture: admin seulement ou l'auteur de la suggestion
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.userId == request.auth.uid
+      );
+
+      // Création: utilisateur authentifié
+      allow create: if isAuthenticated();
+
+      // Mise à jour: admin seulement (pour accepter/refuser)
+      allow update: if isAdmin();
+
+      // Suppression: admin seulement
+      allow delete: if isAdmin();
+    }
   }
 }
