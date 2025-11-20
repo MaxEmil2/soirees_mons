@@ -2032,30 +2032,39 @@
         const mobileMenuAddEvent = document.getElementById('mobile-menu-add-event');
 
         // Open mobile menu
-        hamburgerMenu.addEventListener('click', () => {
-            mobileMenu.classList.add('active');
-            mobileMenuOverlay.classList.add('active');
-            hamburgerMenu.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
+        if (hamburgerMenu) {
+            hamburgerMenu.addEventListener('click', () => {
+                if (mobileMenu) mobileMenu.classList.add('active');
+                if (mobileMenuOverlay) mobileMenuOverlay.classList.add('active');
+                hamburgerMenu.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
 
         // Close mobile menu - make it global for onclick handlers
         window.closeMobileMenu = function() {
-            mobileMenu.classList.remove('active');
-            mobileMenuOverlay.classList.remove('active');
-            hamburgerMenu.classList.remove('active');
+            if (mobileMenu) mobileMenu.classList.remove('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
+            if (hamburgerMenu) hamburgerMenu.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
-        mobileMenuClose.addEventListener('click', closeMobileMenu);
-        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+        }
+
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        }
 
         // Mobile menu "Ajouter une soirée" button
-        mobileMenuAddEvent.addEventListener('click', () => {
-            closeMobileMenu();
-            // Trigger the same function as desktop "Ajouter une soirée" button
-            document.getElementById('btn-add-event').click();
-        });
+        if (mobileMenuAddEvent) {
+            mobileMenuAddEvent.addEventListener('click', () => {
+                closeMobileMenu();
+                // Trigger the same function as desktop "Ajouter une soirée" button
+                document.getElementById('btn-add-event').click();
+            });
+        }
 
         // Notification bell mobile - open same dropdown as desktop
         const notificationBellMobile = document.getElementById('notification-bell-mobile');

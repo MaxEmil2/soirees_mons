@@ -725,30 +725,23 @@ body {
             grid-template-columns: 1fr 1fr;
             gap: 32px;
             padding: 32px;
-            max-height: 85vh;
-            overflow: hidden;
         }
 
         .modal-left {
             display: flex;
             align-items: flex-start;
-            position: sticky;
-            top: 0;
-            align-self: flex-start;
         }
 
         .modal-left img {
             width: 100%;
             height: auto;
-            max-height: 75vh;
+            max-height: 70vh;
             border-radius: 16px;
             object-fit: cover;
         }
 
         .modal-right {
             padding: 0;
-            overflow-y: auto;
-            max-height: 75vh;
             padding-right: 12px;
         }
 
