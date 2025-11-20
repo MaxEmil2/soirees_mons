@@ -190,6 +190,205 @@
                 font-size: 15px;
             }
         }
+
+        /* Mobile Menu Styles */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 85%;
+            max-width: 380px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
+            z-index: 999;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(108, 99, 255, 0.05);
+        }
+
+        .mobile-menu-header h3 {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(90deg, #6c63ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mobile-menu-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-close:hover {
+            background: rgba(255, 77, 79, 0.2);
+            border-color: rgba(255, 77, 79, 0.5);
+            color: #ff4d4f;
+        }
+
+        .mobile-menu-content {
+            padding: 24px 20px;
+            flex: 1;
+        }
+
+        .mobile-menu-section {
+            margin-bottom: 20px;
+        }
+
+        .mobile-menu-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .mobile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 16px 18px;
+            margin-bottom: 8px;
+            background: rgba(108, 99, 255, 0.08);
+            border: 1px solid rgba(108, 99, 255, 0.15);
+            border-radius: 14px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .mobile-menu-item:hover {
+            background: rgba(108, 99, 255, 0.2);
+            border-color: rgba(108, 99, 255, 0.4);
+            transform: translateX(-6px);
+        }
+
+        .mobile-menu-item-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .mobile-menu-item-primary {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.3), rgba(0, 212, 255, 0.2));
+            border-color: rgba(108, 99, 255, 0.4);
+        }
+
+        .mobile-menu-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .mobile-menu-footer p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            margin: 0;
+        }
+
+        /* Hamburger animation */
+        .hamburger-menu {
+            position: relative;
+            width: 44px;
+            height: 44px;
+        }
+
+        .hamburger-menu span {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 2.5px;
+            background: white;
+            border-radius: 3px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hamburger-menu span:nth-child(1) { top: 12px; }
+        .hamburger-menu span:nth-child(2) { top: 20px; }
+        .hamburger-menu span:nth-child(3) { top: 28px; }
+
+        .hamburger-menu.active span:nth-child(1) {
+            top: 20px;
+            transform: translateX(-50%) rotate(45deg);
+            background: #6c63ff;
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            top: 20px;
+            transform: translateX(-50%) rotate(-45deg);
+            background: #6c63ff;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu {
+                width: 90%;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mobile-menu {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -269,25 +468,49 @@
             <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
         </div>
         <div class="mobile-menu-content">
-            <!-- Liens de navigation -->
-            <a href="index.html" class="mobile-menu-item">
-                🎉 Soirées
-            </a>
-            <a href="about.html" class="mobile-menu-item">
-                ℹ️ À propos de nous
-            </a>
+            <!-- Section Navigation -->
+            <div class="mobile-menu-section">
+                <div class="mobile-menu-section-title">Navigation</div>
+                <a href="index.html" class="mobile-menu-item">
+                    <span class="mobile-menu-item-icon">🎉</span>
+                    Soirées
+                </a>
+                <a href="about.html" class="mobile-menu-item">
+                    <span class="mobile-menu-item-icon">ℹ️</span>
+                    À propos de nous
+                </a>
+            </div>
 
             <!-- Affiché si NON connecté -->
-            <a href="signup.html" class="mobile-menu-item" id="mobile-menu-signup">
-                ✨ S'enregistrer
-            </a>
+            <div class="mobile-menu-section" id="mobile-menu-guest">
+                <div class="mobile-menu-section-title">Compte</div>
+                <a href="signup.html" class="mobile-menu-item mobile-menu-item-primary">
+                    <span class="mobile-menu-item-icon">✨</span>
+                    S'enregistrer
+                </a>
+                <a href="login.html" class="mobile-menu-item">
+                    <span class="mobile-menu-item-icon">🔑</span>
+                    Se connecter
+                </a>
+            </div>
 
             <!-- Affiché si connecté -->
             <div id="mobile-menu-connected" style="display: none;">
-                <a href="dashboard.html" class="mobile-menu-item">
-                    👤 Mon compte
-                </a>
+                <div class="mobile-menu-section">
+                    <div class="mobile-menu-section-title">Mon espace</div>
+                    <a href="dashboard.html" class="mobile-menu-item">
+                        <span class="mobile-menu-item-icon">👤</span>
+                        Mon compte
+                    </a>
+                    <a href="mes-preventes.html" class="mobile-menu-item">
+                        <span class="mobile-menu-item-icon">🎟️</span>
+                        Mes préventes
+                    </a>
+                </div>
             </div>
+        </div>
+        <div class="mobile-menu-footer">
+            <p>Soirées Mons © 2024</p>
         </div>
     </nav>
 
@@ -540,9 +763,9 @@
                 navAuthConnected.style.display = 'flex';
 
                 // Menu mobile : afficher les options connectées
-                const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+                const mobileMenuGuest = document.getElementById('mobile-menu-guest');
                 const mobileMenuConnected = document.getElementById('mobile-menu-connected');
-                if (mobileMenuSignup) mobileMenuSignup.style.display = 'none';
+                if (mobileMenuGuest) mobileMenuGuest.style.display = 'none';
                 if (mobileMenuConnected) mobileMenuConnected.style.display = 'block';
             } else {
                 // Utilisateur non connecté → afficher "S'enregistrer"
@@ -550,9 +773,9 @@
                 navAuthConnected.style.display = 'none';
 
                 // Menu mobile : afficher le bouton inscription
-                const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+                const mobileMenuGuest = document.getElementById('mobile-menu-guest');
                 const mobileMenuConnected = document.getElementById('mobile-menu-connected');
-                if (mobileMenuSignup) mobileMenuSignup.style.display = 'block';
+                if (mobileMenuGuest) mobileMenuGuest.style.display = 'block';
                 if (mobileMenuConnected) mobileMenuConnected.style.display = 'none';
             }
         });
@@ -568,16 +791,16 @@
 
         // Fonction pour ouvrir le menu
         function openMobileMenu() {
-            if (mobileMenu) mobileMenu.classList.add('open');
-            if (mobileMenuOverlay) mobileMenuOverlay.classList.add('show');
+            if (mobileMenu) mobileMenu.classList.add('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.add('active');
             if (hamburgerMenu) hamburgerMenu.classList.add('active');
             document.body.style.overflow = 'hidden'; // Bloquer le scroll
         }
 
         // Fonction pour fermer le menu
         function closeMobileMenu() {
-            if (mobileMenu) mobileMenu.classList.remove('open');
-            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('show');
+            if (mobileMenu) mobileMenu.classList.remove('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
             if (hamburgerMenu) hamburgerMenu.classList.remove('active');
             document.body.style.overflow = ''; // Rétablir le scroll
         }
@@ -585,7 +808,7 @@
         // Ouvrir le menu au clic sur hamburger
         if (hamburgerMenu) {
             hamburgerMenu.addEventListener('click', () => {
-                if (mobileMenu && mobileMenu.classList.contains('open')) {
+                if (mobileMenu && mobileMenu.classList.contains('active')) {
                     closeMobileMenu();
                 } else {
                     openMobileMenu();

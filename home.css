@@ -912,11 +912,23 @@ body {
         }
 
         @media (max-width: 768px) {
+            .event-modal {
+                padding: 0;
+                align-items: flex-end;
+            }
+
+            .event-modal .modal-content {
+                max-height: 95vh;
+                border-radius: 20px 20px 0 0;
+                margin: 0;
+            }
+
             .modal-body {
                 grid-template-columns: 1fr;
                 padding: 20px;
                 gap: 20px;
-                max-height: 90vh;
+                max-height: none;
+                overflow-y: visible;
             }
 
             .modal-left {
@@ -925,13 +937,14 @@ body {
             }
 
             .modal-left img {
-                max-height: 40vh;
+                max-height: 35vh;
+                object-fit: cover;
             }
 
             .modal-right {
-                max-height: 65vh;
-                overflow-y: auto;
-                padding-right: 8px;
+                max-height: none;
+                overflow-y: visible;
+                padding-right: 0;
                 padding-bottom: 20px;
             }
 
@@ -1006,6 +1019,9 @@ body {
             z-index: 10000;
             padding: 20px;
             overflow-y: auto;
+            /* Prevent dragging on mobile */
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
         }
 
         .add-event-modal-content {
@@ -1019,6 +1035,18 @@ body {
             border: 1px solid #2d2d44;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             padding: 40px;
+            /* Prevent content from being dragged */
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .add-event-modal-content input,
+        .add-event-modal-content textarea,
+        .add-event-modal-content select {
+            user-select: text;
+            -webkit-user-select: text;
+            touch-action: manipulation;
         }
 
         .add-event-title {
@@ -1055,7 +1083,8 @@ body {
         }
 
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 12px 16px;
             background: #1a1a2e;
@@ -1064,6 +1093,32 @@ body {
             color: white;
             font-size: 16px;
             font-family: inherit;
+            box-sizing: border-box;
+            height: auto;
+            min-height: 48px;
+        }
+
+        /* Specific styling for datetime-local to match other inputs */
+        .form-group input[type="datetime-local"] {
+            appearance: none;
+            -webkit-appearance: none;
+            line-height: 1.5;
+        }
+
+        .form-group input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .form-group input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        .form-group input[type="number"]::-webkit-inner-spin-button,
+        .form-group input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .form-group input:focus,
