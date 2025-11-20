@@ -1280,3 +1280,216 @@ tbody td {
         height: 36px;
     }
 }
+
+/* ========================================
+   COMPREHENSIVE MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Tablet Styles (max-width: 992px) */
+@media (max-width: 992px) {
+    /* Typography adjustments */
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+    h3 { font-size: 1.25rem; }
+
+    /* Container padding */
+    .container {
+        padding: 0 var(--space-md);
+    }
+
+    /* Cards grid */
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile Styles (max-width: 768px) */
+@media (max-width: 768px) {
+    /* Typography */
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.125rem; }
+
+    body {
+        font-size: 14px;
+    }
+
+    /* Stack all grids */
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+    }
+
+    /* Buttons - touch friendly */
+    .btn, button {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    .btn-lg {
+        padding: 14px 24px;
+        font-size: 15px;
+    }
+
+    /* Form inputs - touch friendly */
+    input, select, textarea {
+        min-height: 44px;
+        padding: 12px 14px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Modal adjustments */
+    .modal-overlay {
+        padding: var(--space-md);
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        max-height: 85vh;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        margin-bottom: 0;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: var(--space-lg);
+    }
+
+    .modal-header h2 {
+        font-size: 1.25rem;
+    }
+
+    /* Cards */
+    .card {
+        border-radius: var(--radius-lg);
+    }
+
+    .card-body {
+        padding: var(--space-md);
+    }
+
+    /* Tables - horizontal scroll */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    /* Spacing reductions */
+    section {
+        padding: var(--space-xl) 0;
+    }
+}
+
+/* Small Mobile Styles (max-width: 480px) */
+@media (max-width: 480px) {
+    /* Typography */
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1rem; }
+
+    /* Container */
+    .container {
+        padding: 0 var(--space-sm);
+    }
+
+    /* Full width buttons */
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Stack button groups */
+    .btn-group,
+    .modal-footer {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    /* Modal full screen on small devices */
+    .modal-overlay {
+        padding: 0;
+    }
+
+    .modal-content {
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    /* Form labels */
+    label {
+        font-size: 13px;
+    }
+
+    /* Reduce padding */
+    .card-body,
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: var(--space-md);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    .btn, button, a {
+        min-height: 44px;
+    }
+
+    /* Remove hover effects that don't work well on touch */
+    .btn:hover,
+    button:hover {
+        transform: none;
+    }
+
+    /* Add active state instead */
+    .btn:active,
+    button:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+
+    /* Better tap highlighting */
+    a, button, .btn {
+        -webkit-tap-highlight-color: rgba(108, 99, 255, 0.2);
+    }
+}
+
+/* Landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content {
+        max-height: 95vh;
+    }
+
+    .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+/* Safe area for notched devices */
+@supports (padding: max(0px)) {
+    .navbar,
+    .mobile-menu-header {
+        padding-top: max(var(--space-md), env(safe-area-inset-top));
+    }
+
+    .mobile-menu-footer,
+    .footer {
+        padding-bottom: max(var(--space-lg), env(safe-area-inset-bottom));
+    }
+}
