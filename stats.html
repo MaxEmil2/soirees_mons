@@ -158,9 +158,100 @@
         }
 
         @media (max-width: 768px) {
+            .stats-container {
+                padding: 15px;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            .page-header h1 {
+                font-size: 24px;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+
+            .stat-value {
+                font-size: 28px;
+            }
+
+            .buyers-section {
+                padding: 15px;
+                overflow-x: auto;
+            }
+
+            .buyers-section h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
             .buyers-table {
                 display: block;
                 overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                min-width: 600px;
+            }
+
+            .buyers-table th,
+            .buyers-table td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+
+            .buyers-table th {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-container {
+                padding: 10px;
+            }
+
+            .page-header h1 {
+                font-size: 20px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            .buyers-section {
+                padding: 12px;
+            }
+
+            .buyers-section h2 {
+                font-size: 16px;
+            }
+
+            .buyers-table {
+                min-width: 500px;
+            }
+
+            .buyers-table th,
+            .buyers-table td {
+                padding: 8px 6px;
+                font-size: 11px;
+            }
+
+            .status-badge {
+                font-size: 10px;
+                padding: 3px 6px;
             }
         }
     </style>

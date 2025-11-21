@@ -429,6 +429,11 @@
                         ➕ Ajouter une soirée
                     </button>
 
+                    <!-- Bouton Scanner (affiché seulement si l'utilisateur est scanner) -->
+                    <a href="scanner.html" class="btn-scanner-nav" id="desktop-menu-scanner" style="display: none;">
+                        📱 Scanner
+                    </a>
+
                     <!-- Cloche notifications -->
                     <div class="notification-bell" id="notification-bell">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -521,6 +526,10 @@
                     <a href="mes-preventes.html" class="mobile-menu-item">
                         <span class="mobile-menu-item-icon">🎟️</span>
                         Mes préventes
+                    </a>
+                    <a href="scanner.html" class="mobile-menu-item" id="mobile-menu-scanner" style="display: none;">
+                        <span class="mobile-menu-item-icon">📱</span>
+                        Scanner une prévente
                     </a>
                     <button class="mobile-menu-item mobile-menu-item-primary" id="mobile-menu-add-event">
                         <span class="mobile-menu-item-icon">➕</span>
@@ -1748,6 +1757,9 @@
     <!-- Script gestion des notifications -->
     <script type="module" src="notifications.js"></script>
 
+    <!-- Script détection scanner -->
+    <script type="module" src="scanner-detector.js"></script>
+
     <!-- Script gestion des likes -->
     <script type="module">
         import { loadEventLikes, hasUserLiked, likeEvent, unlikeEvent, getRecentPublicLikers, getTotalLikes } from './likes.js';
@@ -2024,8 +2036,9 @@
 
     <!-- Script Menu Mobile -->
     <script>
-        // Hamburger menu toggle
-        const hamburgerMenu = document.getElementById('hamburger-menu');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hamburger menu toggle
+            const hamburgerMenu = document.getElementById('hamburger-menu');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
         const mobileMenuClose = document.getElementById('mobile-menu-close');
@@ -2070,10 +2083,15 @@
         const notificationBellMobile = document.getElementById('notification-bell-mobile');
         const notificationBadgeMobile = document.getElementById('notification-badge-mobile');
 
-        notificationBellMobile.addEventListener('click', () => {
-            // Trigger desktop notification bell
-            document.getElementById('notification-bell').click();
-        });
+        if (notificationBellMobile) {
+            notificationBellMobile.addEventListener('click', () => {
+                // Trigger desktop notification bell
+                const desktopBell = document.getElementById('notification-bell');
+                if (desktopBell) {
+                    desktopBell.click();
+                }
+            });
+        }
 
         // Sync auth state between desktop and mobile
         const authObserver = setInterval(() => {
@@ -2109,7 +2127,8 @@
             }
         }, 500);
 
-        console.log('📱 Menu mobile initialisé');
+            console.log('📱 Menu mobile initialisé');
+        });
     </script>
 
     <!-- Script Suggestions -->

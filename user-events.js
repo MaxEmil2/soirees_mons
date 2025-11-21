@@ -139,16 +139,56 @@ userImageUploadArea.addEventListener('click', () => {
     userImageInput.click();
 });
 
-userImageInput.addEventListener('change', (e) => {
+// Fonction pour compresser l'image
+async function compressImage(file, maxWidth = 1200, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Redimensionner si nécessaire
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convertir en blob
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            resolve(new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            }));
+                        } else {
+                            reject(new Error('Erreur de compression'));
+                        }
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.onerror = () => reject(new Error('Erreur de chargement de l\'image'));
+        };
+        reader.onerror = () => reject(new Error('Erreur de lecture du fichier'));
+    });
+}
+
+userImageInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Vérifier la taille (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showError('L\'image ne doit pas dépasser 5MB.');
-        userImageInput.value = '';
-        return;
-    }
 
     // Vérifier le type
     if (!file.type.startsWith('image/')) {
@@ -157,16 +197,37 @@ userImageInput.addEventListener('change', (e) => {
         return;
     }
 
-    currentUserImageFile = file;
+    try {
+        // Compresser l'image si elle est trop grande (> 1MB)
+        let processedFile = file;
+        if (file.size > 1 * 1024 * 1024) {
+            console.log(`Compression de l'image (${(file.size / 1024 / 1024).toFixed(2)}MB)...`);
+            processedFile = await compressImage(file);
+            console.log(`Image compressée: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(processedFile.size / 1024 / 1024).toFixed(2)}MB`);
+        }
 
-    // Afficher l'aperçu
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        userPreviewImg.src = e.target.result;
-        userImagePreview.style.display = 'block';
-        userImageUploadArea.classList.add('active');
-    };
-    reader.readAsDataURL(file);
+        // Vérifier la taille finale (max 5MB)
+        if (processedFile.size > 5 * 1024 * 1024) {
+            showError('L\'image ne doit pas dépasser 5MB. Veuillez choisir une image plus petite.');
+            userImageInput.value = '';
+            return;
+        }
+
+        currentUserImageFile = processedFile;
+
+        // Afficher l'aperçu
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            userPreviewImg.src = e.target.result;
+            userImagePreview.style.display = 'block';
+            userImageUploadArea.classList.add('active');
+        };
+        reader.readAsDataURL(processedFile);
+    } catch (error) {
+        console.error('Erreur de traitement de l\'image:', error);
+        showError('Erreur lors du traitement de l\'image. Veuillez réessayer avec une autre image.');
+        userImageInput.value = '';
+    }
 });
 
 // ========================================
