@@ -995,7 +995,7 @@
             getDoc
         } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
         import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
-        import { getTotalLikes } from './likes.js';
+        import { getTotalLikes, getRecentPublicLikers, hasUserLiked } from './likes.js';
 
         // Configuration Firebase
         const firebaseConfig = {
@@ -1024,8 +1024,12 @@
         // Éléments navbar
         const navAuthConnected = document.getElementById('nav-auth-connected');
 
+        // Variable pour stocker l'utilisateur actuel
+        let currentUser = null;
+
         // Détecter l'état de connexion
         onAuthStateChanged(auth, (user) => {
+            currentUser = user;
             if (user) {
                 // Utilisateur connecté → afficher notifications + "Mon compte"
                 btnSignup.style.display = 'none';
@@ -1036,6 +1040,112 @@
                 navAuthConnected.style.display = 'none';
             }
         });
+
+        // Charger les likes d'un événement et afficher dans l'UI
+        window.loadEventLikesUI = async function(eventId) {
+            try {
+                // Récupérer les 3 derniers likers publics
+                const recentLikers = await getRecentPublicLikers(eventId);
+
+                // Récupérer le total de likes
+                const totalLikes = await getTotalLikes(eventId);
+
+                console.log(`🔍 Event ${eventId}: ${totalLikes} likes totaux, ${recentLikers.length} likers publics`);
+
+                // Afficher les photos des likers publics (max 3)
+                const likersPhotosContainer = document.getElementById(`likers-photos-${eventId}`);
+                if (likersPhotosContainer) {
+                    likersPhotosContainer.innerHTML = '';
+                    // Forcer le style du conteneur
+                    likersPhotosContainer.style.cssText = 'display: flex; align-items: center; gap: 0; flex-wrap: nowrap;';
+
+                    // Limiter à 3 avatars maximum
+                    const maxAvatars = 3;
+                    const likersToShow = recentLikers.slice(0, maxAvatars);
+
+                    console.log(`✅ Affichage de ${likersToShow.length} avatars publics pour event ${eventId}`);
+
+                    likersToShow.forEach((liker, index) => {
+                        const img = document.createElement('img');
+                        // Ajouter cache buster pour forcer rechargement des images
+                        const photoURL = liker.userPhotoURL || 'https://via.placeholder.com/50';
+                        img.src = photoURL.includes('?') ? `${photoURL}&t=${Date.now()}` : `${photoURL}?t=${Date.now()}`;
+                        img.alt = 'Liker';
+                        img.className = 'liker-photo';
+                        // FORCER les styles directement via JavaScript (style inline)
+                        img.style.cssText = `
+                            width: 50px !important;
+                            height: 50px !important;
+                            min-width: 50px !important;
+                            max-width: 50px !important;
+                            border-radius: 50%;
+                            border: 3px solid white;
+                            object-fit: cover;
+                            margin-left: ${index === 0 ? '0' : '-15px'};
+                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+                            transition: transform 0.2s;
+                            display: inline-block;
+                        `;
+                        img.onerror = function() {
+                            this.src = 'https://via.placeholder.com/50';
+                        };
+                        likersPhotosContainer.appendChild(img);
+                    });
+                }
+
+                // Afficher le compteur : total - avatars affichés
+                const likesCountElement = document.getElementById(`likes-count-${eventId}`);
+                if (likesCountElement) {
+                    const displayedAvatars = Math.min(recentLikers.length, 3);
+                    const remainingLikes = totalLikes - displayedAvatars;
+
+                    if (remainingLikes > 0) {
+                        // Il y a des likes anonymes ou plus de 3 likes publics
+                        likesCountElement.textContent = `+${remainingLikes}`;
+                        likesCountElement.style.display = 'inline-block';
+                        console.log(`📊 Badge +${remainingLikes} affiché (${totalLikes} total - ${displayedAvatars} avatars)`);
+                    } else {
+                        // Pas de compteur si tous les likes sont affichés en avatar
+                        likesCountElement.style.display = 'none';
+                    }
+                }
+
+                // Vérifier si l'utilisateur a déjà liké
+                if (currentUser) {
+                    const userHasLiked = await hasUserLiked(eventId, currentUser.uid);
+                    const likeBtn = document.getElementById(`like-btn-${eventId}`);
+                    if (likeBtn) {
+                        if (userHasLiked) {
+                            likeBtn.classList.add('liked');
+                        } else {
+                            likeBtn.classList.remove('liked');
+                        }
+
+                        // Ajouter l'écouteur de click
+                        likeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            handleLikeClick(eventId);
+                        });
+                    }
+                }
+
+            } catch (error) {
+                console.error('Erreur chargement likes UI:', error);
+            }
+        };
+
+        // Gérer le click sur le bouton like
+        function handleLikeClick(eventId) {
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            // Note: openLikeChoiceModal should be available from the likes script
+            if (typeof openLikeChoiceModal !== 'undefined') {
+                window.currentLikeEventId = eventId;
+                openLikeChoiceModal();
+            }
+        }
 
         // Charger les événements depuis Firestore
         async function loadEvents() {
