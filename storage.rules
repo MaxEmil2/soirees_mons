@@ -1,0 +1,104 @@
+rules_version = '2';
+
+/**
+ * ╔═══════════════════════════════════════════════════════════════════╗
+ * ║              STORAGE SECURITY RULES - NIVEAU NASA                 ║
+ * ║      Règles ultra-sécurisées pour Firebase Storage                ║
+ * ╚═══════════════════════════════════════════════════════════════════╝
+ */
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ========================================
+    // FONCTIONS HELPER
+    // ========================================
+
+    /**
+     * Vérifie si l'utilisateur est authentifié
+     */
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /**
+     * Vérifie si le fichier est une image valide
+     */
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 5 * 1024 * 1024; // Max 5 MB
+    }
+
+    /**
+     * Vérifie si l'utilisateur est admin
+     */
+    function isAdmin() {
+      return isAuthenticated() &&
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est le propriétaire de l'événement
+     */
+    function isEventOwner(eventId) {
+      return isAuthenticated() &&
+             firestore.get(/databases/(default)/documents/events/$(eventId)).data.createdBy == request.auth.uid;
+    }
+
+    // ========================================
+    // IMAGES D'ÉVÉNEMENTS
+    // ========================================
+
+    match /events/{eventId}/{imageId} {
+      // Lecture: Tout le monde
+      allow read: if true;
+
+      // Écriture: Propriétaire de l'événement ou admin
+      allow write: if isAuthenticated() &&
+                      isValidImage() &&
+                      (isEventOwner(eventId) || isAdmin());
+
+      // Suppression: Propriétaire de l'événement ou admin
+      allow delete: if isAuthenticated() &&
+                       (isEventOwner(eventId) || isAdmin());
+    }
+
+    // ========================================
+    // IMAGES DE PROFIL UTILISATEUR
+    // ========================================
+
+    match /users/{userId}/{imageId} {
+      // Lecture: Tout le monde
+      allow read: if true;
+
+      // Écriture: Propriétaire ou admin
+      allow write: if isAuthenticated() &&
+                      isValidImage() &&
+                      (request.auth.uid == userId || isAdmin());
+
+      // Suppression: Propriétaire ou admin
+      allow delete: if isAuthenticated() &&
+                       (request.auth.uid == userId || isAdmin());
+    }
+
+    // ========================================
+    // ASSETS PUBLICS
+    // ========================================
+
+    match /public/{allPaths=**} {
+      // Lecture: Tout le monde
+      allow read: if true;
+
+      // Écriture: Admin seulement
+      allow write: if isAdmin();
+    }
+
+    // ========================================
+    // DÉFAUT: TOUT REFUSER
+    // ========================================
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
