@@ -1,30 +1,17 @@
 // ========================================
 // MES SOIRÉES - Gestion des soirées par l'utilisateur
+// ARCHITECTURE SÉCURISÉE V2
 // ========================================
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import {
-    getAuth,
-    onAuthStateChanged
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import {
-    getFirestore,
-    collection,
-    query,
-    where,
-    getDocs,
-    doc,
-    deleteDoc,
-    updateDoc,
-    serverTimestamp
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import {
-    getStorage,
-    ref,
-    deleteObject
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
-
+// Import des services sécurisés
+import { authService } from './src/services/auth.service.js';
+import { eventsService } from './src/services/events.service.js';
+import { toast } from './src/components/Toast.js';
 import { showSuccess, showError, showConfirm } from './modal-utils.js';
+
+// Firebase direct imports (pour l'auth state observer)
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
 // Configuration Firebase
 const firebaseConfig = {
@@ -37,11 +24,8 @@ const firebaseConfig = {
     measurementId: "G-526CPT4LQ8"
 };
 
-// Initialiser Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
 
 // Éléments DOM
 const loading = document.getElementById('loading');
@@ -69,51 +53,62 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadUserEvents(userId) {
     try {
-
-        // Récupérer les soirées créées par l'utilisateur
-        const eventsQuery = query(
-            collection(db, 'events'),
-            where('createdBy', '==', userId)
-        );
-
-        const querySnapshot = await getDocs(eventsQuery);
+        // Utiliser eventsService (architecture sécurisée)
+        const result = await eventsService.getMyEvents(userId);
 
         // Masquer le loader
-        loading.style.display = 'none';
-        content.style.display = 'block';
+        if (loading) loading.style.display = 'none';
+        if (content) content.style.display = 'block';
 
-        if (querySnapshot.empty) {
-            eventsList.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">🎉</div>
-                    <p>Vous n'avez pas encore proposé de soirée.</p>
-                    <p>Allez sur la page d'accueil pour proposer votre première soirée !</p>
-                </div>
-            `;
+        if (!result.success) {
+            showError(result.error || 'Erreur lors du chargement de vos soirées');
+            if (eventsList) {
+                eventsList.innerHTML = `
+                    <div class="empty-state">
+                        <p style="color: #ff4d4f;">❌ Erreur lors du chargement de vos soirées.</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        const events = result.events;
+
+        if (!events || events.length === 0) {
+            if (eventsList) {
+                eventsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎉</div>
+                        <p>Vous n'avez pas encore proposé de soirée.</p>
+                        <p>Allez sur la page d'accueil pour proposer votre première soirée !</p>
+                    </div>
+                `;
+            }
             return;
         }
 
         // Vider la liste
-        eventsList.innerHTML = '';
+        if (eventsList) eventsList.innerHTML = '';
 
         // Afficher chaque soirée
-        querySnapshot.forEach((doc) => {
-            const event = doc.data();
-            const eventId = doc.id;
-
-            const eventItem = createEventItem(eventId, event);
-            eventsList.appendChild(eventItem);
+        events.forEach((event) => {
+            const eventItem = createEventItem(event.id, event);
+            if (eventsList) eventsList.appendChild(eventItem);
         });
 
-
     } catch (error) {
-        loading.style.display = 'none';
-        content.style.display = 'block';
-        eventsList.innerHTML = `
-            <div class="empty-state">
-                <p style="color: #ff4d4f;">❌ Erreur lors du chargement de vos soirées.</p>
-            </div>
-        `;
+        console.error('Erreur chargement événements:', error);
+
+        if (loading) loading.style.display = 'none';
+        if (content) content.style.display = 'block';
+
+        if (eventsList) {
+            eventsList.innerHTML = `
+                <div class="empty-state">
+                    <p style="color: #ff4d4f;">❌ Erreur lors du chargement de vos soirées.</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -199,25 +194,30 @@ window.deleteEvent = async function(eventId, imagePath) {
     }
 
     try {
+        // Utiliser eventsService (architecture sécurisée)
+        // Le service gère automatiquement la suppression de l'image dans Storage
+        const result = await eventsService.deleteEvent(eventId);
 
-        // Supprimer l'image du Storage
-        if (imagePath) {
-            try {
-                const imageRef = ref(storage, imagePath);
-                await deleteObject(imageRef);
-            } catch (error) {
-            }
+        if (result.success) {
+            toast.success('Soirée supprimée avec succès!');
+
+            // Rafraîchir la page après un court délai
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showError(result.error || 'Erreur lors de la suppression.');
         }
 
-        // Supprimer le document Firestore
-        await deleteDoc(doc(db, 'events', eventId));
-
-        showSuccess('Soirée supprimée avec succès!', () => {
-            window.location.reload();
-        });
-
     } catch (error) {
+        console.error('Erreur suppression:', error);
         showError('Erreur lors de la suppression.');
     }
 };
 
+// ========================================
+// LOGS DE DÉMARRAGE
+// ========================================
+
+console.log('✅ Mes Soirées page loaded - Architecture sécurisée V2');
+console.log('🔐 Services initialisés: authService, eventsService');

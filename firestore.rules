@@ -1,117 +1,228 @@
 rules_version = '2';
+
+/**
+ * ╔═══════════════════════════════════════════════════════════════════╗
+ * ║              FIRESTORE SECURITY RULES - NIVEAU NASA               ║
+ * ║      Règles ultra-sécurisées pour Soirées Mons                    ║
+ * ╚═══════════════════════════════════════════════════════════════════╝
+ */
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Fonction helper pour vérifier si l'utilisateur est authentifié
+    // ========================================
+    // FONCTIONS HELPER
+    // ========================================
+
+    /**
+     * Vérifie si l'utilisateur est authentifié
+     */
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Fonction helper pour vérifier si c'est le propriétaire
+    /**
+     * Vérifie si l'utilisateur est le propriétaire de la ressource
+     */
     function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Récupère les données utilisateur
+    /**
+     * Récupère les données utilisateur
+     */
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Fonction helper pour vérifier si l'utilisateur est admin
+    /**
+     * Vérifie si l'utilisateur est admin
+     */
     function isAdmin() {
       return isAuthenticated() && getUserData().isAdmin == true;
     }
 
-    // Vérifie si l'utilisateur est organisateur
+    /**
+     * Vérifie si l'utilisateur est organisateur
+     */
     function isOrganizer() {
       return isAuthenticated() && (getUserData().isOrganizer == true || isAdmin());
     }
 
-    // Vérifie que les données string sont valides
+    /**
+     * Vérifie que les données sont valides
+     */
     function isValidString(field, minLength, maxLength) {
       return field is string &&
              field.size() >= minLength &&
              field.size() <= maxLength;
     }
 
-    // Collection Users
+    // ========================================
+    // COLLECTION: USERS
+    // ========================================
+
     match /users/{userId} {
+      // Lecture: Tout utilisateur authentifié peut lire les profils
       allow read: if isAuthenticated();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+
+      // Création: L'utilisateur peut créer son propre profil
+      allow create: if isOwner(userId) &&
+                       request.resource.data.uid == userId &&
+                       request.resource.data.isAdmin == false &&
+                       request.resource.data.isOrganizer == false &&
+                       request.resource.data.isScanner == false;
+
+      // Mise à jour: L'utilisateur peut modifier son propre profil (sauf les rôles)
+      allow update: if isOwner(userId) &&
+                       request.resource.data.uid == userId &&
+                       request.resource.data.isAdmin == resource.data.isAdmin &&
+                       request.resource.data.isOrganizer == resource.data.isOrganizer &&
+                       request.resource.data.isScanner == resource.data.isScanner;
+
+      // Mise à jour admin: Seul l'admin peut modifier les rôles
+      allow update: if isAdmin();
+
+      // Suppression: Seul l'admin
       allow delete: if isAdmin();
     }
 
-    // Collection Events
+    // ========================================
+    // COLLECTION: EVENTS
+    // ========================================
+
     match /events/{eventId} {
-      allow read: if true;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() &&
-        (resource.data.createdBy == request.auth.uid || isAdmin());
-      allow delete: if isAuthenticated() &&
-        (resource.data.createdBy == request.auth.uid || isAdmin());
-    }
+      // Lecture: Tout le monde peut lire les événements approuvés
+      allow read: if resource.data.status == 'approved' || isAuthenticated();
 
-    // Collection Likes
-    match /likes/{likeId} {
-      allow read: if true;
-      allow create: if isAuthenticated();
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Collection Notifications
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Collection Partners
-    match /partners/{partnerId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Collection Presales - NOUVELLE COLLECTION
-    match /presales/{presaleId} {
-      // Lecture: tout utilisateur authentifié peut lire ses propres préventes
-      // Les Cloud Functions gèrent les autres cas (admin, créateur)
-      allow read: if isAuthenticated();
-
-      // Création uniquement par les Cloud Functions (via admin SDK)
+      // Création: Uniquement via Cloud Functions
       allow create: if false;
 
-      // Mise à jour: uniquement pour marquer comme utilisé (par le créateur ou admin)
-      allow update: if isAuthenticated() && (
-        isAdmin() ||
-        // Le créateur de l'événement peut marquer les tickets comme utilisés
-        get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid
-      ) && (
-        // Seuls ces champs peuvent être modifiés
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'usedAt', 'scannedBy'])
-      );
+      // Mise à jour: Uniquement via Cloud Functions
+      allow update: if false;
 
-      // Suppression interdite (seul l'admin via SDK)
+      // Suppression: Uniquement via Cloud Functions
       allow delete: if false;
     }
 
-    // Collection Suggestions
+    // ========================================
+    // COLLECTION: PRESALES (Tickets)
+    // ========================================
+
+    match /presales/{presaleId} {
+      // Lecture: L'utilisateur peut lire ses propres tickets
+      //          L'organisateur peut lire les tickets de ses événements
+      //          L'admin peut tout lire
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin() ||
+        (isOrganizer() && get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid)
+      );
+
+      // Création: Uniquement via Cloud Functions (Stripe Webhook)
+      allow create: if false;
+
+      // Mise à jour: Uniquement pour marquer comme utilisé (via Cloud Functions)
+      allow update: if false;
+
+      // Suppression: Interdite
+      allow delete: if false;
+    }
+
+    // ========================================
+    // COLLECTION: LIKES
+    // ========================================
+
+    match /likes/{likeId} {
+      // Lecture: Tout le monde
+      allow read: if true;
+
+      // Création: Utilisateur authentifié uniquement
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       isValidString(request.resource.data.eventId, 1, 100);
+
+      // Mise à jour: Interdite
+      allow update: if false;
+
+      // Suppression: L'utilisateur peut supprimer son propre like
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ========================================
+    // COLLECTION: NOTIFICATIONS
+    // ========================================
+
+    match /notifications/{notificationId} {
+      // Lecture: L'utilisateur peut lire ses propres notifications
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      // Création: Système ou admin
+      allow create: if isAdmin();
+
+      // Mise à jour: L'utilisateur peut marquer ses notifications comme lues
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == resource.data.userId;
+
+      // Suppression: L'utilisateur peut supprimer ses notifications
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ========================================
+    // COLLECTION: PARTNERS
+    // ========================================
+
+    match /partners/{partnerId} {
+      // Lecture: Tout le monde
+      allow read: if true;
+
+      // Écriture: Admin seulement
+      allow write: if isAdmin();
+    }
+
+    // ========================================
+    // COLLECTION: SUGGESTIONS
+    // ========================================
+
     match /suggestions/{suggestionId} {
-      // Lecture: admin seulement ou l'auteur de la suggestion
+      // Lecture: Admin ou l'auteur
       allow read: if isAuthenticated() && (
         isAdmin() ||
         resource.data.userId == request.auth.uid
       );
 
-      // Création: utilisateur authentifié
-      allow create: if isAuthenticated();
+      // Création: Utilisateur authentifié
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       isValidString(request.resource.data.title, 3, 200) &&
+                       isValidString(request.resource.data.description, 10, 1000);
 
-      // Mise à jour: admin seulement (pour accepter/refuser)
+      // Mise à jour: Admin seulement (pour approuver/rejeter)
       allow update: if isAdmin();
 
-      // Suppression: admin seulement
+      // Suppression: Admin seulement
       allow delete: if isAdmin();
+    }
+
+    // ========================================
+    // COLLECTION: AUDIT_LOGS
+    // ========================================
+
+    match /audit_logs/{logId} {
+      // Lecture: Admin seulement
+      allow read: if isAdmin();
+
+      // Écriture: Système seulement (via Cloud Functions)
+      allow write: if false;
+    }
+
+    // ========================================
+    // DÉFAUT: TOUT REFUSER
+    // ========================================
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

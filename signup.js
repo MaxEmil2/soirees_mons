@@ -1,59 +1,11 @@
 // ========================================
-// IMPORTS FIREBASE V10 (ES MODULES)
+// IMPORTS - ARCHITECTURE SÉCURISÉE V2
 // ========================================
 
-// Import des fonctions Firebase nécessaires depuis le CDN
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    onAuthStateChanged,
-    sendEmailVerification
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import {
-    getFirestore,
-    doc,
-    setDoc,
-    serverTimestamp
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
+// Import des services sécurisés
+import { authService } from './src/services/auth.service.js';
+import { toast } from './src/components/Toast.js';
 import { showSuccess } from './modal-utils.js';
-
-// ========================================
-// CONFIGURATION FIREBASE
-// ========================================
-
-// Configuration Firebase - Soirées Mons
-const firebaseConfig = {
-    apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
-    authDomain: "soirees-mons-6ce3e.firebaseapp.com",
-    projectId: "soirees-mons-6ce3e",
-    storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
-    messagingSenderId: "3405335068",
-    appId: "1:3405335068:web:394c536d95a33069d66dd9",
-    measurementId: "G-526CPT4LQ8"
-};
-
-// Initialiser Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialiser Firebase Authentication
-const auth = getAuth(app);
-
-// Initialiser Firestore
-const db = getFirestore(app);
-
-// ========================================
-// PROVIDERS D'AUTHENTIFICATION
-// ========================================
-
-// Provider Google
-const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-    prompt: 'select_account' // Force l'utilisateur à choisir un compte
-});
 
 // ========================================
 // ÉLÉMENTS DOM
@@ -118,72 +70,11 @@ function setButtonLoading(button, loading) {
 }
 
 /**
- * Traduit les codes d'erreur Firebase en messages français
- * @param {string} errorCode - Code d'erreur Firebase
- * @returns {string} Message d'erreur en français
- */
-function getErrorMessage(errorCode) {
-    const errorMessages = {
-        'auth/email-already-in-use': 'Cet email est déjà utilisé. Veuillez vous connecter.',
-        'auth/invalid-email': 'Adresse email invalide.',
-        'auth/operation-not-allowed': 'Opération non autorisée.',
-        'auth/weak-password': 'Le mot de passe est trop faible. Utilisez au moins 6 caractères.',
-        'auth/network-request-failed': 'Erreur de connexion. Vérifiez votre connexion internet.',
-        'auth/popup-closed-by-user': 'Inscription annulée.',
-        'auth/popup-blocked': 'Popup bloquée. Autorisez les popups pour ce site.',
-        'auth/account-exists-with-different-credential': 'Un compte existe déjà avec cet email via une autre méthode.',
-        'auth/cancelled-popup-request': 'Inscription annulée.'
-    };
-
-    return errorMessages[errorCode] || 'Une erreur est survenue. Veuillez réessayer.';
-}
-
-/**
- * Enregistre les données de l'utilisateur dans Firestore
- * @param {object} user - L'utilisateur Firebase
- * @param {string} provider - Le provider utilisé ('email' ou 'google')
- */
-async function saveUserToFirestore(user, provider) {
-    try {
-        // Référence au document utilisateur dans Firestore
-        const userRef = doc(db, 'users', user.uid);
-
-        // Données à enregistrer
-        const userData = {
-            uid: user.uid,
-            email: user.email,
-            dateCreation: serverTimestamp(),
-            provider: provider
-        };
-
-        // Enregistrer dans Firestore
-        await setDoc(userRef, userData);
-
-    } catch (error) {
-        // On ne bloque pas l'utilisateur même si Firestore échoue
-    }
-}
-
-/**
- * Envoie un email de vérification à l'utilisateur
- * @param {object} user - L'utilisateur Firebase
- */
-async function sendVerificationEmail(user) {
-    try {
-        await sendEmailVerification(user);
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
-
-/**
  * Redirige vers le dashboard après inscription réussie
  * @param {object} user - L'utilisateur connecté
  * @param {boolean} emailSent - Si l'email de vérification a été envoyé
  */
 function redirectToDashboard(user, emailSent = false) {
-
     // Afficher message si email envoyé
     if (emailSent) {
         showSuccess('Inscription réussie ! Un email de vérification vous a été envoyé. Vérifiez votre boîte de réception.', () => {
@@ -229,22 +120,33 @@ signupForm.addEventListener('submit', async (e) => {
     setButtonLoading(signupBtn, true);
 
     try {
-        // Créer le compte utilisateur avec Firebase
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Créer le compte avec authService (architecture sécurisée)
+        // AuthService gère automatiquement:
+        // - La création du compte Firebase
+        // - L'enregistrement dans Firestore
+        // - L'envoi de l'email de vérification
+        // - La gestion des rôles
+        const result = await authService.signUpWithEmail(email, password, email.split('@')[0]);
 
-        // Envoyer l'email de vérification
-        const emailSent = await sendVerificationEmail(userCredential.user);
+        if (result.success) {
+            // Inscription réussie
+            toast.success('Inscription réussie ! Bienvenue sur Soirées Mons.');
 
-        // Enregistrer l'utilisateur dans Firestore
-        await saveUserToFirestore(userCredential.user, 'email');
-
-        // Inscription réussie - redirection
-        redirectToDashboard(userCredential.user, emailSent);
+            // Redirection avec message de vérification email
+            setTimeout(() => {
+                redirectToDashboard(result.user, true);
+            }, 500);
+        } else {
+            // Erreur retournée par le service
+            showError(result.error);
+            setButtonLoading(signupBtn, false);
+        }
 
     } catch (error) {
+        console.error('Erreur lors de l\'inscription:', error);
 
         // Afficher l'erreur à l'utilisateur
-        showError(getErrorMessage(error.code));
+        showError('Une erreur inattendue est survenue. Veuillez réessayer.');
 
         // Désactiver le loader
         setButtonLoading(signupBtn, false);
@@ -260,19 +162,32 @@ googleSignupBtn.addEventListener('click', async () => {
     setButtonLoading(googleSignupBtn, true);
 
     try {
-        // Ouvrir popup d'inscription Google
-        const result = await signInWithPopup(auth, googleProvider);
+        // Inscription Google avec authService (architecture sécurisée)
+        // AuthService gère automatiquement:
+        // - La popup Google
+        // - L'enregistrement dans Firestore
+        // - La gestion des rôles
+        const result = await authService.signInWithGoogle();
 
-        // Enregistrer l'utilisateur dans Firestore
-        await saveUserToFirestore(result.user, 'google');
+        if (result.success) {
+            // Inscription/Connexion Google réussie
+            toast.success('Connexion Google réussie ! Bienvenue ' + result.user.displayName);
 
-        // Inscription réussie
-        redirectToDashboard(result.user);
+            // Redirection après un court délai
+            setTimeout(() => {
+                redirectToDashboard(result.user);
+            }, 500);
+        } else {
+            // Erreur retournée par le service
+            showError(result.error);
+            setButtonLoading(googleSignupBtn, false);
+        }
 
     } catch (error) {
+        console.error('Erreur lors de l\'inscription Google:', error);
 
         // Afficher l'erreur
-        showError(getErrorMessage(error.code));
+        showError('Erreur d\'inscription Google. Veuillez réessayer.');
 
         // Désactiver le loader
         setButtonLoading(googleSignupBtn, false);
@@ -283,18 +198,20 @@ googleSignupBtn.addEventListener('click', async () => {
 // VÉRIFICATION DE L'ÉTAT D'AUTHENTIFICATION
 // ========================================
 
-// Surveiller l'état de connexion
+// Surveiller l'état de connexion au chargement de la page
 // Si l'utilisateur est déjà connecté, rediriger automatiquement
-onAuthStateChanged(auth, (user) => {
-    if (user) {
+window.addEventListener('DOMContentLoaded', () => {
+    // Vérifier si l'utilisateur est déjà authentifié
+    if (authService.isAuthenticated()) {
+        const user = authService.currentUser;
+
         // L'utilisateur est déjà connecté
+        console.log('Utilisateur déjà connecté:', user.email);
 
         // Rediriger vers le dashboard si on est sur la page d'inscription
         if (window.location.pathname.includes('signup.html')) {
             redirectToDashboard(user);
         }
-    } else {
-        // L'utilisateur n'est pas connecté
     }
 });
 
@@ -302,3 +219,5 @@ onAuthStateChanged(auth, (user) => {
 // LOGS DE DÉMARRAGE
 // ========================================
 
+console.log('✅ Signup page loaded - Architecture sécurisée V2');
+console.log('🔐 AuthService initialisé');

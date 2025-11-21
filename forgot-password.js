@@ -1,34 +1,10 @@
 // ========================================
-// IMPORTS FIREBASE V10 (ES MODULES)
+// FORGOT PASSWORD - ARCHITECTURE SÉCURISÉE V2
 // ========================================
 
-// Import des fonctions Firebase nécessaires depuis le CDN
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import {
-    getAuth,
-    sendPasswordResetEmail
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-
-// ========================================
-// CONFIGURATION FIREBASE
-// ========================================
-
-// Configuration Firebase - Soirées Mons
-const firebaseConfig = {
-    apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
-    authDomain: "soirees-mons-6ce3e.firebaseapp.com",
-    projectId: "soirees-mons-6ce3e",
-    storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
-    messagingSenderId: "3405335068",
-    appId: "1:3405335068:web:394c536d95a33069d66dd9",
-    measurementId: "G-526CPT4LQ8"
-};
-
-// Initialiser Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialiser Firebase Authentication
-const auth = getAuth(app);
+// Import des services sécurisés
+import { authService } from './src/services/auth.service.js';
+import { toast } from './src/components/Toast.js';
 
 // ========================================
 // ÉLÉMENTS DOM
@@ -49,21 +25,25 @@ const successMessageDiv = document.getElementById('success-message');
  * @param {string} message - Le message d'erreur à afficher
  */
 function showError(message) {
-    successMessageDiv.style.display = 'none';
-    errorMessageDiv.textContent = message;
-    errorMessageDiv.classList.add('show');
+    if (successMessageDiv) successMessageDiv.style.display = 'none';
+    if (errorMessageDiv) {
+        errorMessageDiv.textContent = message;
+        errorMessageDiv.classList.add('show');
 
-    // Masquer automatiquement après 5 secondes
-    setTimeout(() => {
-        hideError();
-    }, 5000);
+        // Masquer automatiquement après 5 secondes
+        setTimeout(() => {
+            hideError();
+        }, 5000);
+    }
 }
 
 /**
  * Masque le message d'erreur
  */
 function hideError() {
-    errorMessageDiv.classList.remove('show');
+    if (errorMessageDiv) {
+        errorMessageDiv.classList.remove('show');
+    }
 }
 
 /**
@@ -72,8 +52,10 @@ function hideError() {
  */
 function showSuccess(message) {
     hideError();
-    successMessageDiv.textContent = message;
-    successMessageDiv.style.display = 'block';
+    if (successMessageDiv) {
+        successMessageDiv.textContent = message;
+        successMessageDiv.style.display = 'block';
+    }
 }
 
 /**
@@ -96,78 +78,69 @@ function setButtonLoading(button, loading) {
     }
 }
 
-/**
- * Traduit les codes d'erreur Firebase en messages français
- * @param {string} errorCode - Code d'erreur Firebase
- * @returns {string} Message d'erreur en français
- */
-function getErrorMessage(errorCode) {
-    const errorMessages = {
-        'auth/invalid-email': 'Adresse email invalide.',
-        'auth/user-not-found': 'Aucun compte ne correspond à cet email.',
-        'auth/too-many-requests': 'Trop de tentatives. Veuillez réessayer plus tard.',
-        'auth/network-request-failed': 'Erreur de connexion. Vérifiez votre connexion internet.'
-    };
-
-    return errorMessages[errorCode] || 'Une erreur est survenue. Veuillez réessayer.';
-}
-
 // ========================================
 // RÉINITIALISATION DU MOT DE PASSE
 // ========================================
 
-resetForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideError();
+if (resetForm) {
+    resetForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
 
-    const email = emailInput.value.trim();
+        const email = emailInput.value.trim();
 
-    // Validation basique
-    if (!email) {
-        showError('Veuillez entrer votre adresse email.');
-        return;
-    }
+        // Validation basique
+        if (!email) {
+            showError('Veuillez entrer votre adresse email.');
+            return;
+        }
 
-    // Activer le loader
-    setButtonLoading(resetBtn, true);
+        // Activer le loader
+        setButtonLoading(resetBtn, true);
 
-    try {
-        // Envoyer l'email de réinitialisation
-        await sendPasswordResetEmail(auth, email);
+        try {
+            // Utiliser authService (architecture sécurisée)
+            const result = await authService.resetPassword(email);
 
-        // Succès
-        console.log('✅ Email de réinitialisation envoyé à:', email);
+            if (result.success) {
+                // Succès
+                console.log('✅ Email de réinitialisation envoyé à:', email);
 
-        // Afficher le message de succès
-        showSuccess(`📧 Un email de réinitialisation a été envoyé à ${email}. Vérifiez votre boîte de réception.`);
+                // Afficher le message de succès
+                showSuccess(`📧 Un email de réinitialisation a été envoyé à ${email}. Vérifiez votre boîte de réception.`);
+                toast.success('Email de réinitialisation envoyé !');
 
-        // Vider le champ
-        emailInput.value = '';
+                // Vider le champ
+                emailInput.value = '';
 
-        // Désactiver le loader
-        setButtonLoading(resetBtn, false);
+                // Désactiver le loader
+                setButtonLoading(resetBtn, false);
 
-        // Rediriger vers la page de connexion après 5 secondes
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 5000);
+                // Rediriger vers la page de connexion après 5 secondes
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 5000);
+            } else {
+                // Erreur retournée par le service
+                showError(result.error);
+                setButtonLoading(resetBtn, false);
+            }
 
-    } catch (error) {
-        console.error('❌ Erreur réinitialisation:', error);
-        console.error('📌 Code d\'erreur:', error.code);
-        console.error('📌 Message:', error.message);
+        } catch (error) {
+            console.error('❌ Erreur réinitialisation:', error);
 
-        // Afficher l'erreur à l'utilisateur
-        showError(getErrorMessage(error.code));
+            // Afficher l'erreur à l'utilisateur
+            showError('Une erreur est survenue. Veuillez réessayer.');
 
-        // Désactiver le loader
-        setButtonLoading(resetBtn, false);
-    }
-});
+            // Désactiver le loader
+            setButtonLoading(resetBtn, false);
+        }
+    });
+}
 
 // ========================================
 // LOGS DE DÉMARRAGE
 // ========================================
 
-console.log('🔥 Firebase Password Reset initialisé');
-console.log('📱 Version Firebase: 10.8.0');
+console.log('✅ Password Reset page loaded - Architecture sécurisée V2');
+console.log('🔐 AuthService initialisé');

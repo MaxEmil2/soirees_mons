@@ -1,47 +1,10 @@
 // ========================================
-// IMPORTS FIREBASE V10 (ES MODULES)
+// IMPORTS - ARCHITECTURE SÉCURISÉE V2
 // ========================================
 
-// Import des fonctions Firebase nécessaires depuis le CDN
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import {
-    getAuth,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    onAuthStateChanged
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-
-// ========================================
-// CONFIGURATION FIREBASE
-// ========================================
-
-// Configuration Firebase - Soirées Mons
-const firebaseConfig = {
-    apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
-    authDomain: "soirees-mons-6ce3e.firebaseapp.com",
-    projectId: "soirees-mons-6ce3e",
-    storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
-    messagingSenderId: "3405335068",
-    appId: "1:3405335068:web:394c536d95a33069d66dd9",
-    measurementId: "G-526CPT4LQ8"
-};
-
-// Initialiser Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialiser Firebase Authentication
-const auth = getAuth(app);
-
-// ========================================
-// PROVIDERS D'AUTHENTIFICATION
-// ========================================
-
-// Provider Google
-const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-    prompt: 'select_account' // Force l'utilisateur à choisir un compte
-});
+// Import des services sécurisés
+import { authService } from './src/services/auth.service.js';
+import { toast } from './src/components/Toast.js';
 
 // ========================================
 // ÉLÉMENTS DOM
@@ -105,29 +68,6 @@ function setButtonLoading(button, loading) {
 }
 
 /**
- * Traduit les codes d'erreur Firebase en messages français
- * @param {string} errorCode - Code d'erreur Firebase
- * @returns {string} Message d'erreur en français
- */
-function getErrorMessage(errorCode) {
-    const errorMessages = {
-        'auth/invalid-email': 'Adresse email invalide.',
-        'auth/user-disabled': 'Ce compte a été désactivé.',
-        'auth/user-not-found': 'Aucun compte trouvé avec cet email.',
-        'auth/wrong-password': 'Mot de passe incorrect.',
-        'auth/invalid-credential': 'Email ou mot de passe incorrect.',
-        'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard.',
-        'auth/network-request-failed': 'Erreur de connexion. Vérifiez votre connexion internet.',
-        'auth/popup-closed-by-user': 'Connexion annulée.',
-        'auth/popup-blocked': 'Popup bloquée. Autorisez les popups pour ce site.',
-        'auth/account-exists-with-different-credential': 'Un compte existe déjà avec cet email via une autre méthode.',
-        'auth/cancelled-popup-request': 'Connexion annulée.'
-    };
-
-    return errorMessages[errorCode] || 'Une erreur est survenue. Veuillez réessayer.';
-}
-
-/**
  * Redirige vers la page d'accueil après connexion réussie
  * @param {object} user - L'utilisateur connecté
  */
@@ -156,16 +96,28 @@ loginForm.addEventListener('submit', async (e) => {
     setButtonLoading(loginBtn, true);
 
     try {
-        // Connexion avec Firebase
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // Connexion avec authService (architecture sécurisée)
+        const result = await authService.signInWithEmail(email, password);
 
-        // Connexion réussie - redirection
-        redirectToHome(userCredential.user);
+        if (result.success) {
+            // Connexion réussie
+            toast.success('Connexion réussie ! Bienvenue ' + result.user.displayName || result.user.email);
+
+            // Redirection après un court délai pour montrer le toast
+            setTimeout(() => {
+                redirectToHome(result.user);
+            }, 500);
+        } else {
+            // Erreur retournée par le service
+            showError(result.error);
+            setButtonLoading(loginBtn, false);
+        }
 
     } catch (error) {
+        console.error('Erreur lors de la connexion:', error);
 
         // Afficher l'erreur à l'utilisateur
-        showError(getErrorMessage(error.code));
+        showError('Une erreur inattendue est survenue. Veuillez réessayer.');
 
         // Désactiver le loader
         setButtonLoading(loginBtn, false);
@@ -181,16 +133,28 @@ googleLoginBtn.addEventListener('click', async () => {
     setButtonLoading(googleLoginBtn, true);
 
     try {
-        // Ouvrir popup de connexion Google
-        const result = await signInWithPopup(auth, googleProvider);
+        // Connexion Google avec authService (architecture sécurisée)
+        const result = await authService.signInWithGoogle();
 
-        // Connexion réussie
-        redirectToHome(result.user);
+        if (result.success) {
+            // Connexion réussie
+            toast.success('Connexion Google réussie ! Bienvenue ' + result.user.displayName);
+
+            // Redirection après un court délai
+            setTimeout(() => {
+                redirectToHome(result.user);
+            }, 500);
+        } else {
+            // Erreur retournée par le service
+            showError(result.error);
+            setButtonLoading(googleLoginBtn, false);
+        }
 
     } catch (error) {
+        console.error('Erreur lors de la connexion Google:', error);
 
         // Afficher l'erreur
-        showError(getErrorMessage(error.code));
+        showError('Erreur de connexion Google. Veuillez réessayer.');
 
         // Désactiver le loader
         setButtonLoading(googleLoginBtn, false);
@@ -201,18 +165,20 @@ googleLoginBtn.addEventListener('click', async () => {
 // VÉRIFICATION DE L'ÉTAT D'AUTHENTIFICATION
 // ========================================
 
-// Surveiller l'état de connexion
+// Surveiller l'état de connexion au chargement de la page
 // Si l'utilisateur est déjà connecté, rediriger automatiquement
-onAuthStateChanged(auth, (user) => {
-    if (user) {
+window.addEventListener('DOMContentLoaded', () => {
+    // Vérifier si l'utilisateur est déjà authentifié
+    if (authService.isAuthenticated()) {
+        const user = authService.currentUser;
+
         // L'utilisateur est déjà connecté
+        console.log('Utilisateur déjà connecté:', user.email);
 
         // Rediriger vers l'accueil si on est sur la page de connexion
         if (window.location.pathname.includes('login.html')) {
             redirectToHome(user);
         }
-    } else {
-        // L'utilisateur n'est pas connecté
     }
 });
 
@@ -220,3 +186,5 @@ onAuthStateChanged(auth, (user) => {
 // LOGS DE DÉMARRAGE
 // ========================================
 
+console.log('✅ Login page loaded - Architecture sécurisée V2');
+console.log('🔐 AuthService initialisé');
