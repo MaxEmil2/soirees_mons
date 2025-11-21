@@ -50,25 +50,12 @@ service cloud.firestore {
     }
 
     /**
-     * Vérifie si l'utilisateur est scanner
-     */
-    function isScanner() {
-      return isAuthenticated() && (getUserData().isScanner == true || isAdmin());
-    }
-
-    /**
      * Vérifie que les données sont valides
      */
     function isValidString(field, minLength, maxLength) {
       return field is string &&
              field.size() >= minLength &&
              field.size() <= maxLength;
-    }
-
-    function isValidNumber(field, min, max) {
-      return field is number &&
-             field >= min &&
-             field <= max;
     }
 
     // ========================================
