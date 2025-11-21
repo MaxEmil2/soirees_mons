@@ -2,12 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Fonction helper pour vérifier si l'utilisateur est admin
-    function isAdmin() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
-    }
-
     // Fonction helper pour vérifier si l'utilisateur est authentifié
     function isAuthenticated() {
       return request.auth != null;
@@ -16,6 +10,28 @@ service cloud.firestore {
     // Fonction helper pour vérifier si c'est le propriétaire
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Récupère les données utilisateur
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Fonction helper pour vérifier si l'utilisateur est admin
+    function isAdmin() {
+      return isAuthenticated() && getUserData().isAdmin == true;
+    }
+
+    // Vérifie si l'utilisateur est organisateur
+    function isOrganizer() {
+      return isAuthenticated() && (getUserData().isOrganizer == true || isAdmin());
+    }
+
+    // Vérifie que les données string sont valides
+    function isValidString(field, minLength, maxLength) {
+      return field is string &&
+             field.size() >= minLength &&
+             field.size() <= maxLength;
     }
 
     // Collection Users
