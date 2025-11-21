@@ -1,0 +1,325 @@
+rules_version = '2';
+
+/**
+ * FIRESTORE RULES - NIVEAU NASA 🛡️
+ * Sécurité maximale pour toutes les collections
+ * Principe: Deny by default, Allow avec vérifications strictes
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // FONCTIONS HELPER RÉUTILISABLES
+    // ============================================
+
+    /**
+     * Vérifie si l'utilisateur est authentifié
+     */
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est le propriétaire
+     */
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est admin
+     */
+    function isAdmin() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    /**
+     * Vérifie si l'utilisateur a un rôle spécifique
+     */
+    function hasRole(role) {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est admin ou a le rôle spécifié
+     */
+    function isAdminOrHasRole(role) {
+      return isAdmin() || hasRole(role);
+    }
+
+    /**
+     * Vérifie la taille d'une chaîne
+     */
+    function isValidStringLength(str, min, max) {
+      return str is string && str.size() >= min && str.size() <= max;
+    }
+
+    /**
+     * Vérifie qu'un champ n'a pas été modifié
+     */
+    function fieldUnchanged(field) {
+      return request.resource.data[field] == resource.data[field];
+    }
+
+    /**
+     * Vérifie qu'une date est dans le futur
+     */
+    function isFutureDate(dateStr) {
+      return timestamp.value(dateStr) > request.time;
+    }
+
+    // ============================================
+    // COLLECTION: users
+    // ============================================
+
+    match /users/{userId} {
+      // Lecture: l'utilisateur lui-même ou un admin
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Création: uniquement lors de l'inscription (via Auth)
+      // L'utilisateur ne peut créer que son propre document
+      allow create: if isOwner(userId) &&
+                      // Vérifie que les champs requis sont présents
+                      request.resource.data.keys().hasAll([
+                        'uid', 'email', 'displayName', 'createdAt'
+                      ]) &&
+                      // Vérifie que l'uid correspond
+                      request.resource.data.uid == userId &&
+                      // Vérifie que l'email correspond
+                      request.resource.data.email == request.auth.token.email &&
+                      // Empêche l'auto-attribution du rôle admin
+                      request.resource.data.isAdmin == false &&
+                      // Empêche l'auto-attribution d'un rôle autre que 'user'
+                      request.resource.data.role == 'user';
+
+      // Mise à jour: l'utilisateur peut modifier ses propres données
+      // SAUF les champs critiques
+      allow update: if isOwner(userId) &&
+                      // Champs immuables
+                      fieldUnchanged('uid') &&
+                      fieldUnchanged('createdAt') &&
+                      // Un utilisateur ne peut pas se promouvoir admin
+                      (request.resource.data.isAdmin == resource.data.isAdmin) &&
+                      // Un utilisateur ne peut pas changer son propre rôle
+                      (request.resource.data.role == resource.data.role);
+
+      // Suppression: seulement l'admin
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // COLLECTION: events
+    // ============================================
+
+    match /events/{eventId} {
+      // Lecture: tous les utilisateurs authentifiés peuvent voir les événements approuvés
+      // Le créateur peut voir ses propres événements (même en attente/rejetés)
+      // L'admin peut tout voir
+      allow read: if isAuthenticated() && (
+                    resource.data.status == 'approved' ||
+                    isOwner(resource.data.createdBy) ||
+                    isAdmin()
+                  );
+
+      // Liste: optimisée pour éviter les scans complets
+      // Les utilisateurs normaux voient seulement les événements approuvés
+      allow list: if isAuthenticated() && (
+                    resource.data.status == 'approved' ||
+                    isAdmin()
+                  );
+
+      // Création: uniquement via Cloud Function pour validation
+      // Interdit la création directe depuis le client
+      allow create: if false;
+
+      // Mise à jour: seulement le créateur ou l'admin
+      // Le créateur ne peut modifier que certains champs
+      allow update: if isAuthenticated() && (
+                      // L'admin peut tout modifier
+                      isAdmin() ||
+                      // Le créateur peut modifier ses événements (mais pas tous les champs)
+                      (
+                        isOwner(resource.data.createdBy) &&
+                        // Champs immuables pour le créateur
+                        fieldUnchanged('createdBy') &&
+                        fieldUnchanged('createdByEmail') &&
+                        fieldUnchanged('createdAt') &&
+                        fieldUnchanged('status') &&
+                        fieldUnchanged('isPriority') &&
+                        fieldUnchanged('approvedAt') &&
+                        fieldUnchanged('rejectedAt') &&
+                        // L'événement ne doit pas être approuvé (modification interdite après approbation)
+                        resource.data.status == 'pending'
+                      )
+                    );
+
+      // Suppression: seulement le créateur (si pending) ou l'admin
+      allow delete: if isAuthenticated() && (
+                      isAdmin() ||
+                      (isOwner(resource.data.createdBy) && resource.data.status == 'pending')
+                    );
+    }
+
+    // ============================================
+    // COLLECTION: presales
+    // ============================================
+
+    match /presales/{presaleId} {
+      // Lecture: STRICTEMENT limitée
+      // - L'acheteur peut voir ses propres préventes
+      // - Le créateur de l'événement peut voir les préventes de son événement
+      // - L'admin peut tout voir
+      // - Un scanner assigné peut voir les préventes de l'événement
+      allow read: if isAuthenticated() && (
+                    isOwner(resource.data.userId) ||
+                    isOwner(get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy) ||
+                    isAdmin() ||
+                    // Scanner assigné
+                    (
+                      hasRole('scanner') &&
+                      request.auth.uid in get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.scanners
+                    )
+                  );
+
+      // Liste: très restreinte
+      allow list: if false; // Pas de listing direct, utiliser les Cloud Functions
+
+      // Création: UNIQUEMENT via Cloud Function après paiement Stripe
+      // Interdit la création directe (évite la fraude)
+      allow create: if false;
+
+      // Mise à jour: UNIQUEMENT via Cloud Function
+      // Interdit la modification directe du statut ou des données
+      allow update: if false;
+
+      // Suppression: seulement l'admin
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // COLLECTION: likes
+    // ============================================
+
+    match /likes/{likeId} {
+      // Lecture: utilisateurs authentifiés peuvent voir les likes publics
+      // L'utilisateur peut voir ses propres likes (même privés)
+      allow read: if isAuthenticated() && (
+                    resource.data.isPublic == true ||
+                    isOwner(resource.data.userId)
+                  );
+
+      // Création: utilisateur authentifié
+      // Doit correspondre à son propre userId
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.keys().hasAll([
+                        'eventId', 'userId', 'userName', 'isPublic', 'createdAt'
+                      ]) &&
+                      // Vérifie que l'événement existe
+                      exists(/databases/$(database)/documents/events/$(request.resource.data.eventId));
+
+      // Mise à jour: seulement l'utilisateur peut modifier son propre like
+      allow update: if isOwner(resource.data.userId) &&
+                      // Ne peut pas changer l'eventId ou userId
+                      fieldUnchanged('eventId') &&
+                      fieldUnchanged('userId') &&
+                      fieldUnchanged('createdAt');
+
+      // Suppression: seulement l'utilisateur ou l'admin
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ============================================
+    // COLLECTION: notifications
+    // ============================================
+
+    match /notifications/{notificationId} {
+      // Lecture: seulement ses propres notifications
+      allow read: if isOwner(resource.data.userId);
+
+      // Liste: seulement ses propres notifications
+      allow list: if isAuthenticated() &&
+                    resource.data.userId == request.auth.uid;
+
+      // Création: UNIQUEMENT via Cloud Function
+      allow create: if false;
+
+      // Mise à jour: l'utilisateur peut marquer comme lu
+      allow update: if isOwner(resource.data.userId) &&
+                      // Peut seulement modifier 'read'
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+
+      // Suppression: seulement l'utilisateur ou l'admin
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ============================================
+    // COLLECTION: partners (logos partenaires)
+    // ============================================
+
+    match /partners/{partnerId} {
+      // Lecture: public
+      allow read: if true;
+
+      // Création/Mise à jour/Suppression: seulement l'admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // COLLECTION: suggestions
+    // ============================================
+
+    match /suggestions/{suggestionId} {
+      // Lecture: l'utilisateur peut voir ses propres suggestions, l'admin peut tout voir
+      allow read: if isAuthenticated() && (
+                    isOwner(resource.data.userId) ||
+                    isAdmin()
+                  );
+
+      // Création: utilisateur authentifié
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.keys().hasAll([
+                        'userId', 'userName', 'userEmail', 'title',
+                        'description', 'category', 'status', 'createdAt'
+                      ]) &&
+                      // Vérifie les catégories autorisées
+                      request.resource.data.category in ['feature', 'improvement', 'bug', 'design', 'other'] &&
+                      // Le statut doit être 'pending' à la création
+                      request.resource.data.status == 'pending' &&
+                      // Limite de longueur
+                      isValidStringLength(request.resource.data.title, 5, 200) &&
+                      isValidStringLength(request.resource.data.description, 10, 2000);
+
+      // Mise à jour: seulement l'admin (pour changer le statut)
+      allow update: if isAdmin();
+
+      // Suppression: l'utilisateur ou l'admin
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ============================================
+    // COLLECTION: stats (statistiques)
+    // ============================================
+
+    match /stats/{statId} {
+      // Lecture: seulement l'admin
+      allow read: if isAdmin();
+
+      // Écriture: UNIQUEMENT via Cloud Function
+      allow create, update, delete: if false;
+    }
+
+    // ============================================
+    // RÈGLE PAR DÉFAUT
+    // ============================================
+
+    // Bloque tout accès non explicitement autorisé
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

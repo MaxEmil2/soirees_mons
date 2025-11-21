@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soirées Mons - Événements & Soirées à Mons</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="design-system.css">
+    <link rel="stylesheet" href="home.css?v=2024117001">
+    <style>
+        /* Mobile navigation - Hidden on desktop */
+        .nav-mobile-right {
+            display: none;
+        }
+
+        /* Mobile menu overlay */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Mobile slide-out menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 85%;
+            max-width: 380px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
+            z-index: 999;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(108, 99, 255, 0.05);
+        }
+
+        .mobile-menu-header h3 {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(90deg, #6c63ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mobile-menu-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-close:hover {
+            background: rgba(255, 77, 79, 0.2);
+            border-color: rgba(255, 77, 79, 0.5);
+            color: #ff4d4f;
+            transform: rotate(90deg);
+        }
+
+        .mobile-menu-content {
+            padding: 24px 20px;
+            flex: 1;
+        }
+
+        .mobile-menu-section {
+            margin-bottom: 20px;
+        }
+
+        .mobile-menu-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .mobile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 16px 18px;
+            margin-bottom: 8px;
+            background: rgba(108, 99, 255, 0.08);
+            border: 1px solid rgba(108, 99, 255, 0.15);
+            border-radius: 14px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .mobile-menu-item:hover,
+        .mobile-menu-item:active {
+            background: rgba(108, 99, 255, 0.2);
+            border-color: rgba(108, 99, 255, 0.4);
+            transform: translateX(-6px);
+            box-shadow: 4px 4px 20px rgba(108, 99, 255, 0.2);
+        }
+
+        .mobile-menu-item-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .mobile-menu-item-primary {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.3), rgba(0, 212, 255, 0.2));
+            border-color: rgba(108, 99, 255, 0.4);
+        }
+
+        .mobile-menu-item-primary:hover {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.5), rgba(0, 212, 255, 0.3));
+        }
+
+        .mobile-menu-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .mobile-menu-footer p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            margin: 0;
+        }
+
+        /* Hamburger menu button - Animated */
+        .hamburger-menu {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 44px;
+            height: 44px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .hamburger-menu span {
+            width: 24px;
+            height: 2.5px;
+            background: white;
+            border-radius: 3px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+        }
+
+        .hamburger-menu span:nth-child(1) {
+            transform: translateY(-8px);
+        }
+
+        .hamburger-menu span:nth-child(2) {
+            transform: translateY(0);
+        }
+
+        .hamburger-menu span:nth-child(3) {
+            transform: translateY(8px);
+        }
+
+        /* Hamburger to X animation */
+        .hamburger-menu.active span:nth-child(1) {
+            transform: translateY(0) rotate(45deg);
+            background: #6c63ff;
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: translateY(0) rotate(-45deg);
+            background: #6c63ff;
+        }
+
+        .hamburger-menu:hover span {
+            background: #6c63ff;
+        }
+
+        /* Notification bell mobile */
+        .notification-bell-mobile {
+            position: relative;
+            cursor: pointer;
+            padding: 10px;
+            color: white;
+            transition: all 0.3s ease;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .notification-bell-mobile:hover {
+            color: #6c63ff;
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .notification-badge-mobile {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: linear-gradient(135deg, #ff4d4f, #ff7875);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(255, 77, 79, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Responsive: Show mobile nav on tablet and mobile */
+        @media (max-width: 992px) {
+            /* Hide desktop nav elements */
+            .nav-menu,
+            .nav-auth {
+                display: none !important;
+            }
+
+            /* Show mobile nav */
+            .nav-mobile-right {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+        }
+
+        /* Additional mobile optimizations */
+        @media (max-width: 768px) {
+            .mobile-menu {
+                width: 90%;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mobile-menu {
+                width: 100%;
+            }
+
+            .mobile-menu-header h3 {
+                font-size: 20px;
+            }
+
+            .mobile-menu-item {
+                padding: 14px 16px;
+                font-size: 14px;
+            }
+        }
+
+        /* STYLES CRITIQUES DES LIKES - Inline pour éviter problème de chargement CSS */
+        .likers-photos {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .liker-photo {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+            margin-left: -8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .liker-photo:first-child {
+            margin-left: 0;
+        }
+
+        .liker-photo:hover {
+            transform: scale(1.15);
+            z-index: 2;
+        }
+
+        .likes-count {
+            background: rgba(0, 0, 0, 0.8) !important;
+            color: white !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            padding: 4px 8px !important;
+            border-radius: 12px !important;
+            margin-left: 6px !important;
+            border: 2px solid white !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+            min-width: 28px !important;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .likes-container {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        /* Responsive likes - Mobile */
+        @media (max-width: 768px) {
+            .liker-photo {
+                width: 24px !important;
+                height: 24px !important;
+                border-width: 1.5px;
+                margin-left: -6px;
+            }
+
+            .liker-photo:first-child {
+                margin-left: 0;
+            }
+
+            .likes-count {
+                font-size: 10px !important;
+                padding: 3px 6px !important;
+                min-width: 24px !important;
+                margin-left: 4px !important;
+            }
+        }
+
+        /* Responsive likes - Tablette */
+        @media (min-width: 769px) and (max-width: 992px) {
+            .liker-photo {
+                width: 26px !important;
+                height: 26px !important;
+                margin-left: -7px;
+            }
+
+            .liker-photo:first-child {
+                margin-left: 0;
+            }
+
+            .likes-count {
+                font-size: 10px !important;
+                padding: 3px 7px !important;
+                min-width: 26px !important;
+                margin-left: 5px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BARRE DE NAVIGATION -->
+    <header class="navbar">
+        <div class="nav-container">
+            <!-- Logo à gauche -->
+            <div class="logo">
+                <img src="assets/logo.png" alt="Soirées Mons" class="navbar-logo">
+            </div>
+
+            <!-- Menu au centre -->
+            <nav class="nav-menu">
+                <a href="#evenements">Soirées</a>
+                <a href="about.html">À propos de nous</a>
+            </nav>
+
+            <!-- Bouton Auth dynamique à droite -->
+            <div class="nav-auth">
+                <!-- Affiché si NON connecté -->
+                <a href="signup.html" class="btn-signup" id="btn-signup">S'enregistrer</a>
+
+                <!-- Affiché si connecté -->
+                <div class="nav-auth-connected" id="nav-auth-connected" style="display: none;">
+                    <!-- Bouton Ajouter une soirée -->
+                    <button class="btn-add-event-nav" id="btn-add-event">
+                        ➕ Ajouter une soirée
+                    </button>
+
+                    <!-- Bouton Scanner (affiché seulement si l'utilisateur est scanner) -->
+                    <a href="scanner.html" class="btn-scanner-nav" id="desktop-menu-scanner" style="display: none;">
+                        📱 Scanner
+                    </a>
+
+                    <!-- Cloche notifications -->
+                    <div class="notification-bell" id="notification-bell">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+
+                        <!-- Dropdown notifications -->
+                        <div class="notification-dropdown" id="notification-dropdown">
+                            <div class="notification-header">
+                                <h3>Notifications</h3>
+                                <button class="mark-all-read" id="mark-all-read">Tout marquer lu</button>
+                            </div>
+                            <div class="notification-list" id="notification-list">
+                                <!-- Les notifications seront chargées ici -->
+                                <div class="notification-empty">Aucune notification</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bouton Mon compte -->
+                    <a href="dashboard.html" class="btn-login" id="btn-account">Mon compte</a>
+                </div>
+            </div>
+
+            <!-- MOBILE/TABLET: Icônes à droite (cloche + hamburger) -->
+            <div class="nav-mobile-right">
+                <!-- Cloche notifications mobile -->
+                <div class="notification-bell-mobile" id="notification-bell-mobile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge-mobile" id="notification-badge-mobile" style="display: none;">0</span>
+                </div>
+
+                <!-- Menu hamburger -->
+                <button class="hamburger-menu" id="hamburger-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MENU LATÉRAL MOBILE -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <nav class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
+        </div>
+        <div class="mobile-menu-content">
+            <!-- Section Navigation -->
+            <div class="mobile-menu-section">
+                <div class="mobile-menu-section-title">Navigation</div>
+                <a href="#evenements" class="mobile-menu-item" onclick="closeMobileMenu()">
+                    <span class="mobile-menu-item-icon">🎉</span>
+                    Soirées
+                </a>
+                <a href="about.html" class="mobile-menu-item">
+                    <span class="mobile-menu-item-icon">ℹ️</span>
+                    À propos de nous
+                </a>
+            </div>
+
+            <!-- Affiché si NON connecté -->
+            <div class="mobile-menu-section" id="mobile-menu-guest">
+                <div class="mobile-menu-section-title">Compte</div>
+                <a href="signup.html" class="mobile-menu-item mobile-menu-item-primary" id="mobile-menu-signup">
+                    <span class="mobile-menu-item-icon">✨</span>
+                    S'enregistrer
+                </a>
+                <a href="login.html" class="mobile-menu-item">
+                    <span class="mobile-menu-item-icon">🔑</span>
+                    Se connecter
+                </a>
+            </div>
+
+            <!-- Affiché si connecté -->
+            <div id="mobile-menu-connected" style="display: none;">
+                <div class="mobile-menu-section">
+                    <div class="mobile-menu-section-title">Mon espace</div>
+                    <a href="dashboard.html" class="mobile-menu-item">
+                        <span class="mobile-menu-item-icon">👤</span>
+                        Mon compte
+                    </a>
+                    <a href="mes-preventes.html" class="mobile-menu-item">
+                        <span class="mobile-menu-item-icon">🎟️</span>
+                        Mes préventes
+                    </a>
+                    <a href="scanner.html" class="mobile-menu-item" id="mobile-menu-scanner" style="display: none;">
+                        <span class="mobile-menu-item-icon">📱</span>
+                        Scanner une prévente
+                    </a>
+                    <button class="mobile-menu-item mobile-menu-item-primary" id="mobile-menu-add-event">
+                        <span class="mobile-menu-item-icon">➕</span>
+                        Proposer une soirée
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mobile-menu-footer">
+            <p>Soirées Mons © 2024</p>
+        </div>
+    </nav>
+
+    <!-- SECTION ÉVÉNEMENTS -->
+    <section id="evenements" class="events-section">
+        <div class="container">
+            <h2 class="section-title">Événements</h2>
+
+            <!-- Onglets de filtrage -->
+            <div class="events-tabs">
+                <button class="tab-btn active" id="tab-upcoming" data-tab="upcoming">
+                    🎉 Événements à venir
+                </button>
+                <button class="tab-btn" id="tab-liked" data-tab="liked">
+                    ❤️ Événements aimés
+                </button>
+            </div>
+
+            <!-- État de chargement -->
+            <div id="events-loading" class="events-loading">
+                <p>Chargement des événements...</p>
+            </div>
+
+            <!-- Grille d'événements (chargée dynamiquement) -->
+            <div class="events-grid" id="events-grid">
+                <!-- Les événements seront chargés ici depuis Firestore -->
+            </div>
+
+            <!-- Message si aucun événement -->
+            <div id="no-events" class="no-events" style="display: none;">
+                <p>🎉 Aucune soirée prévue pour le moment.</p>
+                <p>Revenez bientôt pour découvrir nos prochains événements!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION PARTENAIRES -->
+    <section id="partenaires" class="partners-section">
+        <div class="container">
+            <h2 class="section-title">Nos partenaires</h2>
+
+            <!-- État de chargement -->
+            <div id="partners-loading" class="events-loading">
+                <p>Chargement des partenaires...</p>
+            </div>
+
+            <!-- Logos des partenaires (chargés dynamiquement) -->
+            <div class="partners-grid" id="partners-grid">
+                <!-- Les partenaires seront chargés ici depuis Firestore -->
+            </div>
+
+            <!-- Message si aucun partenaire -->
+            <div id="no-partners" class="no-events" style="display: none;">
+                <p>Aucun partenaire pour le moment.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL DÉTAILS SOIRÉE -->
+    <div id="event-modal" class="event-modal" style="display: none;">
+        <div class="modal-content">
+            <!-- Bouton fermer -->
+            <button class="modal-close" onclick="closeEventModal()">✕</button>
+
+            <div class="modal-body">
+                <!-- Colonne gauche: Image -->
+                <div class="modal-left">
+                    <img id="modal-image" src="" alt="Image de la soirée">
+                </div>
+
+                <!-- Colonne droite: Informations -->
+                <div class="modal-right">
+                    <h2 id="modal-title"></h2>
+
+                    <!-- Bulles d'infos -->
+                    <div class="modal-info-bubbles">
+                        <div class="info-bubble">
+                            <span class="bubble-icon">📅</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Date</span>
+                                <span class="bubble-value" id="modal-date"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-bubble">
+                            <span class="bubble-icon">📍</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Lieu</span>
+                                <span class="bubble-value" id="modal-location"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-bubble">
+                            <span class="bubble-icon">🔞</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Âge requis</span>
+                                <span class="bubble-value" id="modal-age"></span>
+                            </div>
+                        </div>
+
+                        <div class="info-bubble">
+                            <span class="bubble-icon">💰</span>
+                            <div class="bubble-content">
+                                <span class="bubble-label">Prix</span>
+                                <span class="bubble-value" id="modal-price"></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Section personnes intéressées -->
+                    <div class="modal-interest-section" id="modal-interest-section">
+                        <p class="interest-text">🔥 <span id="modal-interest-count">0</span> personnes sont intéressées par cette soirée</p>
+                    </div>
+
+                    <!-- Description séparée -->
+                    <div class="modal-description-section">
+                        <h3>📝 Description</h3>
+                        <p id="modal-description"></p>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="modal-actions">
+                        <a id="modal-link" href="#" target="_blank" class="modal-btn modal-btn-primary">
+                            📎 Lien de la soirée
+                        </a>
+                        <button id="modal-presales-button" class="modal-btn modal-btn-primary" data-event-id="">
+                            🎟️ Acheter une prévente (8€)
+                        </button>
+                    </div>
+                    <p id="modal-presales-info" class="presales-info-text" style="display: none; font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 10px; text-align: center;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUTER UNE SOIRÉE (UTILISATEUR) -->
+    <div id="add-event-modal" class="add-event-modal" style="display: none;">
+        <div class="add-event-modal-content">
+            <!-- Bouton fermer -->
+            <button class="modal-close" onclick="closeAddEventModal()">✕</button>
+
+            <h2 class="add-event-title">➕ Proposer une soirée</h2>
+
+            <form id="user-event-form" class="user-event-form">
+                <!-- Row 1: Name and Date -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-event-name">Nom de la soirée *</label>
+                        <input type="text" id="user-event-name" placeholder="Ex: Soirée House Music" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-event-date">Date *</label>
+                        <input type="datetime-local" id="user-event-date" required>
+                    </div>
+                </div>
+
+                <!-- Row 2: Location and Price -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-event-location">Lieu *</label>
+                        <input type="text" id="user-event-location" placeholder="Ex: Le Reflektor, Mons" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-event-price">Prix (€) *</label>
+                        <input type="number" id="user-event-price" placeholder="Ex: 15" step="0.01" min="0" required>
+                        <div id="price-commission-info" style="display: none; margin-top: 8px; padding: 8px; background: rgba(108, 99, 255, 0.1); border-radius: 6px;">
+                            <small style="color: #b8b8d1;">
+                                En cas de prévente: Vous recevrez 88% du prix. Commission Soirées Mons: 12%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Age and Link -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-event-age">Âge requis *</label>
+                        <input type="number" id="user-event-age" placeholder="Ex: 18" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-event-link">Lien de la soirée</label>
+                        <input type="url" id="user-event-link" placeholder="https://example.com/tickets">
+                    </div>
+                </div>
+
+                <!-- Row 4: Presales toggle and End Date -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Préventes</label>
+                        <div class="toggle-container">
+                            <div class="toggle-switch" id="user-presales-toggle">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <span class="toggle-label" id="user-presales-label">Désactivé</span>
+                        </div>
+                        <input type="hidden" id="user-event-presales" value="false">
+                        <!-- Nouveau: Texte + bouton Plus d'informations -->
+                        <div style="margin-top: 12px;">
+                            <small style="color: #b8b8d1;">Les préventes permettent d'acheter des billets à l'avance</small><br>
+                            <button type="button" class="btn-info-presales" id="btn-info-presales">ℹ️ Plus d'informations</button>
+                        </div>
+                    </div>
+                    <div class="form-group" id="user-presales-end-container" style="display: none;">
+                        <label for="user-presales-end-date">Date de fin des préventes</label>
+                        <input type="datetime-local" id="user-presales-end-date">
+                    </div>
+                </div>
+
+                <!-- Row 5: Max presales (shown when presales enabled) -->
+                <div class="form-row" id="user-max-presales-container" style="display: none;">
+                    <div class="form-group">
+                        <label for="user-max-presales">Nombre maximum de préventes *</label>
+                        <input type="number" id="user-max-presales" placeholder="Ex: 200" min="1" required>
+                        <small style="color: #b8b8d1; margin-top: 5px; display: block;">
+                            Quand ce quota est atteint, la soirée affichera "Sold Out"
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group full-width">
+                    <label for="user-event-description">Description</label>
+                    <textarea id="user-event-description" placeholder="Décrivez la soirée..."></textarea>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="form-group full-width">
+                    <label>Image de la soirée *</label>
+                    <div class="image-upload-area" id="user-image-upload-area">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">Cliquez pour uploader une image</div>
+                        <small style="color: #b8b8d1;">JPG, PNG ou WEBP - Max 5MB</small>
+                    </div>
+                    <input type="file" id="user-image-input" accept="image/*" required style="display: none;">
+                    <div class="image-preview" id="user-image-preview" style="display: none;">
+                        <img id="user-preview-img" src="" alt="Preview">
+                    </div>
+                </div>
+
+                <!-- Submit buttons -->
+                <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
+                    <button type="submit" class="modal-btn modal-btn-primary" id="user-submit-btn">Envoyer pour validation</button>
+                    <button type="button" class="modal-btn modal-btn-secondary" onclick="closeAddEventModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMATION ENVOI -->
+    <div id="confirmation-modal" class="confirmation-modal" style="display: none;">
+        <div class="confirmation-modal-content">
+            <div class="confirmation-icon">✅</div>
+            <h2>Soirée envoyée !</h2>
+            <p>Nous avons bien reçu votre soirée ! Un administrateur va analyser votre demande sous peu.</p>
+            <p>Vous recevrez une notification dès que votre soirée sera acceptée ou refusée.</p>
+            <p><strong>Merci pour votre contribution à la communauté !</strong></p>
+            <button class="modal-btn modal-btn-primary" onclick="closeConfirmationModal()">Compris !</button>
+        </div>
+    </div>
+
+    <!-- MODAL INFO PRÉVENTES -->
+    <div id="info-presales-modal" class="info-presales-modal" style="display: none;">
+        <div class="info-modal-content">
+            <button class="modal-close" onclick="closeInfoPresalesModal()">✕</button>
+            <h2>ℹ️ Informations sur les préventes</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Comment ça marche ?</h3>
+                <p style="margin-bottom: 15px;">Les préventes permettent à vos participants d'acheter leurs billets à l'avance via un paiement sécurisé.</p>
+
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Prix et commissions</h3>
+                <ul style="margin-bottom: 15px; padding-left: 20px;">
+                    <li>Prix de la prévente : <strong>Vous choisissez le prix</strong></li>
+                    <li>Vous recevez : <strong>88%</strong> du prix sur votre compte</li>
+                    <li>Commission Soirées Mons : <strong>12%</strong></li>
+                </ul>
+
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Ce que reçoit l'acheteur</h3>
+                <ul style="margin-bottom: 15px; padding-left: 20px;">
+                    <li>Un email avec un <strong>QR code unique</strong></li>
+                    <li>Le QR code contient ses informations personnelles</li>
+                    <li>Il présente le QR code à l'entrée de l'événement</li>
+                </ul>
+
+                <h3 style="color: #6c63ff; margin-bottom: 10px;">Pour l'organisateur</h3>
+                <ul style="padding-left: 20px;">
+                    <li>Configurez votre compte bancaire via <strong>Stripe Connect</strong></li>
+                    <li>Scannez les QR codes avec la <a href="scanner.html" style="color: #00d4ff;">page de scan</a></li>
+                    <li>Les tickets ne peuvent être utilisés qu'une seule fois</li>
+                </ul>
+            </div>
+            <button class="modal-btn modal-btn-primary" onclick="closeInfoPresalesModal()">Compris !</button>
+        </div>
+    </div>
+
+    <!-- MODAL CHOIX LIKE PUBLIC/ANONYME -->
+    <div id="like-choice-modal" class="like-choice-modal" style="display: none;">
+        <div class="like-choice-content">
+            <h2 id="like-modal-title">❤️ Liker cette soirée</h2>
+            <p id="like-modal-description">Voulez-vous liker en public ou en anonyme ?</p>
+
+            <div class="like-choice-buttons" id="like-choice-buttons">
+                <button class="like-choice-btn like-choice-public" id="like-public-btn">
+                    <span class="like-choice-icon">👤</span>
+                    <strong>Public</strong>
+                    <small>Votre photo sera affichée</small>
+                </button>
+
+                <button class="like-choice-btn like-choice-anonymous" id="like-anonymous-btn">
+                    <span class="like-choice-icon">🕶️</span>
+                    <strong>Anonyme</strong>
+                    <small>Juste +1 dans le compteur</small>
+                </button>
+            </div>
+
+            <button class="like-choice-unlike" id="like-unlike-btn" style="display: none;">
+                💔 Ne plus aimer
+            </button>
+
+            <button class="like-choice-cancel" onclick="closeLikeChoiceModal()">Annuler</button>
+        </div>
+    </div>
+
+    <!-- MODAL SUGGESTIONS -->
+    <div id="suggestions-modal" class="info-presales-modal" style="display: none;">
+        <div class="info-modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeSuggestionsModal()">✕</button>
+            <h2>💡 Envoyer une suggestion</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <p style="margin-bottom: 15px; color: #b8b8d1;">
+                    Vous avez une idée pour améliorer Soirées Mons ? Partagez-la avec nous !
+                </p>
+                <form id="suggestions-form">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="suggestion-title" style="display: block; margin-bottom: 5px; color: #fff;">Titre *</label>
+                        <input type="text" id="suggestion-title" placeholder="Ex: Nouvelle fonctionnalité..."
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="suggestion-description" style="display: block; margin-bottom: 5px; color: #fff;">Description *</label>
+                        <textarea id="suggestion-description" placeholder="Décrivez votre suggestion en détail..."
+                                  style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff; min-height: 120px; resize: vertical;" required></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="suggestion-category" style="display: block; margin-bottom: 5px; color: #fff;">Catégorie</label>
+                        <select id="suggestion-category"
+                                style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;">
+                            <option value="feature">Nouvelle fonctionnalité</option>
+                            <option value="improvement">Amélioration</option>
+                            <option value="bug">Bug à corriger</option>
+                            <option value="design">Design/Interface</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="modal-btn modal-btn-secondary" onclick="closeSuggestionsModal()">Annuler</button>
+                <button class="modal-btn modal-btn-primary" id="submit-suggestion-btn">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QUESTIONNAIRE PRÉVENTE -->
+    <div id="presale-questionnaire-modal" class="info-presales-modal" style="display: none;">
+        <div class="info-modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closePresaleQuestionnaireModal()">✕</button>
+            <h2>🎟️ Informations pour la prévente</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <p style="margin-bottom: 15px; color: #b8b8d1;">
+                    Ces informations apparaîtront sur votre ticket et seront vérifiées à l'entrée.
+                </p>
+                <form id="presale-questionnaire-form">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-nom" style="display: block; margin-bottom: 5px; color: #fff;">Nom *</label>
+                        <input type="text" id="presale-nom" placeholder="Votre nom"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-prenom" style="display: block; margin-bottom: 5px; color: #fff;">Prénom *</label>
+                        <input type="text" id="presale-prenom" placeholder="Votre prénom"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-age" style="display: block; margin-bottom: 5px; color: #fff;">Âge *</label>
+                        <input type="number" id="presale-age" placeholder="Votre âge" min="1" max="120"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                </form>
+                <div id="presale-age-error" style="display: none; background: rgba(255, 77, 79, 0.1); border: 1px solid rgba(255, 77, 79, 0.5); border-radius: 8px; padding: 12px; margin-top: 15px; color: #ff4d4f; font-size: 14px; text-align: center;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="modal-btn modal-btn-secondary" onclick="closePresaleQuestionnaireModal()">Annuler</button>
+                <button class="modal-btn modal-btn-primary" id="submit-presale-questionnaire-btn">Continuer vers le paiement</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animation cœur (style Instagram) -->
+    <div id="heart-animation" class="heart-animation" style="display: none;">
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="#ff4458">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Gauche: Copyright -->
+            <div class="footer-left">
+                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank" style="color: var(--primary-color); text-decoration: none; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Maxence</a></p>
+            </div>
+
+            <!-- Centre: Logo -->
+            <div class="footer-center">
+                <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
+            </div>
+
+            <!-- Droite: Réseaux sociaux -->
+            <div class="footer-right">
+                <p>Suivez-nous :</p>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/soirees_mons/" target="_blank" aria-label="Instagram">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@soirees_mons" target="_blank" aria-label="TikTok">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Styles pour le chargement et messages -->
+
+    <!-- Firebase Auth et chargement des événements -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            query,
+            orderBy,
+            where,
+            doc,
+            getDoc
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js';
+        import { getTotalLikes } from './likes.js';
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const functions = getFunctions(app, 'europe-west1');
+
+        // Éléments DOM
+        const btnSignup = document.getElementById('btn-signup');
+        const btnAccount = document.getElementById('btn-account');
+        const eventsGrid = document.getElementById('events-grid');
+        const eventsLoading = document.getElementById('events-loading');
+        const noEvents = document.getElementById('no-events');
+
+        // Éléments navbar
+        const navAuthConnected = document.getElementById('nav-auth-connected');
+
+        // Détecter l'état de connexion
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Utilisateur connecté → afficher notifications + "Mon compte"
+                btnSignup.style.display = 'none';
+                navAuthConnected.style.display = 'flex';
+            } else {
+                // Utilisateur non connecté → afficher "S'enregistrer"
+                btnSignup.style.display = 'inline-block';
+                navAuthConnected.style.display = 'none';
+            }
+        });
+
+        // Charger les événements depuis Firestore
+        async function loadEvents() {
+            try {
+                console.log('📥 Chargement des événements...');
+
+                // Récupérer tous les événements
+                const querySnapshot = await getDocs(collection(db, 'events'));
+
+                // Masquer le loader
+                eventsLoading.style.display = 'none';
+
+                // Filtrer les événements approuvés uniquement ET charger les likes
+                const approvedEvents = [];
+                for (const doc of querySnapshot.docs) {
+                    const event = doc.data();
+                    // Afficher uniquement les événements approuvés ou sans status (anciennes soirées)
+                    if (event.status === 'approved' || !event.status) {
+                        const eventId = doc.id;
+                        // Compter les likes
+                        const likesCount = await getTotalLikes(eventId);
+
+                        approvedEvents.push({
+                            id: eventId,
+                            ...event,
+                            likesCount: likesCount || 0
+                        });
+                    }
+                }
+
+                if (approvedEvents.length === 0) {
+                    // Aucun événement approuvé
+                    noEvents.style.display = 'block';
+                    console.log('ℹ️ Aucun événement approuvé trouvé');
+                    return;
+                }
+
+                // Trier par nombre de likes (décroissant)
+                approvedEvents.sort((a, b) => b.likesCount - a.likesCount);
+
+                // Grouper par mois
+                const eventsByMonth = {};
+                const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                                   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+                approvedEvents.forEach(eventData => {
+                    const eventDate = new Date(eventData.date);
+                    const monthKey = eventDate.getFullYear() + '-' + String(eventDate.getMonth()).padStart(2, '0');
+                    const monthLabel = monthNames[eventDate.getMonth()];
+
+                    if (!eventsByMonth[monthKey]) {
+                        eventsByMonth[monthKey] = {
+                            label: monthLabel,
+                            year: eventDate.getFullYear(),
+                            month: eventDate.getMonth(),
+                            events: []
+                        };
+                    }
+
+                    eventsByMonth[monthKey].events.push(eventData);
+                });
+
+                // Trier les mois par ordre chronologique
+                const sortedMonthKeys = Object.keys(eventsByMonth).sort();
+
+                // Vider le conteneur
+                eventsGrid.innerHTML = '';
+
+                // Afficher les événements par mois
+                for (const monthKey of sortedMonthKeys) {
+                    const monthData = eventsByMonth[monthKey];
+
+                    // Créer la section du mois
+                    const monthSection = document.createElement('div');
+                    monthSection.className = 'month-section';
+                    monthSection.innerHTML = '<h3 class="month-title">' + monthData.label + ' ' + monthData.year + '</h3><div class="events-grid-month"></div>';
+
+                    const monthGrid = monthSection.querySelector('.events-grid-month');
+
+                    // Ajouter les événements du mois (déjà triés par likes)
+                    for (const eventData of monthData.events) {
+                        const eventId = eventData.id;
+
+                        // Stocker l'événement globalement
+                        window.eventsData[eventId] = eventData;
+
+                        const eventCard = await createEventCard(eventData, eventId);
+                        monthGrid.appendChild(eventCard);
+                    }
+
+                    eventsGrid.appendChild(monthSection);
+                }
+
+                console.log('✅ ' + approvedEvents.length + ' événement(s) chargé(s) et groupé(s) par mois');
+
+            } catch (error) {
+                console.error('❌ Erreur chargement événements:', error);
+                eventsLoading.innerHTML = '<p style="color: #ff4d4f;">❌ Erreur lors du chargement des événements.</p>';
+            }
+        }
+
+        // Créer une carte événement
+        async function createEventCard(event, eventId) {
+            const card = document.createElement('div');
+            card.className = 'event-card';
+
+            // Formater la date
+            const eventDate = new Date(event.date);
+            const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+
+            card.innerHTML = `
+                <div class="event-image" id="event-image-${eventId}">
+                    <img src="${event.imageURL}" alt="${event.name}">
+                    <div class="likes-container" id="likes-container-${eventId}">
+                        <div class="likers-info" style="display: flex; align-items: center;">
+                            <div class="likers-photos" id="likers-photos-${eventId}">
+                                <!-- Photos des likers seront ajoutées ici -->
+                            </div>
+                            <span class="likes-count" id="likes-count-${eventId}" style="display: none;">+0</span>
+                        </div>
+                        <button class="like-button" id="like-btn-${eventId}" data-event-id="${eventId}">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="event-info">
+                    <h3>${event.name}</h3>
+                    <p class="event-date">📅 ${formattedDate}</p>
+                    <button class="event-details-btn" data-event-id="${eventId}">Détails de la soirée</button>
+                </div>
+            `;
+
+            // Ajouter l'écouteur d'événement pour le bouton détails
+            const detailsBtn = card.querySelector('.event-details-btn');
+            detailsBtn.addEventListener('click', () => openEventModal(eventId));
+
+            // Charger les likes pour cet événement
+            loadEventLikesUI(eventId);
+
+            return card;
+        }
+
+        // Stocker les événements globalement pour accès rapide
+        window.eventsData = {};
+
+        // Fonction pour ouvrir le modal
+        window.openEventModal = async function(eventId) {
+            const event = window.eventsData[eventId];
+            if (!event) return;
+
+            // Formater la date complète
+            const eventDate = new Date(event.date);
+            const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Remplir le modal
+            document.getElementById('modal-image').src = event.imageURL;
+            document.getElementById('modal-title').textContent = event.name;
+            document.getElementById('modal-date').textContent = formattedDate;
+            document.getElementById('modal-location').textContent = event.location;
+            document.getElementById('modal-age').textContent = event.age + '+ ans';
+            document.getElementById('modal-price').textContent = event.price + '€';
+            document.getElementById('modal-description').textContent = event.description || 'Aucune description disponible.';
+
+            // Récupérer et afficher le nombre de personnes intéressées (likes)
+            const likesCount = await getEventLikesCount(eventId);
+            document.getElementById('modal-interest-count').textContent = likesCount;
+
+            // Lien de la soirée
+            const linkElement = document.getElementById('modal-link');
+            if (event.link) {
+                linkElement.href = event.link;
+                linkElement.style.display = 'inline-flex';
+            } else {
+                linkElement.style.display = 'none';
+            }
+
+            // Bouton préventes
+            const presalesButton = document.getElementById('modal-presales-button');
+            const presalesInfo = document.getElementById('modal-presales-info');
+
+            if (event.presales) {
+                // Vérifier si les préventes sont encore disponibles
+                let presalesAvailable = true;
+                let infoText = '';
+
+                // Vérifier si les préventes ont été stoppées manuellement
+                if (event.presalesStopped) {
+                    presalesAvailable = false;
+                    infoText = '🔥 SOLD OUT - Préventes terminées !';
+                }
+
+                // Vérifier si sold out (quota atteint)
+                if (presalesAvailable && event.maxPresales && event.presalesSold >= event.maxPresales) {
+                    presalesAvailable = false;
+                    infoText = '🔥 SOLD OUT - Toutes les préventes ont été vendues !';
+                }
+
+                // Vérifier la date de fin
+                if (presalesAvailable && event.presalesEndDate) {
+                    const endDate = new Date(event.presalesEndDate);
+                    if (new Date() > endDate) {
+                        presalesAvailable = false;
+                        infoText = 'Les préventes sont terminées';
+                    } else {
+                        const formattedEndDate = endDate.toLocaleDateString('fr-BE', {
+                            day: 'numeric',
+                            month: 'long',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        // Afficher aussi le nombre restant
+                        if (event.maxPresales) {
+                            const remaining = event.maxPresales - (event.presalesSold || 0);
+                            infoText = `${remaining} préventes restantes - Jusqu'au ${formattedEndDate}`;
+                        } else {
+                            infoText = `Préventes disponibles jusqu'au ${formattedEndDate}`;
+                        }
+                    }
+                } else if (presalesAvailable && event.maxPresales) {
+                    const remaining = event.maxPresales - (event.presalesSold || 0);
+                    infoText = `${remaining} préventes restantes`;
+                }
+
+                if (presalesAvailable) {
+                    const ticketPriceEuros = event.ticketPrice ? (event.ticketPrice / 100).toFixed(2) : '8.00';
+                    presalesButton.textContent = `🎟️ Acheter une prévente (${ticketPriceEuros}€)`;
+                    presalesButton.className = 'modal-btn modal-btn-primary';
+                    presalesButton.style.cursor = 'pointer';
+                    presalesButton.disabled = false;
+                    presalesButton.dataset.eventId = eventId;
+                    presalesButton.dataset.ticketPrice = ticketPriceEuros;
+                    presalesButton.dataset.minAge = event.age || 0;
+                } else {
+                    // Sold out ou terminé
+                    if (event.presalesStopped || (event.maxPresales && event.presalesSold >= event.maxPresales)) {
+                        presalesButton.textContent = '🔥 SOLD OUT';
+                        presalesButton.style.background = 'linear-gradient(90deg, #ff4d4f, #ff7875)';
+                    } else {
+                        presalesButton.textContent = '🚫 Préventes terminées';
+                    }
+                    presalesButton.className = 'modal-btn modal-btn-secondary';
+                    presalesButton.style.cursor = 'not-allowed';
+                    presalesButton.disabled = true;
+                }
+
+                if (infoText) {
+                    presalesInfo.textContent = infoText;
+                    presalesInfo.style.display = 'block';
+                } else {
+                    presalesInfo.style.display = 'none';
+                }
+            } else {
+                presalesButton.textContent = '🚫 Pas de préventes';
+                presalesButton.className = 'modal-btn modal-btn-secondary';
+                presalesButton.style.cursor = 'not-allowed';
+                presalesButton.disabled = true;
+                presalesInfo.style.display = 'none';
+            }
+
+            // Afficher le modal
+            document.getElementById('event-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        // Variables pour le questionnaire prévente
+        let currentPresaleEventId = null;
+        let currentPresalePrice = null;
+        let currentPresaleMinAge = null;
+
+        // Gestionnaire de clic pour le bouton préventes
+        document.getElementById('modal-presales-button').addEventListener('click', async function() {
+            const eventId = this.dataset.eventId;
+            if (!eventId || this.disabled) return;
+
+            const user = auth.currentUser;
+            if (!user) {
+                // Rediriger vers la connexion
+                window.location.href = `login.html?redirect=${encodeURIComponent(window.location.pathname)}`;
+                return;
+            }
+
+            // Stocker l'eventId, le prix et l'âge minimum
+            currentPresaleEventId = eventId;
+            currentPresalePrice = this.dataset.ticketPrice || '8.00';
+            currentPresaleMinAge = parseInt(this.dataset.minAge) || 0;
+
+            // Vérifier si l'utilisateur a déjà une prévente pour cet événement
+            try {
+                const presalesQuery = query(
+                    collection(db, 'presales'),
+                    where('eventId', '==', eventId),
+                    where('userId', '==', user.uid),
+                    where('status', '==', 'valid')
+                );
+                const existingPresales = await getDocs(presalesQuery);
+
+                if (!existingPresales.empty) {
+                    alert('Vous avez déjà une prévente pour cet événement !');
+                    return;
+                }
+
+                // Ouvrir le modal questionnaire
+                document.getElementById('presale-questionnaire-modal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                // Réinitialiser le formulaire
+                document.getElementById('presale-questionnaire-form').reset();
+
+            } catch (error) {
+                console.error('Erreur vérification prévente:', error);
+                alert('Erreur: ' + (error.message || 'Impossible de vérifier vos préventes'));
+            }
+        });
+
+        // Fermer le modal questionnaire
+        window.closePresaleQuestionnaireModal = function() {
+            document.getElementById('presale-questionnaire-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentPresaleEventId = null;
+            currentPresalePrice = null;
+            currentPresaleMinAge = null;
+        };
+
+        // Soumettre le questionnaire et procéder au paiement
+        document.getElementById('submit-presale-questionnaire-btn').addEventListener('click', async function() {
+            const nom = document.getElementById('presale-nom').value.trim();
+            const prenom = document.getElementById('presale-prenom').value.trim();
+            const age = document.getElementById('presale-age').value;
+            const errorDiv = document.getElementById('presale-age-error');
+
+            // Cacher l'erreur précédente
+            errorDiv.style.display = 'none';
+
+            if (!nom || !prenom || !age) {
+                errorDiv.textContent = 'Veuillez remplir tous les champs.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (parseInt(age) < 1 || parseInt(age) > 120) {
+                errorDiv.textContent = 'Veuillez entrer un âge valide.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Vérifier l'âge minimum requis pour la soirée
+            if (currentPresaleMinAge && parseInt(age) < currentPresaleMinAge) {
+                errorDiv.textContent = `Vous devez avoir au moins ${currentPresaleMinAge} ans pour acheter une prévente pour cette soirée.`;
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = '⏳ Chargement...';
+
+            try {
+                // Créer la session de checkout avec les infos utilisateur
+                const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+                const result = await createCheckoutSession({
+                    eventId: currentPresaleEventId,
+                    baseUrl: window.location.origin,
+                    buyerInfo: {
+                        nom: nom,
+                        prenom: prenom,
+                        age: parseInt(age)
+                    }
+                });
+
+                if (result.data.url) {
+                    // Rediriger vers Stripe Checkout
+                    window.location.href = result.data.url;
+                } else {
+                    throw new Error('URL de paiement non reçue');
+                }
+
+            } catch (error) {
+                console.error('Erreur achat prévente:', error);
+                alert('Erreur: ' + (error.message || 'Impossible de procéder au paiement'));
+                this.disabled = false;
+                this.textContent = 'Continuer vers le paiement';
+            }
+        });
+
+        // Fonction pour fermer le modal
+        window.closeEventModal = function() {
+            document.getElementById('event-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+
+        // Fermer le modal en cliquant en dehors
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('event-modal');
+            if (e.target === modal) {
+                closeEventModal();
+            }
+        });
+
+        // Charger les partenaires depuis Firestore
+        async function loadPartners() {
+            try {
+                console.log('📥 Chargement des partenaires...');
+
+                const partnersGrid = document.getElementById('partners-grid');
+                const partnersLoading = document.getElementById('partners-loading');
+                const noPartners = document.getElementById('no-partners');
+
+                const querySnapshot = await getDocs(collection(db, 'partners'));
+
+                // Masquer le loader
+                partnersLoading.style.display = 'none';
+
+                if (querySnapshot.empty) {
+                    // Aucun partenaire
+                    noPartners.style.display = 'block';
+                    console.log('ℹ️ Aucun partenaire trouvé');
+                    return;
+                }
+
+                // Afficher les partenaires
+                querySnapshot.forEach((doc) => {
+                    const partner = doc.data();
+                    const partnerDiv = document.createElement('div');
+                    partnerDiv.className = 'partner-logo';
+
+                    partnerDiv.innerHTML = `
+                        <img src="${partner.logoURL}" alt="Logo partenaire">
+                    `;
+
+                    partnersGrid.appendChild(partnerDiv);
+                });
+
+                console.log(`✅ ${querySnapshot.size} partenaire(s) chargé(s)`);
+
+            } catch (error) {
+                console.error('❌ Erreur chargement partenaires:', error);
+                document.getElementById('partners-loading').innerHTML = '<p style="color: #ff4d4f;">❌ Erreur lors du chargement des partenaires.</p>';
+            }
+        }
+
+        // ========================================
+        // SYSTÈME D'ONGLETS ÉVÉNEMENTS
+        // ========================================
+
+        let currentTab = 'upcoming'; // 'upcoming' ou 'liked'
+        let allApprovedEvents = []; // Stocker tous les événements approuvés
+
+        // Fonction helper pour grouper et afficher les événements par mois
+        async function displayEventsByMonth(events) {
+            const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+            // Séparer les événements prioritaires et normaux
+            const priorityEvents = events.filter(e => e.isPriority === true);
+            const normalEvents = events.filter(e => !e.isPriority);
+
+            // Grouper les événements normaux par mois
+            const eventsByMonth = {};
+            normalEvents.forEach(eventData => {
+                const eventDate = new Date(eventData.date);
+                const monthKey = eventDate.getFullYear() + '-' + String(eventDate.getMonth()).padStart(2, '0');
+                const monthLabel = monthNames[eventDate.getMonth()];
+
+                if (!eventsByMonth[monthKey]) {
+                    eventsByMonth[monthKey] = {
+                        label: monthLabel,
+                        year: eventDate.getFullYear(),
+                        month: eventDate.getMonth(),
+                        events: []
+                    };
+                }
+
+                eventsByMonth[monthKey].events.push(eventData);
+            });
+
+            // Trier les mois par ordre chronologique
+            const sortedMonthKeys = Object.keys(eventsByMonth).sort();
+
+            // Vider le conteneur
+            eventsGrid.innerHTML = '';
+
+            // Afficher d'abord les événements prioritaires
+            if (priorityEvents.length > 0) {
+                const prioritySection = document.createElement('div');
+                prioritySection.className = 'month-section priority-section';
+                prioritySection.innerHTML = '<h3 class="month-title priority-title">⭐ Soirées prioritaires</h3><div class="events-grid-month"></div>';
+
+                const priorityGrid = prioritySection.querySelector('.events-grid-month');
+
+                for (const eventData of priorityEvents) {
+                    const eventId = eventData.id;
+                    window.eventsData[eventId] = eventData;
+                    const eventCard = await createEventCard(eventData, eventId);
+                    priorityGrid.appendChild(eventCard);
+                }
+
+                eventsGrid.appendChild(prioritySection);
+            }
+
+            // Afficher les événements normaux par mois
+            for (const monthKey of sortedMonthKeys) {
+                const monthData = eventsByMonth[monthKey];
+
+                // Créer la section du mois
+                const monthSection = document.createElement('div');
+                monthSection.className = 'month-section';
+                monthSection.innerHTML = '<h3 class="month-title">' + monthData.label + ' ' + monthData.year + '</h3><div class="events-grid-month"></div>';
+
+                const monthGrid = monthSection.querySelector('.events-grid-month');
+
+                // Ajouter les événements du mois
+                for (const eventData of monthData.events) {
+                    const eventId = eventData.id;
+
+                    // Stocker l'événement globalement
+                    window.eventsData[eventId] = eventData;
+
+                    const eventCard = await createEventCard(eventData, eventId);
+                    monthGrid.appendChild(eventCard);
+                }
+
+                eventsGrid.appendChild(monthSection);
+            }
+        }
+
+        // Fonction pour récupérer le nombre de likes d'un événement
+        async function getEventLikesCount(eventId) {
+            try {
+                const likesQuery = query(
+                    collection(db, 'likes'),
+                    where('eventId', '==', eventId)
+                );
+                const snapshot = await getDocs(likesQuery);
+                return snapshot.size;
+            } catch (error) {
+                console.error('Erreur comptage likes:', error);
+                return 0;
+            }
+        }
+
+        // Fonction pour trier les événements par nombre de likes
+        async function sortEventsByLikes(events) {
+            // Récupérer le nombre de likes pour chaque événement
+            const eventsWithLikes = await Promise.all(
+                events.map(async (event) => {
+                    const likesCount = await getEventLikesCount(event.id);
+                    return { ...event, likesCount };
+                })
+            );
+
+            // Trier par nombre de likes décroissant
+            return eventsWithLikes.sort((a, b) => b.likesCount - a.likesCount);
+        }
+
+        // Fonction pour charger les événements likés par l'utilisateur
+        async function loadLikedEvents() {
+            try {
+                // Vérifier si l'utilisateur est connecté
+                const currentUser = auth.currentUser;
+
+                if (!currentUser) {
+                    // Si non connecté, afficher un message
+                    eventsLoading.style.display = 'none';
+                    noEvents.innerHTML = '<p>🔐 Vous devez être connecté pour voir vos événements aimés.</p><p><a href="login.html" style="color: #6c63ff; text-decoration: underline;">Se connecter</a></p>';
+                    noEvents.style.display = 'block';
+                    return;
+                }
+
+                eventsLoading.style.display = 'block';
+                noEvents.style.display = 'none';
+
+                // Récupérer les likes de l'utilisateur
+                const likesQuery = query(
+                    collection(db, 'likes'),
+                    where('userId', '==', currentUser.uid)
+                );
+
+                const likesSnapshot = await getDocs(likesQuery);
+
+                eventsLoading.style.display = 'none';
+
+                if (likesSnapshot.empty) {
+                    noEvents.innerHTML = '<p>❤️ Vous n\'avez pas encore aimé d\'événements.</p><p>Explorez les soirées et cliquez sur le ❤️ pour les ajouter à vos favoris !</p>';
+                    noEvents.style.display = 'block';
+                    return;
+                }
+
+                // Récupérer les IDs des événements likés
+                const likedEventIds = [];
+                likesSnapshot.forEach((doc) => {
+                    likedEventIds.push(doc.data().eventId);
+                });
+
+                // Filtrer les événements approuvés qui sont dans les likes
+                let likedEvents = allApprovedEvents.filter(event =>
+                    likedEventIds.includes(event.id)
+                );
+
+                if (likedEvents.length === 0) {
+                    noEvents.innerHTML = '<p>❤️ Les événements que vous avez aimés ne sont plus disponibles.</p>';
+                    noEvents.style.display = 'block';
+                    return;
+                }
+
+                // Trier par nombre de likes
+                likedEvents = await sortEventsByLikes(likedEvents);
+
+                // Afficher les événements likés groupés par mois
+                await displayEventsByMonth(likedEvents);
+
+                console.log(`✅ ${likedEvents.length} événement(s) aimé(s) affiché(s)`);
+
+            } catch (error) {
+                console.error('❌ Erreur chargement événements aimés:', error);
+                eventsLoading.innerHTML = '<p style="color: #ff4d4f;">❌ Erreur lors du chargement des événements aimés.</p>';
+            }
+        }
+
+        // Fonction pour basculer entre les onglets
+        async function switchTab(tab) {
+            // Mettre à jour l'onglet actif visuellement
+            document.getElementById('tab-upcoming').classList.toggle('active', tab === 'upcoming');
+            document.getElementById('tab-liked').classList.toggle('active', tab === 'liked');
+
+            // Vider la grille
+            eventsGrid.innerHTML = '';
+            noEvents.style.display = 'none';
+
+            // Afficher les événements selon l'onglet
+            if (tab === 'upcoming') {
+                currentTab = 'upcoming';
+
+                if (allApprovedEvents.length === 0) {
+                    noEvents.innerHTML = '<p>🎉 Aucune soirée prévue pour le moment.</p><p>Revenez bientôt pour découvrir nos prochains événements!</p>';
+                    noEvents.style.display = 'block';
+                    return;
+                }
+
+                // Trier par nombre de likes
+                const sortedEvents = await sortEventsByLikes(allApprovedEvents);
+
+                // Afficher tous les événements approuvés groupés par mois
+                await displayEventsByMonth(sortedEvents);
+            } else if (tab === 'liked') {
+                currentTab = 'liked';
+                await loadLikedEvents();
+            }
+        }
+
+        // Ajouter les écouteurs sur les boutons d'onglets
+        document.getElementById('tab-upcoming').addEventListener('click', () => switchTab('upcoming'));
+        document.getElementById('tab-liked').addEventListener('click', () => switchTab('liked'));
+
+        // ========================================
+        // CHARGEMENT INITIAL MODIFIÉ
+        // ========================================
+
+        // Modifier loadEvents pour stocker les événements
+        async function loadEventsWithStorage() {
+            try {
+                console.log('📥 Chargement des événements...');
+
+                // Récupérer tous les événements
+                const querySnapshot = await getDocs(collection(db, 'events'));
+
+                // Masquer le loader
+                eventsLoading.style.display = 'none';
+
+                // Filtrer les événements approuvés uniquement
+                allApprovedEvents = [];
+                querySnapshot.forEach((doc) => {
+                    const event = doc.data();
+                    // Afficher uniquement les événements approuvés ou sans status (anciennes soirées)
+                    if (event.status === 'approved' || !event.status) {
+                        allApprovedEvents.push({ id: doc.id, ...event });
+                        // Stocker l'événement globalement
+                        window.eventsData[doc.id] = { id: doc.id, ...event };
+                    }
+                });
+
+                if (allApprovedEvents.length === 0) {
+                    // Aucun événement approuvé
+                    noEvents.innerHTML = '<p>🎉 Aucune soirée prévue pour le moment.</p><p>Revenez bientôt pour découvrir nos prochains événements!</p>';
+                    noEvents.style.display = 'block';
+                    console.log('ℹ️ Aucun événement approuvé trouvé');
+                    return;
+                }
+
+                // Afficher les événements selon l'onglet actif
+                switchTab(currentTab);
+
+                console.log(`✅ ${allApprovedEvents.length} événement(s) chargé(s)`);
+
+            } catch (error) {
+                console.error('❌ Erreur chargement événements:', error);
+                eventsLoading.innerHTML = '<p style="color: #ff4d4f;">❌ Erreur lors du chargement des événements.</p>';
+            }
+        }
+
+        // Charger les événements et partenaires au démarrage
+        loadEventsWithStorage();
+        loadPartners();
+    </script>
+
+    <!-- Script gestion des soirées par utilisateurs -->
+    <script type="module" src="user-events.js"></script>
+
+    <!-- Script gestion des notifications -->
+    <script type="module" src="notifications.js"></script>
+
+    <!-- Script détection scanner -->
+    <script type="module" src="scanner-detector.js"></script>
+
+    <!-- Script gestion des likes -->
+    <script type="module">
+        import { loadEventLikes, hasUserLiked, likeEvent, unlikeEvent, getRecentPublicLikers, getTotalLikes } from './likes.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let currentLikeEventId = null;
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+        });
+
+        // Charger les likes d'un événement et afficher dans l'UI
+        window.loadEventLikesUI = async function(eventId) {
+            try {
+                // Récupérer les 3 derniers likers publics
+                const recentLikers = await getRecentPublicLikers(eventId);
+
+                // Récupérer le total de likes
+                const totalLikes = await getTotalLikes(eventId);
+
+                console.log(`🔍 Event ${eventId}: ${totalLikes} likes totaux, ${recentLikers.length} likers publics`);
+
+                // Afficher les photos des likers publics (max 3)
+                const likersPhotosContainer = document.getElementById(`likers-photos-${eventId}`);
+                if (likersPhotosContainer) {
+                    likersPhotosContainer.innerHTML = '';
+                    // Forcer le style du conteneur
+                    likersPhotosContainer.style.cssText = 'display: flex; align-items: center; gap: 0; flex-wrap: nowrap;';
+
+                    // Limiter à 3 avatars maximum
+                    const maxAvatars = 3;
+                    const likersToShow = recentLikers.slice(0, maxAvatars);
+
+                    console.log(`✅ Affichage de ${likersToShow.length} avatars publics pour event ${eventId}`);
+
+                    likersToShow.forEach((liker, index) => {
+                        const img = document.createElement('img');
+                        // Ajouter cache buster pour forcer rechargement des images
+                        const photoURL = liker.userPhotoURL || 'https://via.placeholder.com/50';
+                        img.src = photoURL.includes('?') ? `${photoURL}&t=${Date.now()}` : `${photoURL}?t=${Date.now()}`;
+                        img.alt = 'Liker';
+                        img.className = 'liker-photo';
+                        // FORCER les styles directement via JavaScript (style inline)
+                        img.style.cssText = `
+                            width: 50px !important;
+                            height: 50px !important;
+                            min-width: 50px !important;
+                            max-width: 50px !important;
+                            border-radius: 50%;
+                            border: 3px solid white;
+                            object-fit: cover;
+                            margin-left: ${index === 0 ? '0' : '-15px'};
+                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+                            transition: transform 0.2s;
+                            display: inline-block;
+                        `;
+                        img.onerror = function() {
+                            this.src = 'https://via.placeholder.com/50';
+                        };
+                        likersPhotosContainer.appendChild(img);
+                    });
+                }
+
+                // Afficher le compteur : total - avatars affichés
+                const likesCountElement = document.getElementById(`likes-count-${eventId}`);
+                if (likesCountElement) {
+                    const displayedAvatars = Math.min(recentLikers.length, 3);
+                    const remainingLikes = totalLikes - displayedAvatars;
+
+                    if (remainingLikes > 0) {
+                        // Il y a des likes anonymes ou plus de 3 likes publics
+                        likesCountElement.textContent = `+${remainingLikes}`;
+                        likesCountElement.style.display = 'inline-block';
+                        console.log(`📊 Badge +${remainingLikes} affiché (${totalLikes} total - ${displayedAvatars} avatars)`);
+                    } else {
+                        // Pas de compteur si tous les likes sont affichés en avatar
+                        likesCountElement.style.display = 'none';
+                    }
+                }
+
+                // Vérifier si l'utilisateur a déjà liké
+                if (currentUser) {
+                    const userHasLiked = await hasUserLiked(eventId, currentUser.uid);
+                    const likeBtn = document.getElementById(`like-btn-${eventId}`);
+                    if (likeBtn) {
+                        if (userHasLiked) {
+                            likeBtn.classList.add('liked');
+                        } else {
+                            likeBtn.classList.remove('liked');
+                        }
+
+                        // Ajouter l'écouteur de click
+                        likeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            handleLikeClick(eventId);
+                        });
+                    }
+                }
+
+            } catch (error) {
+                console.error('Erreur chargement likes UI:', error);
+            }
+        };
+
+        // Gérer le click sur le bouton like
+        function handleLikeClick(eventId) {
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Ouvrir le modal de choix
+            currentLikeEventId = eventId;
+            openLikeChoiceModal();
+        }
+
+        // Ouvrir le modal de choix
+        async function openLikeChoiceModal() {
+            const modal = document.getElementById('like-choice-modal');
+            const likeChoiceButtons = document.getElementById('like-choice-buttons');
+            const unlikeBtn = document.getElementById('like-unlike-btn');
+            const modalTitle = document.getElementById('like-modal-title');
+            const modalDescription = document.getElementById('like-modal-description');
+
+            // Vérifier si l'utilisateur a déjà liké
+            const alreadyLiked = await hasUserLiked(currentLikeEventId, currentUser.uid);
+
+            if (alreadyLiked) {
+                // Cacher les boutons Public/Anonyme
+                likeChoiceButtons.style.display = 'none';
+                modalDescription.style.display = 'none';
+                // Afficher le bouton "Ne plus aimer"
+                unlikeBtn.style.display = 'block';
+                // Changer le titre
+                modalTitle.textContent = '💗 Vous aimez cette soirée';
+            } else {
+                // Afficher les boutons Public/Anonyme
+                likeChoiceButtons.style.display = 'grid';
+                modalDescription.style.display = 'block';
+                // Cacher le bouton "Ne plus aimer"
+                unlikeBtn.style.display = 'none';
+                // Remettre le titre normal
+                modalTitle.textContent = '❤️ Liker cette soirée';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        window.closeLikeChoiceModal = function() {
+            const modal = document.getElementById('like-choice-modal');
+            modal.style.display = 'none';
+            currentLikeEventId = null;
+        };
+
+        // Bouton Like Public
+        document.getElementById('like-public-btn').addEventListener('click', async () => {
+            if (!currentLikeEventId) return;
+
+            await performLike(currentLikeEventId, true);
+            closeLikeChoiceModal();
+        });
+
+        // Bouton Like Anonyme
+        document.getElementById('like-anonymous-btn').addEventListener('click', async () => {
+            if (!currentLikeEventId) return;
+
+            await performLike(currentLikeEventId, false);
+            closeLikeChoiceModal();
+        });
+
+        // Bouton Ne plus aimer
+        document.getElementById('like-unlike-btn').addEventListener('click', async () => {
+            if (!currentLikeEventId) return;
+
+            try {
+                await unlikeEvent(currentLikeEventId);
+
+                // Mise à jour immédiate du bouton like
+                const likeBtn = document.getElementById(`like-btn-${currentLikeEventId}`);
+                if (likeBtn) {
+                    likeBtn.classList.remove('liked');
+                }
+
+                // Recharger les avatars et le compteur immédiatement
+                loadEventLikesUI(currentLikeEventId);
+
+                closeLikeChoiceModal();
+                console.log('✅ Unlike effectué avec succès');
+            } catch (error) {
+                console.error('Erreur unlike:', error);
+                alert('❌ Erreur lors du retrait du like');
+            }
+        });
+
+        // Effectuer le like
+        async function performLike(eventId, isPublic) {
+            try {
+                await likeEvent(eventId, isPublic);
+
+                // Animation type Instagram sur la carte spécifique
+                showHeartAnimation(eventId);
+
+                // Recharger les likes immédiatement
+                loadEventLikesUI(eventId);
+
+            } catch (error) {
+                console.error('Erreur like:', error);
+            }
+        }
+
+        // Animation cœur Instagram sur la carte spécifique
+        function showHeartAnimation(eventId) {
+            const eventCard = document.getElementById(`event-image-${eventId}`);
+            if (!eventCard) return;
+
+            // Créer l'animation de cœur pour cette carte spécifique
+            const heart = document.createElement('div');
+            heart.className = 'heart-animation-card';
+            heart.innerHTML = `
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="#ff4458">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            `;
+            heart.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                z-index: 100;
+                pointer-events: none;
+                opacity: 0;
+            `;
+
+            eventCard.appendChild(heart);
+
+            // Animation
+            setTimeout(() => {
+                heart.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                heart.style.opacity = '1';
+                heart.style.transition = 'all 0.2s ease-out';
+            }, 10);
+
+            setTimeout(() => {
+                heart.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 150);
+
+            setTimeout(() => {
+                heart.style.opacity = '0';
+                heart.style.transform = 'translate(-50%, -50%) scale(0)';
+            }, 600);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 800);
+        }
+
+        console.log('❤️ Likes UI initialisé');
+    </script>
+
+    <!-- Script Menu Mobile -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hamburger menu toggle
+            const hamburgerMenu = document.getElementById('hamburger-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        const mobileMenuAddEvent = document.getElementById('mobile-menu-add-event');
+
+        // Open mobile menu
+        if (hamburgerMenu) {
+            hamburgerMenu.addEventListener('click', () => {
+                if (mobileMenu) mobileMenu.classList.add('active');
+                if (mobileMenuOverlay) mobileMenuOverlay.classList.add('active');
+                hamburgerMenu.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        // Close mobile menu - make it global for onclick handlers
+        window.closeMobileMenu = function() {
+            if (mobileMenu) mobileMenu.classList.remove('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
+            if (hamburgerMenu) hamburgerMenu.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+        }
+
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        }
+
+        // Mobile menu "Ajouter une soirée" button
+        if (mobileMenuAddEvent) {
+            mobileMenuAddEvent.addEventListener('click', () => {
+                closeMobileMenu();
+                // Trigger the same function as desktop "Ajouter une soirée" button
+                document.getElementById('btn-add-event').click();
+            });
+        }
+
+        // Notification bell mobile - open same dropdown as desktop
+        const notificationBellMobile = document.getElementById('notification-bell-mobile');
+        const notificationBadgeMobile = document.getElementById('notification-badge-mobile');
+
+        if (notificationBellMobile) {
+            notificationBellMobile.addEventListener('click', () => {
+                // Trigger desktop notification bell
+                const desktopBell = document.getElementById('notification-bell');
+                if (desktopBell) {
+                    desktopBell.click();
+                }
+            });
+        }
+
+        // Sync auth state between desktop and mobile
+        const authObserver = setInterval(() => {
+            const navAuthConnected = document.getElementById('nav-auth-connected');
+            const mobileMenuGuest = document.getElementById('mobile-menu-guest');
+            const mobileMenuConnected = document.getElementById('mobile-menu-connected');
+
+            if (navAuthConnected && mobileMenuGuest && mobileMenuConnected) {
+                const isConnected = navAuthConnected.style.display !== 'none';
+
+                if (isConnected) {
+                    mobileMenuGuest.style.display = 'none';
+                    mobileMenuConnected.style.display = 'block';
+                } else {
+                    mobileMenuGuest.style.display = 'block';
+                    mobileMenuConnected.style.display = 'none';
+                }
+            }
+        }, 500);
+
+        // Sync notification badge between desktop and mobile
+        const badgeObserver = setInterval(() => {
+            const desktopBadge = document.getElementById('notification-badge');
+            const mobileBadge = document.getElementById('notification-badge-mobile');
+
+            if (desktopBadge && mobileBadge) {
+                if (desktopBadge.style.display !== 'none') {
+                    mobileBadge.textContent = desktopBadge.textContent;
+                    mobileBadge.style.display = 'inline-block';
+                } else {
+                    mobileBadge.style.display = 'none';
+                }
+            }
+        }, 500);
+
+            console.log('📱 Menu mobile initialisé');
+        });
+    </script>
+
+    <!-- Script Suggestions -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Bouton pour ouvrir le modal suggestions
+        document.getElementById('btn-suggestions').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('suggestions-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Fermer le modal suggestions
+        window.closeSuggestionsModal = function() {
+            document.getElementById('suggestions-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            // Réinitialiser le formulaire
+            document.getElementById('suggestions-form').reset();
+        };
+
+        // Fermer en cliquant en dehors
+        document.getElementById('suggestions-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'suggestions-modal') {
+                closeSuggestionsModal();
+            }
+        });
+
+        // Soumettre la suggestion
+        document.getElementById('submit-suggestion-btn').addEventListener('click', async () => {
+            const title = document.getElementById('suggestion-title').value.trim();
+            const description = document.getElementById('suggestion-description').value.trim();
+            const category = document.getElementById('suggestion-category').value;
+
+            if (!title || !description) {
+                alert('Veuillez remplir le titre et la description.');
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Vous devez être connecté pour envoyer une suggestion.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-suggestion-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Envoi...';
+
+            try {
+                await addDoc(collection(db, 'suggestions'), {
+                    title: title,
+                    description: description,
+                    category: category,
+                    userId: user.uid,
+                    userEmail: user.email,
+                    userName: user.displayName || user.email.split('@')[0],
+                    status: 'pending', // pending, accepted, refused
+                    createdAt: serverTimestamp()
+                });
+
+                alert('Merci ! Votre suggestion a été envoyée.');
+                closeSuggestionsModal();
+            } catch (error) {
+                console.error('Erreur envoi suggestion:', error);
+                alert('Erreur lors de l\'envoi. Veuillez réessayer.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Envoyer';
+            }
+        });
+
+        console.log('💡 Suggestions initialisé');
+    </script>
+</body>
+</html>

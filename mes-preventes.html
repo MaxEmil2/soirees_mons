@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Préventes - Soirées Mons</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="stylesheet" href="design-system.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .preventes-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        .page-header h1 {
+            background: linear-gradient(90deg, #6c63ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .prevente-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .prevente-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(108, 99, 255, 0.5);
+        }
+
+        .prevente-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .prevente-event-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .prevente-date {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .prevente-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .prevente-status.valid {
+            background: rgba(82, 196, 26, 0.2);
+            color: #52c41a;
+        }
+
+        .prevente-status.used {
+            background: rgba(250, 173, 20, 0.2);
+            color: #faad14;
+        }
+
+        .prevente-status.refunded {
+            background: rgba(255, 77, 79, 0.2);
+            color: #ff4d4f;
+        }
+
+        .prevente-qr-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        .prevente-qr {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            flex-shrink: 0;
+        }
+
+        .prevente-qr img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .prevente-info {
+            flex: 1;
+        }
+
+        .prevente-info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .prevente-info-label {
+            width: 80px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .prevente-info-value {
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .prevente-id {
+            font-family: monospace;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        .no-preventes {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px dashed rgba(108, 99, 255, 0.3);
+        }
+
+        .no-preventes-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .no-preventes-text {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+        }
+
+        .no-preventes a {
+            color: #6c63ff;
+            text-decoration: none;
+        }
+
+        .no-preventes a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(108, 99, 255, 0.3);
+            border-top-color: #6c63ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: rgba(108, 99, 255, 0.3);
+            border: 1px solid rgba(108, 99, 255, 0.5);
+            border-radius: 5px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: rgba(108, 99, 255, 0.5);
+        }
+
+        .used-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(250, 173, 20, 0.1);
+            border-radius: 5px;
+            font-size: 12px;
+            color: #faad14;
+        }
+
+        .prevente-qr {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .prevente-qr:hover {
+            transform: scale(1.05);
+        }
+
+        .buyer-info {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .buyer-info-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 4px;
+        }
+
+        .buyer-info-label {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .buyer-info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin: 30px 0 15px;
+            color: #6c63ff;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        /* Modal QR Code agrandi */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .qr-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+    <main class="preventes-container">
+        <!-- Bouton Retour -->
+        <a href="dashboard.html" class="back-button" style="display: inline-flex; align-items: center; gap: 8px; color: #6c63ff; text-decoration: none; margin-bottom: 20px; font-weight: 500; transition: all 0.3s ease;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            Retour
+        </a>
+        <div class="page-header">
+            <h1>Mes Préventes</h1>
+            <p>Retrouvez ici tous vos QR codes pour vos événements</p>
+        </div>
+
+        <div id="loadingState" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Chargement de vos préventes...</p>
+        </div>
+
+        <div id="contentState" style="display: none;"></div>
+    </main>
+
+    <!-- Modal QR Code agrandi -->
+    <div id="qrModal" class="qr-modal" onclick="closeQrModal()">
+        <img id="qrModalImage" src="" alt="QR Code">
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const functions = getFunctions(app, 'europe-west1');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html?redirect=mes-preventes';
+                return;
+            }
+
+            await loadPresales();
+        });
+
+        async function loadPresales() {
+            const loadingState = document.getElementById('loadingState');
+            const contentState = document.getElementById('contentState');
+
+            try {
+                const getMyPresales = httpsCallable(functions, 'getMyPresales');
+                const result = await getMyPresales();
+                const presales = result.data.presales || [];
+
+                loadingState.style.display = 'none';
+                contentState.style.display = 'block';
+
+                if (presales.length === 0) {
+                    contentState.innerHTML = `
+                        <div class="no-preventes">
+                            <div class="no-preventes-icon">🎫</div>
+                            <p class="no-preventes-text">Vous n'avez pas encore de préventes</p>
+                            <a href="index.html">Découvrir les événements</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Récupérer les infos des événements
+                const eventPromises = presales.map(async (presale) => {
+                    const eventDoc = await getDoc(doc(db, 'events', presale.eventId));
+                    return {
+                        ...presale,
+                        eventData: eventDoc.exists() ? eventDoc.data() : null
+                    };
+                });
+
+                const presalesWithEvents = await Promise.all(eventPromises);
+
+                // Séparer les préventes valides et utilisées
+                const validPresales = presalesWithEvents.filter(p => p.status === 'valid');
+                const usedPresales = presalesWithEvents.filter(p => p.status === 'used');
+                const refundedPresales = presalesWithEvents.filter(p => p.status === 'refunded');
+
+                const renderPresale = (presale) => {
+                    const eventDate = presale.eventData
+                        ? new Date(presale.eventData.date).toLocaleDateString('fr-BE', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })
+                        : 'Date inconnue';
+
+                    const location = presale.eventData?.location || 'Lieu inconnu';
+
+                    // Formater la date d'achat
+                    let purchaseDate = '';
+                    if (presale.createdAt) {
+                        const date = new Date(presale.createdAt);
+                        if (!isNaN(date.getTime())) {
+                            purchaseDate = date.toLocaleDateString('fr-BE', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        }
+                    }
+
+                    let usedInfo = '';
+                    if (presale.status === 'used' && presale.usedAt) {
+                        const usedDate = new Date(presale.usedAt);
+                        if (!isNaN(usedDate.getTime())) {
+                            const formattedUsedDate = usedDate.toLocaleString('fr-BE', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            usedInfo = `<div class="used-info">Utilisé le ${formattedUsedDate}</div>`;
+                        }
+                    }
+
+                    // Infos acheteur
+                    let buyerInfo = '';
+                    if (presale.buyerNom || presale.buyerPrenom || presale.buyerAge) {
+                        buyerInfo = `
+                            <div class="buyer-info">
+                                <div class="buyer-info-row">
+                                    <span class="buyer-info-label">Nom:</span>
+                                    <span class="buyer-info-value">${presale.buyerNom || '-'} ${presale.buyerPrenom || '-'}</span>
+                                </div>
+                                <div class="buyer-info-row">
+                                    <span class="buyer-info-label">Âge:</span>
+                                    <span class="buyer-info-value">${presale.buyerAge || '-'} ans</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="prevente-card">
+                            <div class="prevente-header">
+                                <div>
+                                    <div class="prevente-event-name">${presale.eventName}</div>
+                                    <div class="prevente-date">${eventDate}</div>
+                                </div>
+                                <span class="prevente-status ${presale.status}">
+                                    ${presale.status === 'valid' ? 'Valide' : presale.status === 'used' ? 'Utilisé' : 'Remboursé'}
+                                </span>
+                            </div>
+                            <div class="prevente-qr-section">
+                                <div class="prevente-qr" onclick="showQrModal('${presale.qrCode}')">
+                                    <img src="${presale.qrCode}" alt="QR Code">
+                                </div>
+                                <div class="prevente-info">
+                                    <div class="prevente-info-row">
+                                        <span class="prevente-info-label">Lieu</span>
+                                        <span class="prevente-info-value">${location}</span>
+                                    </div>
+                                    <div class="prevente-info-row">
+                                        <span class="prevente-info-label">Prix</span>
+                                        <span class="prevente-info-value">${presale.amount}€</span>
+                                    </div>
+                                    <div class="prevente-info-row">
+                                        <span class="prevente-info-label">Acheté le</span>
+                                        <span class="prevente-info-value">${purchaseDate || '-'}</span>
+                                    </div>
+                                    ${buyerInfo}
+                                    <div class="prevente-id">ID: ${presale.id}</div>
+                                    ${usedInfo}
+                                    ${presale.status === 'valid' ? `
+                                        <button class="download-btn" onclick="downloadQR('${presale.qrCode}', '${presale.eventName}')">
+                                            📥 Télécharger le QR
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                };
+
+                let html = '';
+
+                if (validPresales.length > 0) {
+                    html += '<h2 class="section-title">🎟️ Préventes valides</h2>';
+                    html += validPresales.map(renderPresale).join('');
+                }
+
+                if (usedPresales.length > 0) {
+                    html += '<h2 class="section-title">✅ Préventes utilisées</h2>';
+                    html += usedPresales.map(renderPresale).join('');
+                }
+
+                if (refundedPresales.length > 0) {
+                    html += '<h2 class="section-title">💸 Préventes remboursées</h2>';
+                    html += refundedPresales.map(renderPresale).join('');
+                }
+
+                contentState.innerHTML = html;
+
+            } catch (error) {
+                console.error('Erreur chargement préventes:', error);
+                loadingState.style.display = 'none';
+                contentState.style.display = 'block';
+                contentState.innerHTML = `
+                    <div class="no-preventes">
+                        <div class="no-preventes-icon">❌</div>
+                        <p class="no-preventes-text">Erreur lors du chargement de vos préventes</p>
+                        <a href="javascript:location.reload()">Réessayer</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Fonction pour télécharger le QR code
+        window.downloadQR = function(qrCodeBase64, eventName) {
+            const link = document.createElement('a');
+            link.href = qrCodeBase64;
+            link.download = `prevente-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Fonction pour afficher le QR code en grand
+        window.showQrModal = function(qrCodeBase64) {
+            const modal = document.getElementById('qrModal');
+            const img = document.getElementById('qrModalImage');
+            img.src = qrCodeBase64;
+            modal.style.display = 'flex';
+        };
+
+        // Fonction pour fermer le modal QR
+        window.closeQrModal = function() {
+            document.getElementById('qrModal').style.display = 'none';
+        };
+    </script>
+</body>
+</html>
