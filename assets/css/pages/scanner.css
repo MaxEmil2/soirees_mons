@@ -1,0 +1,497 @@
+/*
+ * SCANNER - PAGE STYLES
+ * Professional QR code scanner with instant validation
+ */
+
+/* ==========================================
+   LAYOUT
+   ========================================== */
+
+.scanner-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: var(--space-8) var(--space-4);
+}
+
+.scanner-container {
+    max-width: 700px;
+    margin: 0 auto;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* ==========================================
+   PAGE TITLE
+   ========================================== */
+
+.scanner-title {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.scanner-title h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-2);
+}
+
+.scanner-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* ==========================================
+   EVENT SELECTOR
+   ========================================== */
+
+.event-selector {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.event-selector label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.event-selector select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.event-selector select:hover {
+    border-color: var(--border-medium);
+}
+
+.event-selector select:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+}
+
+.event-selector select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* ==========================================
+   STATS GRID
+   ========================================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-500);
+    margin-bottom: var(--space-1);
+}
+
+.stat-label {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ==========================================
+   SCANNER BOX
+   ========================================== */
+
+.scanner-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+}
+
+#reader {
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #000;
+}
+
+#reader video {
+    border-radius: var(--radius-md);
+}
+
+.scanner-error {
+    padding: var(--space-8);
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+.scanner-error-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-3);
+    opacity: 0.3;
+}
+
+/* ==========================================
+   RESULT BOX
+   ========================================== */
+
+.result-box {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-6);
+    text-align: center;
+    display: none;
+    border: 2px solid transparent;
+    transition: all var(--transition-base);
+}
+
+.result-box.visible {
+    display: block;
+}
+
+.result-box.valid {
+    background: rgba(82, 196, 26, 0.1);
+    border-color: var(--success);
+}
+
+.result-box.invalid {
+    background: rgba(255, 77, 79, 0.1);
+    border-color: var(--danger);
+}
+
+.result-box.used {
+    background: rgba(250, 173, 20, 0.1);
+    border-color: var(--warning);
+}
+
+.result-box.validated {
+    animation: validatePulse 0.5s ease;
+}
+
+.result-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-3);
+}
+
+.result-status {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+    color: var(--text-primary);
+}
+
+.result-details {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.result-details p {
+    margin: var(--space-2) 0;
+}
+
+.result-details strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ==========================================
+   ACTION BUTTONS
+   ========================================== */
+
+.validate-btn {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    background: var(--gradient-success);
+    border: none;
+    border-radius: var(--radius-md);
+    color: white;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 14px rgba(82, 196, 26, 0.4);
+}
+
+.validate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(82, 196, 26, 0.5);
+}
+
+.validate-btn:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.scan-again-btn {
+    margin-top: var(--space-3);
+    padding: 0.75rem 2rem;
+    font-size: 0.9375rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-weight: 600;
+}
+
+.scan-again-btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-medium);
+}
+
+/* ==========================================
+   PRESALES LIST
+   ========================================== */
+
+.presales-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-top: var(--space-6);
+}
+
+.presales-header {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-500);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.presales-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.presale-item {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all var(--transition-base);
+}
+
+.presale-item:hover {
+    border-color: var(--border-medium);
+}
+
+.presale-info {
+    flex: 1;
+}
+
+.presale-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-1);
+}
+
+.presale-email {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.presale-status {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.presale-status.valid {
+    background: rgba(82, 196, 26, 0.15);
+    color: var(--success);
+}
+
+.presale-status.used {
+    background: rgba(250, 173, 20, 0.15);
+    color: var(--warning);
+}
+
+/* ==========================================
+   EMPTY STATE
+   ========================================== */
+
+.no-event-selected {
+    text-align: center;
+    padding: var(--space-12);
+    color: var(--text-tertiary);
+}
+
+.no-event-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+    opacity: 0.3;
+}
+
+.no-event-text {
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+.empty-presales {
+    text-align: center;
+    padding: var(--space-8);
+    color: var(--text-tertiary);
+}
+
+/* ==========================================
+   LOADING STATE
+   ========================================== */
+
+.loading-container {
+    text-align: center;
+    padding: var(--space-8);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-primary);
+    border-top-color: var(--primary-500);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--space-3);
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes validatePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+    .scanner-page {
+        padding: var(--space-4) var(--space-3);
+    }
+
+    .scanner-title h1 {
+        font-size: 2rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+
+    .scanner-box {
+        padding: var(--space-4);
+    }
+
+    .result-box {
+        padding: var(--space-4);
+    }
+
+    .result-icon {
+        font-size: 3rem;
+    }
+
+    .result-status {
+        font-size: 1.25rem;
+    }
+
+    .validate-btn {
+        width: 100%;
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+    }
+
+    .scan-again-btn {
+        width: 100%;
+    }
+
+    .presale-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-2);
+    }
+
+    .presale-status {
+        align-self: stretch;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .scanner-title h1 {
+        font-size: 1.75rem;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+    }
+
+    .presales-section {
+        padding: var(--space-4);
+    }
+}
