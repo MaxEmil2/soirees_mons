@@ -3,559 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel d'administration - Soirées Mons">
     <title>Panel Admin - Soirées Mons</title>
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="design-system.css">
-    <style>
-        /* ========================================
-           LAYOUT
-           ======================================== */
 
-        body {
-            background: var(--gradient-bg);
-            min-height: 100vh;
-            padding: var(--space-2xl) var(--space-lg);
-        }
-
-        .admin-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        /* ========================================
-           HEADER
-           ======================================== */
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--space-2xl);
-            flex-wrap: wrap;
-            gap: var(--space-lg);
-        }
-
-        .page-title {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-        }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-sm);
-            padding: 0.875rem 1.5rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: 600;
-            backdrop-filter: blur(10px);
-            transition: all var(--transition-base);
-        }
-
-        .btn-back:hover {
-            background: var(--bg-card);
-            border-color: var(--border-medium);
-            transform: translateX(-4px);
-        }
-
-        /* ========================================
-           ADMIN CARDS
-           ======================================== */
-
-        .admin-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-2xl);
-            padding: var(--space-2xl);
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-lg);
-            margin-bottom: var(--space-2xl);
-        }
-
-        .admin-card h2 {
-            font-size: 1.75rem;
-            color: var(--primary-400);
-            margin-bottom: var(--space-xl);
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-        }
-
-        /* ========================================
-           FORMS
-           ======================================== */
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--space-md);
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        /* ========================================
-           IMAGE UPLOAD AREA
-           ======================================== */
-
-        .image-upload-area {
-            border: 2px dashed var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-2xl);
-            text-align: center;
-            background: rgba(255, 255, 255, 0.02);
-            cursor: pointer;
-            transition: all var(--transition-base);
-        }
-
-        .image-upload-area:hover,
-        .image-upload-area.active {
-            border-color: var(--primary-500);
-            background: rgba(108, 99, 255, 0.05);
-        }
-
-        .upload-icon {
-            font-size: 3rem;
-            margin-bottom: var(--space-md);
-        }
-
-        .upload-text {
-            color: var(--text-secondary);
-            margin-bottom: var(--space-xs);
-            font-weight: 600;
-        }
-
-        .image-preview {
-            display: none;
-            max-width: 300px;
-            margin: var(--space-md) auto 0;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-        }
-
-        .image-preview img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        /* ========================================
-           TOGGLE SWITCH
-           ======================================== */
-
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            transition: all var(--transition-base);
-        }
-
-        .toggle-switch.active {
-            background: var(--primary-500);
-            border-color: var(--primary-500);
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 22px;
-            height: 22px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transition: transform var(--transition-base);
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
-        }
-
-        .toggle-label {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .toggle-switch.active + .toggle-label {
-            color: var(--primary-400);
-        }
-
-        /* ========================================
-           EVENTS & PARTNERS LISTS
-           ======================================== */
-
-        .items-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-lg);
-        }
-
-        .item-card {
-            display: grid;
-            grid-template-columns: 140px 1fr auto;
-            gap: var(--space-lg);
-            align-items: center;
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-            transition: all var(--transition-base);
-        }
-
-        .item-card:hover {
-            border-color: var(--border-medium);
-            transform: translateX(4px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .item-thumbnail {
-            width: 140px;
-            height: 140px;
-            border-radius: var(--radius-md);
-            object-fit: cover;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .partner-thumbnail {
-            object-fit: contain;
-            background: white;
-            padding: var(--space-sm);
-        }
-
-        .item-details {
-            flex: 1;
-        }
-
-        .item-details h3 {
-            color: var(--text-primary);
-            margin-bottom: var(--space-sm);
-            font-size: 1.125rem;
-        }
-
-        .item-details p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin: var(--space-xs) 0;
-        }
-
-        .item-actions {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-sm);
-        }
-
-        .btn-sm {
-            padding: 0.625rem 1rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-            color: white;
-            box-shadow: 0 4px 14px rgba(255, 152, 0, 0.4);
-        }
-
-        .btn-warning:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.5);
-        }
-
-        .btn-success {
-            background: var(--gradient-success);
-            color: white;
-            box-shadow: 0 4px 14px rgba(82, 196, 26, 0.4);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(82, 196, 26, 0.5);
-        }
-
-        .btn-danger {
-            background: var(--gradient-danger);
-            color: white;
-            box-shadow: 0 4px 14px rgba(255, 77, 79, 0.4);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 77, 79, 0.5);
-        }
-
-        /* ========================================
-           FOOTER
-           ======================================== */
-
-        .footer {
-            background: rgba(0, 0, 0, 0.3);
-            border-top: 1px solid var(--border-subtle);
-            padding: var(--space-2xl) 0;
-            margin-top: var(--space-3xl);
-        }
-
-        .footer-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 var(--space-lg);
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: var(--space-lg);
-        }
-
-        .footer-left {
-            text-align: left;
-        }
-
-        .footer-left p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .footer-left a {
-            color: var(--primary-400);
-            text-decoration: none;
-            transition: all var(--transition-base);
-        }
-
-        .footer-left a:hover {
-            color: var(--primary-500);
-            text-decoration: underline;
-        }
-
-        .footer-center {
-            text-align: center;
-        }
-
-        .footer-logo {
-            height: 45px;
-            max-width: 150px;
-            object-fit: contain;
-        }
-
-        .footer-right {
-            text-align: right;
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            justify-content: flex-end;
-        }
-
-        .footer-right p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .social-icons {
-            display: flex;
-            gap: var(--space-md);
-        }
-
-        .social-icons a {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
-            color: var(--primary-400);
-            transition: all var(--transition-base);
-        }
-
-        .social-icons a:hover {
-            background: var(--primary-500);
-            color: white;
-            border-color: var(--primary-500);
-            transform: translateY(-2px);
-        }
-
-        /* ========================================
-           RESPONSIVE
-           ======================================== */
-
-        @media (max-width: 992px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .item-card {
-                grid-template-columns: 120px 1fr;
-                gap: var(--space-md);
-            }
-
-            .item-actions {
-                grid-column: 2;
-                flex-direction: row;
-            }
-
-            .footer-container {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: var(--space-xl);
-            }
-
-            .footer-left,
-            .footer-right {
-                text-align: center;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: var(--space-lg);
-            }
-
-            .admin-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .admin-card {
-                padding: var(--space-lg);
-            }
-
-            .item-card {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .item-thumbnail {
-                margin: 0 auto;
-            }
-
-            .item-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .item-actions .btn {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page-title {
-                font-size: 1.5rem;
-            }
-
-            .admin-card h2 {
-                font-size: 1.25rem;
-            }
-
-            .item-thumbnail {
-                width: 100px;
-                height: 100px;
-            }
-        }
-    </style>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/css/design-system.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/pages/admin-panel.css">
 </head>
-<body class="page-wrapper">
-    <div class="page-content">
-    <div class="admin-container">
-        <!-- Header -->
-        <div class="admin-header">
-            <h1 class="page-title">
-                <span>🔑</span>
-                Panel Admin
-            </h1>
-            <a href="dashboard.html" class="btn-back">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                Retour Dashboard
-            </a>
-        </div>
+<body class="admin-page">
 
-        <!-- Loading State -->
-        <div id="loading" class="loading-container">
-            <div class="spinner spinner-lg"></div>
-            <p class="loading-text">Vérification des droits d'administration...</p>
-        </div>
+    <!-- ==========================================
+         LOADING STATE
+         ========================================== -->
+    <div id="loading" class="loading-container">
+        <div class="spinner spinner-lg"></div>
+        <p class="loading-text">Vérification des droits d'administration...</p>
+    </div>
 
-        <!-- Admin Content -->
-        <div id="admin-content" style="display: none;">
+    <!-- ==========================================
+         ADMIN CONTENT
+         ========================================== -->
+    <div id="admin-content" style="display: none;">
+        <div class="admin-container">
 
-            <!-- Add/Edit Event Form -->
-            <div class="admin-card">
-                <h2 id="form-title">
-                    <span>➕</span>
+            <!-- Header -->
+            <header class="admin-header">
+                <h1 class="admin-title">
+                    <span class="admin-title-icon">🔑</span>
+                    Panel Admin
+                </h1>
+                <a href="/dashboard.html" class="btn-back">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Retour Dashboard
+                </a>
+            </header>
+
+            <!-- ==========================================
+                 ADD/EDIT EVENT FORM
+                 ========================================== -->
+            <section class="admin-card">
+                <h2 class="admin-card-title" id="form-title">
+                    <span class="admin-card-title-icon">➕</span>
                     Ajouter une nouvelle soirée
                 </h2>
 
-                <form id="event-form">
+                <form id="event-form" class="admin-form">
                     <input type="hidden" id="event-id" value="">
 
                     <!-- Row 1: Name and Date -->
                     <div class="form-row">
-                        <div class="input-group">
-                            <label for="event-name">Nom de la soirée *</label>
-                            <input type="text" id="event-name" placeholder="Ex: Soirée House Music" required>
+                        <div class="form-group">
+                            <label for="event-name" class="form-label required">Nom de la soirée</label>
+                            <input type="text" id="event-name" class="form-input" placeholder="Ex: Soirée House Music" required>
                         </div>
-                        <div class="input-group">
-                            <label for="event-date">Date *</label>
-                            <input type="datetime-local" id="event-date" required>
+                        <div class="form-group">
+                            <label for="event-date" class="form-label required">Date</label>
+                            <input type="datetime-local" id="event-date" class="form-input" required>
                         </div>
                     </div>
 
                     <!-- Row 2: Location and Price -->
                     <div class="form-row">
-                        <div class="input-group">
-                            <label for="event-location">Lieu *</label>
-                            <input type="text" id="event-location" placeholder="Ex: Le Reflektor, Mons" required>
+                        <div class="form-group">
+                            <label for="event-location" class="form-label required">Lieu</label>
+                            <input type="text" id="event-location" class="form-input" placeholder="Ex: Le Reflektor, Mons" required>
                         </div>
-                        <div class="input-group">
-                            <label for="event-price">Prix (€) *</label>
-                            <input type="number" id="event-price" placeholder="Ex: 15" step="0.01" min="0" required>
+                        <div class="form-group">
+                            <label for="event-price" class="form-label required">Prix (€)</label>
+                            <input type="number" id="event-price" class="form-input" placeholder="Ex: 15" step="0.01" min="0" required>
                         </div>
                     </div>
 
                     <!-- Row 3: Age and Link -->
                     <div class="form-row">
-                        <div class="input-group">
-                            <label for="event-age">Âge requis *</label>
-                            <input type="number" id="event-age" placeholder="Ex: 18" min="0" required>
+                        <div class="form-group">
+                            <label for="event-age" class="form-label required">Âge requis</label>
+                            <input type="number" id="event-age" class="form-input" placeholder="Ex: 18" min="0" required>
                         </div>
-                        <div class="input-group">
-                            <label for="event-link">Lien de la soirée</label>
-                            <input type="url" id="event-link" placeholder="https://example.com/tickets">
+                        <div class="form-group">
+                            <label for="event-link" class="form-label">Lien de la soirée</label>
+                            <input type="url" id="event-link" class="form-input" placeholder="https://example.com/tickets">
                         </div>
                     </div>
 
                     <!-- Row 4: Presales Toggle and End Date -->
                     <div class="form-row">
-                        <div class="input-group">
-                            <label>Préventes</label>
-                            <div class="toggle-container">
+                        <div class="form-group">
+                            <label class="form-label">Préventes</label>
+                            <div class="toggle-wrapper">
                                 <div class="toggle-switch" id="presales-toggle">
                                     <div class="toggle-slider"></div>
                                 </div>
@@ -563,153 +104,206 @@
                             </div>
                             <input type="hidden" id="event-presales" value="false">
                         </div>
-                        <div class="input-group" id="presales-end-container" style="display: none;">
-                            <label for="presales-end-date">Date de fin des préventes</label>
-                            <input type="datetime-local" id="presales-end-date">
+                        <div class="form-group" id="presales-end-container" style="display: none;">
+                            <label for="presales-end-date" class="form-label">Date de fin des préventes</label>
+                            <input type="datetime-local" id="presales-end-date" class="form-input">
                         </div>
                     </div>
 
                     <!-- Description -->
-                    <div class="input-group full-width">
-                        <label for="event-description">Description</label>
-                        <textarea id="event-description" placeholder="Décrivez la soirée..."></textarea>
+                    <div class="form-group full-width">
+                        <label for="event-description" class="form-label">Description</label>
+                        <textarea id="event-description" class="form-textarea" placeholder="Décrivez la soirée..."></textarea>
                     </div>
 
                     <!-- Image Upload -->
-                    <div class="input-group full-width">
-                        <label>Image de la soirée *</label>
-                        <div class="image-upload-area" id="image-upload-area">
-                            <div class="upload-icon">📸</div>
-                            <div class="upload-text">Cliquez pour uploader une image</div>
-                            <small style="color: var(--text-tertiary);">JPG, PNG ou WEBP - Max 5MB</small>
-                        </div>
-                        <input type="file" id="image-input" accept="image/*" required style="display: none;">
-                        <div class="image-preview" id="image-preview">
-                            <img id="preview-img" src="" alt="Preview">
+                    <div class="form-group full-width">
+                        <label class="form-label required">Image de la soirée</label>
+                        <div class="image-upload-wrapper">
+                            <div class="image-upload-area" id="image-upload-area">
+                                <div class="upload-icon">📸</div>
+                                <div class="upload-text">Cliquez pour uploader une image</div>
+                                <div class="upload-hint">JPG, PNG ou WEBP - Max 5MB</div>
+                            </div>
+                            <input type="file" id="image-input" accept="image/*" required style="display: none;">
+                            <div class="image-preview" id="image-preview">
+                                <img id="preview-img" src="" alt="Preview">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Submit Buttons -->
-                    <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap;">
-                        <button type="submit" class="btn btn-primary" id="submit-btn">Publier la soirée</button>
-                        <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">Annuler</button>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            Publier la soirée
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">
+                            Annuler
+                        </button>
                     </div>
                 </form>
-            </div>
+            </section>
 
-            <!-- Published Events List -->
-            <div class="admin-card">
-                <h2>
-                    <span>📋</span>
+            <!-- ==========================================
+                 PUBLISHED EVENTS LIST
+                 ========================================== -->
+            <section class="admin-card">
+                <h2 class="admin-card-title">
+                    <span class="admin-card-title-icon">📋</span>
                     Soirées publiées
                 </h2>
                 <div id="events-list" class="items-list">
                     <!-- Events will be loaded here -->
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Pending Events List -->
-            <div class="admin-card">
-                <h2>
-                    <span>⏳</span>
+            <!-- ==========================================
+                 PENDING EVENTS LIST
+                 ========================================== -->
+            <section class="admin-card">
+                <h2 class="admin-card-title">
+                    <span class="admin-card-title-icon">⏳</span>
                     Soirées en attente de validation
                 </h2>
                 <div id="pending-events-list" class="items-list">
                     <!-- Pending events will be loaded here -->
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Add/Edit Partner Form -->
-            <div class="admin-card">
-                <h2 id="partner-form-title">
-                    <span>🤝</span>
+            <!-- ==========================================
+                 ADD/EDIT PARTNER FORM
+                 ========================================== -->
+            <section class="admin-card">
+                <h2 class="admin-card-title" id="partner-form-title">
+                    <span class="admin-card-title-icon">🤝</span>
                     Ajouter un partenaire
                 </h2>
 
-                <form id="partner-form">
+                <form id="partner-form" class="admin-form">
                     <input type="hidden" id="partner-id" value="">
 
                     <!-- Partner Logo Upload -->
-                    <div class="input-group full-width">
-                        <label>Logo du partenaire *</label>
-                        <div class="image-upload-area" id="partner-image-upload-area">
-                            <div class="upload-icon">🏢</div>
-                            <div class="upload-text">Cliquez pour uploader le logo</div>
-                            <small style="color: var(--text-tertiary);">PNG ou SVG de préférence - Max 2MB</small>
-                        </div>
-                        <input type="file" id="partner-image-input" accept="image/*" required style="display: none;">
-                        <div class="image-preview" id="partner-image-preview">
-                            <img id="partner-preview-img" src="" alt="Preview">
+                    <div class="form-group full-width">
+                        <label class="form-label required">Logo du partenaire</label>
+                        <div class="image-upload-wrapper">
+                            <div class="image-upload-area" id="partner-image-upload-area">
+                                <div class="upload-icon">🏢</div>
+                                <div class="upload-text">Cliquez pour uploader le logo</div>
+                                <div class="upload-hint">PNG ou SVG de préférence - Max 2MB</div>
+                            </div>
+                            <input type="file" id="partner-image-input" accept="image/*" required style="display: none;">
+                            <div class="image-preview" id="partner-image-preview">
+                                <img id="partner-preview-img" src="" alt="Preview">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Submit Buttons -->
-                    <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap;">
-                        <button type="submit" class="btn btn-primary" id="partner-submit-btn">Ajouter le partenaire</button>
-                        <button type="button" class="btn btn-secondary" id="partner-cancel-btn" style="display: none;">Annuler</button>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="partner-submit-btn">
+                            Ajouter le partenaire
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="partner-cancel-btn" style="display: none;">
+                            Annuler
+                        </button>
                     </div>
                 </form>
-            </div>
+            </section>
 
-            <!-- Partners List -->
-            <div class="admin-card">
-                <h2>
-                    <span>🏢</span>
+            <!-- ==========================================
+                 PARTNERS LIST
+                 ========================================== -->
+            <section class="admin-card">
+                <h2 class="admin-card-title">
+                    <span class="admin-card-title-icon">🏢</span>
                     Partenaires publiés
                 </h2>
                 <div id="partners-list" class="items-list">
                     <!-- Partners will be loaded here -->
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Suggestions -->
-            <div class="admin-card">
-                <h2>
-                    <span>💡</span>
+            <!-- ==========================================
+                 SUGGESTIONS
+                 ========================================== -->
+            <section class="admin-card">
+                <h2 class="admin-card-title">
+                    <span class="admin-card-title-icon">💡</span>
                     Suggestions des utilisateurs
                 </h2>
                 <div id="suggestions-list" class="items-list">
                     <!-- Suggestions will be loaded here -->
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
         </div>
     </div>
-    </div>
 
-    <!-- Footer -->
-    <footer class="footer-global">
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="footer">
         <div class="footer-container">
-            <!-- Left: Copyright -->
-            <div class="footer-left">
-                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank">Maxence</a></p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Soirées Mons</h4>
+                    <ul class="footer-links">
+                        <li><a href="/index.html">Événements</a></li>
+                        <li><a href="/about.html">À propos</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Administration</h4>
+                    <ul class="footer-links">
+                        <li><a href="/dashboard.html">Dashboard</a></li>
+                        <li><a href="/admin-panel.html">Panel Admin</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Suivez-nous</h4>
+                    <div class="footer-social">
+                        <a href="https://instagram.com/soirees_mons" target="_blank" class="footer-social-link" aria-label="Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                        <a href="https://tiktok.com/@soirees_mons" target="_blank" class="footer-social-link" aria-label="TikTok">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <!-- Center: Logo -->
-            <div class="footer-center">
-                <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
-            </div>
-
-            <!-- Right: Social -->
-            <div class="footer-right">
-                <p>Suivez-nous :</p>
-                <div class="social-icons">
-                    <a href="https://www.instagram.com/soirees_mons/" target="_blank" aria-label="Instagram">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    <a href="https://www.tiktok.com/@soirees_mons" target="_blank" aria-label="TikTok">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
-                    </a>
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    &copy; 2025 Soirées Mons. Tous droits réservés.
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- JavaScript -->
-    <script type="module" src="admin-panel.js"></script>
+    <!-- ==========================================
+         JAVASCRIPT - MODULE
+         ========================================== -->
+    <script type="module" src="/assets/js/pages/admin-panel.js"></script>
+
 </body>
 </html>

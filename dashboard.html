@@ -3,782 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gérez votre compte Soirées Mons - Profil, événements, préventes">
     <title>Mon Compte - Soirées Mons</title>
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="design-system.css">
-    <style>
-        /* ========================================
-           LAYOUT PRINCIPAL
-           ======================================== */
 
-        body {
-            background: var(--gradient-bg);
-            min-height: 100vh;
-            padding: var(--space-2xl) var(--space-lg);
-        }
-
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        /* ========================================
-           HEADER
-           ======================================== */
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--space-2xl);
-            flex-wrap: wrap;
-            gap: var(--space-lg);
-        }
-
-        .page-title {
-            font-size: 2.5rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-        }
-
-        .btn-home {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-sm);
-            padding: 0.875rem 1.5rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: 600;
-            backdrop-filter: blur(10px);
-            transition: all var(--transition-base);
-        }
-
-        .btn-home:hover {
-            background: var(--bg-card);
-            border-color: var(--border-medium);
-            transform: translateX(-4px);
-        }
-
-        /* ========================================
-           LOADING STATE
-           ======================================== */
-
-        .loading-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-3xl);
-            text-align: center;
-            min-height: 400px;
-        }
-
-        .loading-state .spinner {
-            margin-bottom: var(--space-lg);
-        }
-
-        .loading-state p {
-            color: var(--text-secondary);
-            font-size: 1.125rem;
-        }
-
-        /* ========================================
-           PROFILE CARD
-           ======================================== */
-
-        .profile-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-2xl);
-            padding: var(--space-2xl);
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-lg);
-            margin-bottom: var(--space-2xl);
-        }
-
-        .profile-grid {
-            display: grid;
-            grid-template-columns: 220px 1fr;
-            gap: var(--space-2xl);
-            align-items: start;
-        }
-
-        /* ========================================
-           PHOTO DE PROFIL
-           ======================================== */
-
-        .profile-photo-section {
-            text-align: center;
-        }
-
-        .profile-photo-container {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            margin: 0 auto var(--space-md);
-            cursor: pointer;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 4px solid var(--primary-500);
-            transition: all var(--transition-base);
-            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.4);
-        }
-
-        .profile-photo-container:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(108, 99, 255, 0.6);
-            border-color: var(--accent-500);
-        }
-
-        .profile-photo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background: var(--gradient-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            color: white;
-        }
-
-        .photo-upload-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: var(--space-xs);
-            opacity: 0;
-            transition: opacity var(--transition-base);
-        }
-
-        .profile-photo-container:hover .photo-upload-overlay {
-            opacity: 1;
-        }
-
-        .photo-upload-overlay .icon {
-            font-size: 2rem;
-        }
-
-        .photo-upload-overlay .text {
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .photo-upload-text {
-            font-size: 0.875rem;
-            color: var(--text-tertiary);
-        }
-
-        /* ========================================
-           USER INFO SECTION
-           ======================================== */
-
-        .user-info-section {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-md);
-        }
-
-        .info-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all var(--transition-base);
-        }
-
-        .info-item:hover {
-            border-color: var(--border-medium);
-            transform: translateX(4px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .info-content {
-            flex: 1;
-        }
-
-        .info-label {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 600;
-            margin-bottom: var(--space-xs);
-        }
-
-        .info-value {
-            font-size: 1rem;
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .edit-icon {
-            cursor: pointer;
-            padding: var(--space-sm);
-            border-radius: var(--radius-md);
-            color: var(--primary-400);
-            transition: all var(--transition-base);
-            font-size: 1.25rem;
-            background: transparent;
-        }
-
-        .edit-icon:hover {
-            background: rgba(108, 99, 255, 0.15);
-            color: var(--primary-500);
-            transform: scale(1.1);
-        }
-
-        /* ========================================
-           ACTION BUTTONS
-           ======================================== */
-
-        .action-buttons {
-            display: flex;
-            gap: var(--space-md);
-            margin-top: var(--space-2xl);
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn-admin {
-            background: var(--gradient-danger);
-            color: white;
-            box-shadow: 0 4px 14px rgba(255, 77, 79, 0.4);
-        }
-
-        .btn-admin:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 77, 79, 0.5);
-        }
-
-        /* ========================================
-           MODALS
-           ======================================== */
-
-        .edit-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: var(--z-modal);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-lg);
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        .edit-modal.show {
-            display: flex;
-        }
-
-        .edit-modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-medium);
-            border-radius: var(--radius-2xl);
-            max-width: 500px;
-            width: 100%;
-            padding: var(--space-2xl);
-            box-shadow: var(--shadow-xl);
-            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-
-        .modal-title {
-            font-size: 1.75rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: var(--space-xl);
-        }
-
-        .form-group {
-            margin-bottom: var(--space-lg);
-        }
-
-        .form-group label {
-            display: block;
-            color: var(--text-secondary);
-            margin-bottom: var(--space-sm);
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 1rem 1.25rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: all var(--transition-base);
-            backdrop-filter: blur(10px);
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary-500);
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
-        }
-
-        .form-group input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: var(--space-md);
-            margin-top: var(--space-xl);
-        }
-
-        .modal-buttons .btn {
-            flex: 1;
-        }
-
-        /* Modal de confirmation */
-        .success-modal-content {
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .success-icon {
-            font-size: 4rem;
-            margin-bottom: var(--space-lg);
-            animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .success-modal-content .modal-title {
-            margin-bottom: var(--space-md);
-        }
-
-        .success-modal-content p {
-            color: var(--text-secondary);
-            margin-bottom: var(--space-xl);
-        }
-
-        /* ========================================
-           FOOTER
-           ======================================== */
-
-        .footer {
-            background: rgba(0, 0, 0, 0.3);
-            border-top: 1px solid var(--border-subtle);
-            padding: var(--space-2xl) 0;
-            margin-top: var(--space-3xl);
-            /* Étendre le footer à toute la largeur malgré le padding du body */
-            margin-left: calc(-1 * var(--space-lg));
-            margin-right: calc(-1 * var(--space-lg));
-            padding-left: var(--space-lg);
-            padding-right: var(--space-lg);
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 var(--space-lg);
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: var(--space-lg);
-        }
-
-        .footer-left {
-            text-align: left;
-        }
-
-        .footer-left p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .footer-left a {
-            color: var(--primary-400);
-            text-decoration: none;
-            transition: all var(--transition-base);
-        }
-
-        .footer-left a:hover {
-            color: var(--primary-500);
-            text-decoration: underline;
-        }
-
-        .footer-center {
-            text-align: center;
-        }
-
-        .footer-logo {
-            height: 45px;
-            max-width: 150px;
-            object-fit: contain;
-        }
-
-        .footer-right {
-            text-align: right;
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            justify-content: flex-end;
-        }
-
-        .footer-right p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .social-icons {
-            display: flex;
-            gap: var(--space-md);
-        }
-
-        .social-icons a {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
-            color: var(--primary-400);
-            transition: all var(--transition-base);
-        }
-
-        .social-icons a:hover {
-            background: var(--primary-500);
-            color: white;
-            border-color: var(--primary-500);
-            transform: translateY(-2px);
-        }
-
-        /* ========================================
-           RESPONSIVE
-           ======================================== */
-
-        @media (max-width: 992px) {
-            .profile-grid {
-                grid-template-columns: 1fr;
-                gap: var(--space-xl);
-            }
-
-            .profile-photo-container {
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .footer-container {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: var(--space-xl);
-            }
-
-            .footer-left,
-            .footer-right {
-                text-align: center;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: var(--space-lg);
-            }
-
-            .dashboard-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .profile-card {
-                padding: var(--space-lg);
-            }
-
-            .profile-photo-container {
-                width: 160px;
-                height: 160px;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .action-buttons .btn {
-                width: 100%;
-            }
-
-            .modal-buttons {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page-title {
-                font-size: 1.5rem;
-            }
-
-            .profile-photo-container {
-                width: 140px;
-                height: 140px;
-            }
-
-            .edit-modal-content {
-                padding: var(--space-lg);
-            }
-        }
-    </style>
-
-    <!-- Bibliothèque de compression d'images (uniquement pour photos de profil) -->
-    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/css/design-system.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/pages/dashboard.css">
 </head>
-<body class="page-wrapper">
-    <div class="page-content">
-    <div class="dashboard-container">
-        <!-- Loading State -->
-        <div id="loading" class="loading-state">
-            <div class="spinner spinner-lg"></div>
-            <p>Chargement de votre profil...</p>
-        </div>
+<body>
 
-        <!-- Main Content -->
-        <div id="dashboard-content" style="display: none;">
+    <!-- ==========================================
+         NAVBAR
+         ========================================== -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/index.html">
+                    <img src="/logo.png" alt="Soirées Mons" class="navbar-logo">
+                </a>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="/index.html">Événements</a>
+                <a href="/dashboard.html" class="active">Mon Compte</a>
+                <a href="/mes-preventes.html">Mes Préventes</a>
+                <a href="/mes-soirees.html">Mes Soirées</a>
+            </nav>
+
+            <div class="nav-auth">
+                <a href="/index.html" class="btn btn-secondary btn-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Retour
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         LOADING STATE
+         ========================================== -->
+    <div id="dashboard-loading" class="dashboard-loading">
+        <div class="loader loader-lg"></div>
+        <p style="margin-top: var(--space-4); color: var(--text-secondary);">Chargement de votre compte...</p>
+    </div>
+
+    <!-- ==========================================
+         DASHBOARD CONTENT
+         ========================================== -->
+    <div id="dashboard-content" class="dashboard-wrapper" style="display: none;">
+        <div class="dashboard-container">
+
             <!-- Header -->
             <div class="dashboard-header">
-                <h1 class="page-title">
-                    <span>👤</span>
-                    Mon Compte
-                </h1>
-                <a href="index.html" class="btn-home">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                    Retour à l'accueil
-                </a>
+                <h1 class="dashboard-title">Mon Compte</h1>
             </div>
 
             <!-- Profile Card -->
             <div class="profile-card">
-                <div class="profile-grid">
-                    <!-- Photo Section -->
-                    <div class="profile-photo-section">
-                        <div class="profile-photo-container" id="photo-container">
-                            <div class="profile-photo" id="profile-photo">
-                                👤
-                            </div>
-                            <div class="photo-upload-overlay">
-                                <span class="icon">📸</span>
-                                <span class="text">Changer la photo</span>
-                            </div>
-                        </div>
-                        <p class="photo-upload-text">Cliquez pour changer</p>
-                        <input type="file" id="photo-input" accept="image/*" style="display: none;">
-                    </div>
-
-                    <!-- User Info Section -->
-                    <div class="user-info-section">
-                        <!-- UID (readonly) -->
-                        <div class="info-item">
-                            <div class="info-content">
-                                <div class="info-label">🆔 UID</div>
-                                <div class="info-value" id="user-uid">-</div>
-                            </div>
-                        </div>
-
-                        <!-- Pseudo (editable) -->
-                        <div class="info-item">
-                            <div class="info-content">
-                                <div class="info-label">✨ Pseudo</div>
-                                <div class="info-value" id="user-pseudo">-</div>
-                            </div>
-                            <span class="edit-icon" id="edit-pseudo">✏️</span>
-                        </div>
-
-                        <!-- Email (readonly) -->
-                        <div class="info-item">
-                            <div class="info-content">
-                                <div class="info-label">📧 Email</div>
-                                <div class="info-value" id="user-email">-</div>
-                            </div>
-                        </div>
-
-                        <!-- Password (editable) -->
-                        <div class="info-item">
-                            <div class="info-content">
-                                <div class="info-label">🔒 Mot de passe</div>
-                                <div class="info-value">••••••••</div>
-                            </div>
-                            <span class="edit-icon" id="edit-password">✏️</span>
-                        </div>
-                    </div>
+                <div class="profile-avatar-section">
+                    <img src="" alt="Profile" id="profile-avatar" class="profile-avatar">
+                    <button class="profile-avatar-upload" id="avatar-upload-btn" aria-label="Upload avatar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </button>
+                    <input type="file" id="avatar-input" class="profile-avatar-input" accept="image/*">
                 </div>
 
-                <!-- Stripe Connect Section -->
-                <div class="stripe-connect-section" id="stripe-connect-section" style="display: none; margin-top: var(--space-xl); padding: var(--space-lg); background: rgba(108, 99, 255, 0.1); border-radius: var(--radius-lg); border: 1px solid rgba(108, 99, 255, 0.3);">
-                    <h3 style="color: var(--primary-400); margin-bottom: var(--space-md); display: flex; align-items: center; gap: var(--space-sm);">
-                        💳 Configuration des paiements
-                    </h3>
-                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: var(--space-md);">
-                        Pour recevoir les paiements de vos préventes (88% du prix du ticket), configurez votre compte bancaire via Stripe.
+                <div class="profile-info">
+                    <h2 class="profile-name" id="profile-name">Loading...</h2>
+                    <p class="profile-email" id="profile-email">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        loading@example.com
                     </p>
-                    <div id="stripe-status" style="padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-md); font-size: 0.875rem;">
-                        <!-- Status will be inserted here -->
+                    <span class="profile-role" id="profile-role">
+                        Loading...
+                    </span>
+                </div>
+
+                <div class="profile-actions">
+                    <a href="/mes-soirees.html" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Mes Soirées
+                    </a>
+                    <a href="/mes-preventes.html" class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                        Mes Préventes
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Grid (Organizer/Admin only) -->
+            <div id="stats-section" class="stats-grid" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
                     </div>
-                    <button class="btn btn-primary" id="setup-stripe-btn">
-                        ⚙️ Configurer mon compte
+                    <div class="stat-card-value" id="stat-events">0</div>
+                    <div class="stat-card-label">Événements créés</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                <line x1="1" y1="10" x2="23" y2="10"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-card-value" id="stat-presales">0</div>
+                    <div class="stat-card-label">Préventes vendues</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon warning">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-card-value" id="stat-revenue">€0.00</div>
+                    <div class="stat-card-label">Revenu total</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon" style="background: var(--danger-bg); color: var(--danger);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-card-value" id="stat-likes">0</div>
+                    <div class="stat-card-label">Likes reçus</div>
+                </div>
+            </div>
+
+            <!-- Profile Information Section -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">Informations du profil</h3>
+                </div>
+
+                <form id="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="input-name">Nom complet</label>
+                            <input type="text" id="input-name" class="form-input" placeholder="Votre nom" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="input-email">Email</label>
+                            <input type="email" id="input-email" class="form-input" placeholder="votre@email.com" required>
+                            <div class="form-help">⚠️ Changer votre email nécessitera une nouvelle vérification</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Sauvegarder les modifications
+                    </button>
+                </form>
+            </div>
+
+            <!-- Password Section -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">Changer le mot de passe</h3>
+                </div>
+
+                <form id="password-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="input-new-password">Nouveau mot de passe</label>
+                            <input type="password" id="input-new-password" class="form-input" placeholder="Minimum 6 caractères" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="input-confirm-password">Confirmer le mot de passe</label>
+                            <input type="password" id="input-confirm-password" class="form-input" placeholder="Répétez le mot de passe" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        Changer le mot de passe
+                    </button>
+                </form>
+            </div>
+
+            <!-- Stripe Connect Section (Organizer/Admin only) -->
+            <div id="stripe-section" class="stripe-connect-card" style="display: none;">
+                <div class="stripe-connect-header">
+                    <div class="stripe-logo">
+                        <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" width="48" height="20">
+                            <path fill="#635BFF" d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.04 1.26-.06 1.48zm-5.92-5.62c-1.03 0-2.17.73-2.17 2.58h4.25c0-1.85-1.07-2.58-2.08-2.58zM40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM40 8.95c-.95 0-1.54.34-1.97.81l.02 6.12c.4.44.98.78 1.95.78 1.52 0 2.54-1.65 2.54-3.87 0-2.15-1.04-3.84-2.54-3.84zM28.24 5.57h4.13v14.44h-4.13V5.57zm0-4.7L32.37 0v3.36l-4.13.88V.88zm-4.32 9.35v9.79H19.8V5.57h3.7l.12 1.22c1-1.77 3.07-1.41 3.62-1.22v3.79c-.52-.17-2.29-.43-3.32.86zm-8.55 4.72c0 2.43 2.6 1.68 3.12 1.46v3.36c-.55.3-1.54.54-2.89.54a4.15 4.15 0 0 1-4.27-4.24l.01-13.17 4.02-.86v3.54h3.14V9.1h-3.13v5.85zm-4.91.7c0 2.97-2.31 4.66-5.73 4.66a11.2 11.2 0 0 1-4.46-.93v-3.93c1.38.75 3.1 1.31 4.46 1.31.92 0 1.53-.24 1.53-1C6.26 13.77 0 14.51 0 9.95 0 7.04 2.28 5.3 5.62 5.3c1.36 0 2.72.2 4.09.75v3.88a9.23 9.23 0 0 0-4.1-1.06c-.86 0-1.44.25-1.44.93 0 1.85 6.29.97 6.29 5.88z"/>
+                        </svg>
+                    </div>
+                    <h3 class="stripe-connect-title">Stripe Connect</h3>
+                </div>
+
+                <p class="stripe-connect-description">
+                    Configurez votre compte Stripe pour recevoir les paiements des préventes.
+                    Vous recevrez 88% de chaque vente.
+                </p>
+
+                <div class="stripe-status pending">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Non configuré
+                </div>
+
+                <button class="btn btn-lg" style="background: white; color: #635BFF;" id="btn-stripe-connect">
+                    Configurer Stripe Connect
+                </button>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">Zone de danger</h3>
+                </div>
+
+                <div class="danger-zone">
+                    <div class="danger-zone-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <h4 class="danger-zone-title">Supprimer le compte</h4>
+                    </div>
+
+                    <p class="danger-zone-description">
+                        Cette action est irréversible. Toutes vos données seront définitivement supprimées.
+                    </p>
+
+                    <button class="btn btn-danger" id="btn-delete-account">
+                        Supprimer mon compte
                     </button>
                 </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <a href="admin-panel.html" class="btn btn-admin" id="admin-btn" style="display: none;">
-                        🔑 Panel Admin
-                    </a>
-                    <a href="mes-soirees.html" class="btn btn-primary">
-                        📋 Mes Soirées
-                    </a>
-                    <a href="mes-preventes.html" class="btn btn-primary">
-                        🎟️ Mes Préventes
-                    </a>
-                    <a href="scanner.html" class="btn btn-secondary" id="scanner-btn" style="display: none;">
-                        📷 Scanner QR
-                    </a>
-                    <button class="btn btn-secondary" id="logout-btn">
-                        🚪 Se déconnecter
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <!-- Photo Success Modal -->
-    <div id="photo-success-modal" class="edit-modal">
-        <div class="edit-modal-content success-modal-content">
-            <div class="success-icon">✅</div>
-            <h2 class="modal-title">Photo mise à jour</h2>
-            <p>Votre photo de profil a été mise à jour avec succès !</p>
-            <button class="btn btn-primary" onclick="closePhotoSuccessModal()">OK</button>
-        </div>
-    </div>
-
-    <!-- Edit Pseudo Modal -->
-    <div id="edit-pseudo-modal" class="edit-modal">
-        <div class="edit-modal-content">
-            <h2 class="modal-title">Modifier le pseudo</h2>
-            <form id="edit-pseudo-form">
-                <div class="form-group">
-                    <label for="new-pseudo">Nouveau pseudo</label>
-                    <input type="text" id="new-pseudo" placeholder="Votre pseudo" required>
-                </div>
-                <div class="modal-buttons">
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeEditPseudoModal()">Annuler</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Password Modal -->
-    <div id="edit-password-modal" class="edit-modal">
-        <div class="edit-modal-content">
-            <h2 class="modal-title">Modifier le mot de passe</h2>
-            <form id="edit-password-form">
-                <div class="form-group">
-                    <label for="current-password">Mot de passe actuel</label>
-                    <input type="password" id="current-password" placeholder="••••••••" required>
-                </div>
-                <div class="form-group">
-                    <label for="new-password">Nouveau mot de passe</label>
-                    <input type="password" id="new-password" placeholder="••••••••" required>
-                </div>
-                <div class="form-group">
-                    <label for="confirm-password">Confirmer le mot de passe</label>
-                    <input type="password" id="confirm-password" placeholder="••••••••" required>
-                </div>
-                <div class="modal-buttons">
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeEditPasswordModal()">Annuler</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer-global">
-        <div class="footer-container">
-            <!-- Left: Copyright -->
-            <div class="footer-left">
-                <p>Site créé par <a href="https://www.instagram.com/7.maxncs/" target="_blank">Maxence</a></p>
             </div>
 
-            <!-- Center: Logo -->
-            <div class="footer-center">
-                <img src="assets/logo.png" alt="Soirées Mons Logo" class="footer-logo">
-            </div>
-
-            <!-- Right: Social -->
-            <div class="footer-right">
-                <p>Suivez-nous :</p>
-                <div class="social-icons">
-                    <a href="https://www.instagram.com/soirees_mons/" target="_blank" aria-label="Instagram">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    <a href="https://www.tiktok.com/@soirees_mons" target="_blank" aria-label="TikTok">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
-                    </a>
-                </div>
-            </div>
         </div>
-    </footer>
+    </div>
 
-    <script>
-        // Global functions for closing modals
-        window.closeEditPseudoModal = function() {
-            document.getElementById('edit-pseudo-modal').classList.remove('show');
-        };
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
+    <script type="module" src="/assets/js/pages/dashboard.js"></script>
 
-        window.closeEditPasswordModal = function() {
-            document.getElementById('edit-password-modal').classList.remove('show');
-        };
-
-        window.closePhotoSuccessModal = function() {
-            document.getElementById('photo-success-modal').classList.remove('show');
-        };
-    </script>
-
-    <!-- Firebase Dashboard Logic -->
-    <script type="module" src="dashboard.js"></script>
 </body>
 </html>
