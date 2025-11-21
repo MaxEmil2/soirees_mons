@@ -1,0 +1,229 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================
+    // FONCTIONS HELPER - SÉCURITÉ
+    // ========================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    function hasAnyRole(roles) {
+      return isAuthenticated() && getUserData().role in roles;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isOrganizer() {
+      return hasRole('organizer') || isAdmin();
+    }
+
+    function isScanner() {
+      return hasRole('scanner') || isAdmin();
+    }
+
+    // Validation des données
+    function isValidEmail(email) {
+      return email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+
+    function isValidString(str, minLen, maxLen) {
+      return str is string && str.size() >= minLen && str.size() <= maxLen;
+    }
+
+    function isValidPrice(price) {
+      return price is number && price >= 1 && price <= 1000;
+    }
+
+    function isValidAge(age) {
+      return age is int && age >= 16 && age <= 99;
+    }
+
+    // ========================================
+    // COLLECTION: users
+    // ========================================
+    match /users/{userId} {
+      // Lecture: utilisateur connecté ou admin
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Création: lors de l'inscription uniquement
+      allow create: if isOwner(userId)
+                    && request.resource.data.keys().hasAll(['email', 'role', 'createdAt'])
+                    && request.resource.data.role == 'user'
+                    && isValidEmail(request.resource.data.email);
+
+      // Mise à jour: utilisateur lui-même (champs limités) ou admin
+      allow update: if (isOwner(userId)
+                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'email', 'uid']))
+                    || isAdmin();
+
+      // Suppression: admin uniquement
+      allow delete: if isAdmin();
+    }
+
+    // ========================================
+    // COLLECTION: events
+    // ========================================
+    match /events/{eventId} {
+      // Lecture: public pour les events approuvés, créateur pour ses events, admin pour tout
+      allow read: if resource.data.status == 'approved'
+                  || (isAuthenticated() && resource.data.createdBy == request.auth.uid)
+                  || isAdmin();
+
+      // Création: INTERDITE depuis le front (via Cloud Function uniquement)
+      allow create: if false;
+
+      // Mise à jour: INTERDITE depuis le front (via Cloud Function uniquement)
+      allow update: if false;
+
+      // Suppression: créateur ou admin (via Cloud Function uniquement)
+      allow delete: if false;
+    }
+
+    // ========================================
+    // COLLECTION: presales (TICKETS)
+    // ========================================
+    match /presales/{presaleId} {
+      // Lecture: propriétaire du ticket, organisateur de l'event, scanner, ou admin
+      allow read: if isAuthenticated()
+                  && (resource.data.userId == request.auth.uid
+                      || isAdmin()
+                      || (isScanner() && get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.scanners.hasAny([request.auth.uid]))
+                      || get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid);
+
+      // Création/Mise à jour: INTERDITES (via Cloud Function Stripe uniquement)
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ========================================
+    // COLLECTION: notifications
+    // ========================================
+    match /notifications/{notificationId} {
+      // Lecture: propriétaire de la notification ou admin
+      allow read: if isAuthenticated()
+                  && (resource.data.userId == request.auth.uid || isAdmin());
+
+      // Création: système uniquement (Cloud Function)
+      allow create: if false;
+
+      // Mise à jour: propriétaire peut marquer comme lu
+      allow update: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+
+      // Suppression: propriétaire ou admin
+      allow delete: if isAuthenticated()
+                    && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ========================================
+    // COLLECTION: likes
+    // ========================================
+    match /likes/{likeId} {
+      // Lecture: public
+      allow read: if true;
+
+      // Création: utilisateur authentifié uniquement pour ses propres likes
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.keys().hasAll(['userId', 'eventId', 'createdAt']);
+
+      // Mise à jour: propriétaire peut mettre à jour isPublic
+      allow update: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isPublic']);
+
+      // Suppression: propriétaire ou admin
+      allow delete: if isAuthenticated()
+                    && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ========================================
+    // COLLECTION: partners
+    // ========================================
+    match /partners/{partnerId} {
+      // Lecture: public
+      allow read: if true;
+
+      // Écriture: admin uniquement
+      allow write: if isAdmin();
+    }
+
+    // ========================================
+    // COLLECTION: scanLogs (AUDIT TRAIL)
+    // ========================================
+    match /scanLogs/{logId} {
+      // Lecture: organisateur de l'event, scanner qui a scanné, ou admin
+      allow read: if isAuthenticated()
+                  && (isAdmin()
+                      || resource.data.scannedBy == request.auth.uid
+                      || get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid);
+
+      // Création: via Cloud Function uniquement
+      allow create: if false;
+
+      // Pas de modification ni suppression
+      allow update, delete: if false;
+    }
+
+    // ========================================
+    // COLLECTION: statistics
+    // ========================================
+    match /statistics/{statId} {
+      // Lecture: organisateur de l'event ou admin
+      allow read: if isAuthenticated()
+                  && (isAdmin()
+                      || get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid);
+
+      // Écriture: via Cloud Function uniquement
+      allow write: if false;
+    }
+
+    // ========================================
+    // COLLECTION: eventSubmissions (soumissions d'événements)
+    // ========================================
+    match /eventSubmissions/{submissionId} {
+      // Lecture: créateur ou admin
+      allow read: if isAuthenticated()
+                  && (resource.data.createdBy == request.auth.uid || isAdmin());
+
+      // Création: utilisateur authentifié
+      allow create: if isAuthenticated()
+                    && request.resource.data.createdBy == request.auth.uid
+                    && isValidString(request.resource.data.name, 3, 100)
+                    && isValidString(request.resource.data.location, 3, 200)
+                    && isValidAge(request.resource.data.age)
+                    && (request.resource.data.presales == false || isValidPrice(request.resource.data.price));
+
+      // Mise à jour/Suppression: créateur ou admin
+      allow update, delete: if isAuthenticated()
+                            && (resource.data.createdBy == request.auth.uid || isAdmin());
+    }
+
+    // ========================================
+    // BLOCAGE PAR DÉFAUT
+    // ========================================
+    // Tout le reste est INTERDIT
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
