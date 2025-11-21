@@ -21,10 +21,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             z-index: 998;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s ease;
         }
 
         .mobile-menu-overlay.active {
@@ -37,14 +39,16 @@
             position: fixed;
             top: 0;
             right: -100%;
-            width: 75%;
-            max-width: 400px;
+            width: 85%;
+            max-width: 380px;
             height: 100vh;
-            background: var(--bg-dark, #1a1a2e);
+            background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
             z-index: 999;
-            transition: right 0.3s ease;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .mobile-menu.active {
@@ -52,83 +56,171 @@
         }
 
         .mobile-menu-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: rgba(108, 99, 255, 0.05);
         }
 
         .mobile-menu-header h3 {
             color: white;
-            font-size: 20px;
+            font-size: 22px;
+            font-weight: 700;
             margin: 0;
+            background: linear-gradient(90deg, #6c63ff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .mobile-menu-close {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            transition: background 0.3s;
+            border-radius: 12px;
+            transition: all 0.3s ease;
         }
 
         .mobile-menu-close:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 77, 79, 0.2);
+            border-color: rgba(255, 77, 79, 0.5);
+            color: #ff4d4f;
+            transform: rotate(90deg);
         }
 
         .mobile-menu-content {
-            padding: 20px;
+            padding: 24px 20px;
+            flex: 1;
+        }
+
+        .mobile-menu-section {
+            margin-bottom: 20px;
+        }
+
+        .mobile-menu-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-left: 4px;
         }
 
         .mobile-menu-item {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             width: 100%;
-            padding: 16px 20px;
-            margin-bottom: 10px;
-            background: rgba(108, 99, 255, 0.1);
-            border: 1px solid rgba(108, 99, 255, 0.3);
-            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 8px;
+            background: rgba(108, 99, 255, 0.08);
+            border: 1px solid rgba(108, 99, 255, 0.15);
+            border-radius: 14px;
             color: white;
             text-decoration: none;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             text-align: left;
             cursor: pointer;
         }
 
-        .mobile-menu-item:hover {
+        .mobile-menu-item:hover,
+        .mobile-menu-item:active {
             background: rgba(108, 99, 255, 0.2);
-            border-color: rgba(108, 99, 255, 0.5);
-            transform: translateX(-4px);
+            border-color: rgba(108, 99, 255, 0.4);
+            transform: translateX(-6px);
+            box-shadow: 4px 4px 20px rgba(108, 99, 255, 0.2);
         }
 
-        /* Hamburger menu button */
+        .mobile-menu-item-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .mobile-menu-item-primary {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.3), rgba(0, 212, 255, 0.2));
+            border-color: rgba(108, 99, 255, 0.4);
+        }
+
+        .mobile-menu-item-primary:hover {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.5), rgba(0, 212, 255, 0.3));
+        }
+
+        .mobile-menu-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .mobile-menu-footer p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            margin: 0;
+        }
+
+        /* Hamburger menu button - Animated */
         .hamburger-menu {
             background: none;
             border: none;
             cursor: pointer;
-            padding: 8px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            justify-content: center;
+            align-items: center;
+            width: 44px;
+            height: 44px;
             z-index: 10;
+            position: relative;
         }
 
         .hamburger-menu span {
             width: 24px;
-            height: 3px;
+            height: 2.5px;
             background: white;
-            border-radius: 2px;
-            transition: all 0.3s;
+            border-radius: 3px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+        }
+
+        .hamburger-menu span:nth-child(1) {
+            transform: translateY(-8px);
+        }
+
+        .hamburger-menu span:nth-child(2) {
+            transform: translateY(0);
+        }
+
+        .hamburger-menu span:nth-child(3) {
+            transform: translateY(8px);
+        }
+
+        /* Hamburger to X animation */
+        .hamburger-menu.active span:nth-child(1) {
+            transform: translateY(0) rotate(45deg);
+            background: #6c63ff;
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: translateY(0) rotate(-45deg);
+            background: #6c63ff;
         }
 
         .hamburger-menu:hover span {
@@ -139,20 +231,27 @@
         .notification-bell-mobile {
             position: relative;
             cursor: pointer;
-            padding: 8px;
+            padding: 10px;
             color: white;
-            transition: color 0.3s;
+            transition: all 0.3s ease;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
         }
 
         .notification-bell-mobile:hover {
             color: #6c63ff;
+            background: rgba(108, 99, 255, 0.1);
         }
 
         .notification-badge-mobile {
             position: absolute;
-            top: 4px;
-            right: 4px;
-            background: #ff4d4f;
+            top: 6px;
+            right: 6px;
+            background: linear-gradient(135deg, #ff4d4f, #ff7875);
             color: white;
             font-size: 10px;
             font-weight: bold;
@@ -160,6 +259,13 @@
             border-radius: 10px;
             min-width: 16px;
             text-align: center;
+            box-shadow: 0 2px 8px rgba(255, 77, 79, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         /* Responsive: Show mobile nav on tablet and mobile */
@@ -174,7 +280,30 @@
             .nav-mobile-right {
                 display: flex;
                 align-items: center;
-                gap: 12px;
+                gap: 8px;
+            }
+        }
+
+        /* Additional mobile optimizations */
+        @media (max-width: 768px) {
+            .mobile-menu {
+                width: 90%;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mobile-menu {
+                width: 100%;
+            }
+
+            .mobile-menu-header h3 {
+                font-size: 20px;
+            }
+
+            .mobile-menu-item {
+                padding: 14px 16px;
+                font-size: 14px;
             }
         }
 
@@ -286,7 +415,6 @@
             <nav class="nav-menu">
                 <a href="#evenements">Soirées</a>
                 <a href="about.html">À propos de nous</a>
-                <a href="#" id="btn-suggestions">Suggestions</a>
             </nav>
 
             <!-- Bouton Auth dynamique à droite -->
@@ -300,6 +428,11 @@
                     <button class="btn-add-event-nav" id="btn-add-event">
                         ➕ Ajouter une soirée
                     </button>
+
+                    <!-- Bouton Scanner (affiché seulement si l'utilisateur est scanner) -->
+                    <a href="scanner.html" class="btn-scanner-nav" id="desktop-menu-scanner" style="display: none;">
+                        📱 Scanner
+                    </a>
 
                     <!-- Cloche notifications -->
                     <div class="notification-bell" id="notification-bell">
@@ -356,20 +489,57 @@
             <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
         </div>
         <div class="mobile-menu-content">
+            <!-- Section Navigation -->
+            <div class="mobile-menu-section">
+                <div class="mobile-menu-section-title">Navigation</div>
+                <a href="#evenements" class="mobile-menu-item" onclick="closeMobileMenu()">
+                    <span class="mobile-menu-item-icon">🎉</span>
+                    Soirées
+                </a>
+                <a href="about.html" class="mobile-menu-item">
+                    <span class="mobile-menu-item-icon">ℹ️</span>
+                    À propos de nous
+                </a>
+            </div>
+
             <!-- Affiché si NON connecté -->
-            <a href="signup.html" class="mobile-menu-item" id="mobile-menu-signup">
-                S'enregistrer
-            </a>
+            <div class="mobile-menu-section" id="mobile-menu-guest">
+                <div class="mobile-menu-section-title">Compte</div>
+                <a href="signup.html" class="mobile-menu-item mobile-menu-item-primary" id="mobile-menu-signup">
+                    <span class="mobile-menu-item-icon">✨</span>
+                    S'enregistrer
+                </a>
+                <a href="login.html" class="mobile-menu-item">
+                    <span class="mobile-menu-item-icon">🔑</span>
+                    Se connecter
+                </a>
+            </div>
 
             <!-- Affiché si connecté -->
             <div id="mobile-menu-connected" style="display: none;">
-                <a href="dashboard.html" class="mobile-menu-item">
-                    Mon compte
-                </a>
-                <button class="mobile-menu-item" id="mobile-menu-add-event">
-                    ➕ Ajouter une soirée
-                </button>
+                <div class="mobile-menu-section">
+                    <div class="mobile-menu-section-title">Mon espace</div>
+                    <a href="dashboard.html" class="mobile-menu-item">
+                        <span class="mobile-menu-item-icon">👤</span>
+                        Mon compte
+                    </a>
+                    <a href="mes-preventes.html" class="mobile-menu-item">
+                        <span class="mobile-menu-item-icon">🎟️</span>
+                        Mes préventes
+                    </a>
+                    <a href="scanner.html" class="mobile-menu-item" id="mobile-menu-scanner" style="display: none;">
+                        <span class="mobile-menu-item-icon">📱</span>
+                        Scanner une prévente
+                    </a>
+                    <button class="mobile-menu-item mobile-menu-item-primary" id="mobile-menu-add-event">
+                        <span class="mobile-menu-item-icon">➕</span>
+                        Proposer une soirée
+                    </button>
+                </div>
             </div>
+        </div>
+        <div class="mobile-menu-footer">
+            <p>Soirées Mons © 2024</p>
         </div>
     </nav>
 
@@ -536,6 +706,11 @@
                     <div class="form-group">
                         <label for="user-event-price">Prix (€) *</label>
                         <input type="number" id="user-event-price" placeholder="Ex: 15" step="0.01" min="0" required>
+                        <div id="price-commission-info" style="display: none; margin-top: 8px; padding: 8px; background: rgba(108, 99, 255, 0.1); border-radius: 6px;">
+                            <small style="color: #b8b8d1;">
+                                En cas de prévente: Vous recevrez 88% du prix. Commission Soirées Mons: 12%
+                            </small>
+                        </div>
                     </div>
                 </div>
 
@@ -572,10 +747,15 @@
                         <label for="user-presales-end-date">Date de fin des préventes</label>
                         <input type="datetime-local" id="user-presales-end-date">
                     </div>
-                    <div id="user-presales-info" style="display: none; margin-top: 10px; padding: 10px; background: rgba(108, 99, 255, 0.1); border-radius: 8px;">
-                        <small style="color: #b8b8d1;">
-                            Le prix de la prévente sera celui indiqué dans "Prix (€)" ci-dessus.<br>
-                            Vous recevrez 88% du prix. Commission Soirées Mons: 12%
+                </div>
+
+                <!-- Row 5: Max presales (shown when presales enabled) -->
+                <div class="form-row" id="user-max-presales-container" style="display: none;">
+                    <div class="form-group">
+                        <label for="user-max-presales">Nombre maximum de préventes *</label>
+                        <input type="number" id="user-max-presales" placeholder="Ex: 200" min="1" required>
+                        <small style="color: #b8b8d1; margin-top: 5px; display: block;">
+                            Quand ce quota est atteint, la soirée affichera "Sold Out"
                         </small>
                     </div>
                 </div>
@@ -719,6 +899,42 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="modal-btn modal-btn-secondary" onclick="closeSuggestionsModal()">Annuler</button>
                 <button class="modal-btn modal-btn-primary" id="submit-suggestion-btn">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QUESTIONNAIRE PRÉVENTE -->
+    <div id="presale-questionnaire-modal" class="info-presales-modal" style="display: none;">
+        <div class="info-modal-content" style="max-width: 450px;">
+            <button class="modal-close" onclick="closePresaleQuestionnaireModal()">✕</button>
+            <h2>🎟️ Informations pour la prévente</h2>
+            <div style="text-align: left; margin: 20px 0;">
+                <p style="margin-bottom: 15px; color: #b8b8d1;">
+                    Ces informations apparaîtront sur votre ticket et seront vérifiées à l'entrée.
+                </p>
+                <form id="presale-questionnaire-form">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-nom" style="display: block; margin-bottom: 5px; color: #fff;">Nom *</label>
+                        <input type="text" id="presale-nom" placeholder="Votre nom"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-prenom" style="display: block; margin-bottom: 5px; color: #fff;">Prénom *</label>
+                        <input type="text" id="presale-prenom" placeholder="Votre prénom"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="presale-age" style="display: block; margin-bottom: 5px; color: #fff;">Âge *</label>
+                        <input type="number" id="presale-age" placeholder="Votre âge" min="1" max="120"
+                               style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 99, 255, 0.3); background: rgba(255,255,255,0.05); color: #fff;" required>
+                    </div>
+                </form>
+                <div id="presale-age-error" style="display: none; background: rgba(255, 77, 79, 0.1); border: 1px solid rgba(255, 77, 79, 0.5); border-radius: 8px; padding: 12px; margin-top: 15px; color: #ff4d4f; font-size: 14px; text-align: center;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="modal-btn modal-btn-secondary" onclick="closePresaleQuestionnaireModal()">Annuler</button>
+                <button class="modal-btn modal-btn-primary" id="submit-presale-questionnaire-btn">Continuer vers le paiement</button>
             </div>
         </div>
     </div>
@@ -1018,7 +1234,20 @@
                 let presalesAvailable = true;
                 let infoText = '';
 
-                if (event.presalesEndDate) {
+                // Vérifier si les préventes ont été stoppées manuellement
+                if (event.presalesStopped) {
+                    presalesAvailable = false;
+                    infoText = '🔥 SOLD OUT - Préventes terminées !';
+                }
+
+                // Vérifier si sold out (quota atteint)
+                if (presalesAvailable && event.maxPresales && event.presalesSold >= event.maxPresales) {
+                    presalesAvailable = false;
+                    infoText = '🔥 SOLD OUT - Toutes les préventes ont été vendues !';
+                }
+
+                // Vérifier la date de fin
+                if (presalesAvailable && event.presalesEndDate) {
                     const endDate = new Date(event.presalesEndDate);
                     if (new Date() > endDate) {
                         presalesAvailable = false;
@@ -1030,8 +1259,17 @@
                             hour: '2-digit',
                             minute: '2-digit'
                         });
-                        infoText = `Préventes disponibles jusqu'au ${formattedEndDate}`;
+                        // Afficher aussi le nombre restant
+                        if (event.maxPresales) {
+                            const remaining = event.maxPresales - (event.presalesSold || 0);
+                            infoText = `${remaining} préventes restantes - Jusqu'au ${formattedEndDate}`;
+                        } else {
+                            infoText = `Préventes disponibles jusqu'au ${formattedEndDate}`;
+                        }
                     }
+                } else if (presalesAvailable && event.maxPresales) {
+                    const remaining = event.maxPresales - (event.presalesSold || 0);
+                    infoText = `${remaining} préventes restantes`;
                 }
 
                 if (presalesAvailable) {
@@ -1042,8 +1280,15 @@
                     presalesButton.disabled = false;
                     presalesButton.dataset.eventId = eventId;
                     presalesButton.dataset.ticketPrice = ticketPriceEuros;
+                    presalesButton.dataset.minAge = event.age || 0;
                 } else {
-                    presalesButton.textContent = '🚫 Préventes terminées';
+                    // Sold out ou terminé
+                    if (event.presalesStopped || (event.maxPresales && event.presalesSold >= event.maxPresales)) {
+                        presalesButton.textContent = '🔥 SOLD OUT';
+                        presalesButton.style.background = 'linear-gradient(90deg, #ff4d4f, #ff7875)';
+                    } else {
+                        presalesButton.textContent = '🚫 Préventes terminées';
+                    }
                     presalesButton.className = 'modal-btn modal-btn-secondary';
                     presalesButton.style.cursor = 'not-allowed';
                     presalesButton.disabled = true;
@@ -1068,6 +1313,11 @@
             document.body.style.overflow = 'hidden';
         };
 
+        // Variables pour le questionnaire prévente
+        let currentPresaleEventId = null;
+        let currentPresalePrice = null;
+        let currentPresaleMinAge = null;
+
         // Gestionnaire de clic pour le bouton préventes
         document.getElementById('modal-presales-button').addEventListener('click', async function() {
             const eventId = this.dataset.eventId;
@@ -1080,12 +1330,13 @@
                 return;
             }
 
-            // Désactiver le bouton pendant le traitement
-            this.disabled = true;
-            this.textContent = '⏳ Chargement...';
+            // Stocker l'eventId, le prix et l'âge minimum
+            currentPresaleEventId = eventId;
+            currentPresalePrice = this.dataset.ticketPrice || '8.00';
+            currentPresaleMinAge = parseInt(this.dataset.minAge) || 0;
 
+            // Vérifier si l'utilisateur a déjà une prévente pour cet événement
             try {
-                // Vérifier si l'utilisateur a déjà une prévente pour cet événement
                 const presalesQuery = query(
                     collection(db, 'presales'),
                     where('eventId', '==', eventId),
@@ -1096,17 +1347,74 @@
 
                 if (!existingPresales.empty) {
                     alert('Vous avez déjà une prévente pour cet événement !');
-                    const price = this.dataset.ticketPrice || '8.00';
-                    this.textContent = `🎟️ Acheter une prévente (${price}€)`;
-                    this.disabled = false;
                     return;
                 }
 
-                // Créer la session de checkout
+                // Ouvrir le modal questionnaire
+                document.getElementById('presale-questionnaire-modal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                // Réinitialiser le formulaire
+                document.getElementById('presale-questionnaire-form').reset();
+
+            } catch (error) {
+                console.error('Erreur vérification prévente:', error);
+                alert('Erreur: ' + (error.message || 'Impossible de vérifier vos préventes'));
+            }
+        });
+
+        // Fermer le modal questionnaire
+        window.closePresaleQuestionnaireModal = function() {
+            document.getElementById('presale-questionnaire-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentPresaleEventId = null;
+            currentPresalePrice = null;
+            currentPresaleMinAge = null;
+        };
+
+        // Soumettre le questionnaire et procéder au paiement
+        document.getElementById('submit-presale-questionnaire-btn').addEventListener('click', async function() {
+            const nom = document.getElementById('presale-nom').value.trim();
+            const prenom = document.getElementById('presale-prenom').value.trim();
+            const age = document.getElementById('presale-age').value;
+            const errorDiv = document.getElementById('presale-age-error');
+
+            // Cacher l'erreur précédente
+            errorDiv.style.display = 'none';
+
+            if (!nom || !prenom || !age) {
+                errorDiv.textContent = 'Veuillez remplir tous les champs.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (parseInt(age) < 1 || parseInt(age) > 120) {
+                errorDiv.textContent = 'Veuillez entrer un âge valide.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Vérifier l'âge minimum requis pour la soirée
+            if (currentPresaleMinAge && parseInt(age) < currentPresaleMinAge) {
+                errorDiv.textContent = `Vous devez avoir au moins ${currentPresaleMinAge} ans pour acheter une prévente pour cette soirée.`;
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = '⏳ Chargement...';
+
+            try {
+                // Créer la session de checkout avec les infos utilisateur
                 const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
                 const result = await createCheckoutSession({
-                    eventId: eventId,
-                    baseUrl: window.location.origin
+                    eventId: currentPresaleEventId,
+                    baseUrl: window.location.origin,
+                    buyerInfo: {
+                        nom: nom,
+                        prenom: prenom,
+                        age: parseInt(age)
+                    }
                 });
 
                 if (result.data.url) {
@@ -1119,9 +1427,8 @@
             } catch (error) {
                 console.error('Erreur achat prévente:', error);
                 alert('Erreur: ' + (error.message || 'Impossible de procéder au paiement'));
-                const price = this.dataset.ticketPrice || '8.00';
-                this.textContent = `🎟️ Acheter une prévente (${price}€)`;
                 this.disabled = false;
+                this.textContent = 'Continuer vers le paiement';
             }
         });
 
@@ -1450,6 +1757,9 @@
     <!-- Script gestion des notifications -->
     <script type="module" src="notifications.js"></script>
 
+    <!-- Script détection scanner -->
+    <script type="module" src="scanner-detector.js"></script>
+
     <!-- Script gestion des likes -->
     <script type="module">
         import { loadEventLikes, hasUserLiked, likeEvent, unlikeEvent, getRecentPublicLikers, getTotalLikes } from './likes.js';
@@ -1726,60 +2036,77 @@
 
     <!-- Script Menu Mobile -->
     <script>
-        // Hamburger menu toggle
-        const hamburgerMenu = document.getElementById('hamburger-menu');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hamburger menu toggle
+            const hamburgerMenu = document.getElementById('hamburger-menu');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
         const mobileMenuClose = document.getElementById('mobile-menu-close');
         const mobileMenuAddEvent = document.getElementById('mobile-menu-add-event');
 
         // Open mobile menu
-        hamburgerMenu.addEventListener('click', () => {
-            mobileMenu.classList.add('active');
-            mobileMenuOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
+        if (hamburgerMenu) {
+            hamburgerMenu.addEventListener('click', () => {
+                if (mobileMenu) mobileMenu.classList.add('active');
+                if (mobileMenuOverlay) mobileMenuOverlay.classList.add('active');
+                hamburgerMenu.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
 
-        // Close mobile menu
-        function closeMobileMenu() {
-            mobileMenu.classList.remove('active');
-            mobileMenuOverlay.classList.remove('active');
+        // Close mobile menu - make it global for onclick handlers
+        window.closeMobileMenu = function() {
+            if (mobileMenu) mobileMenu.classList.remove('active');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
+            if (hamburgerMenu) hamburgerMenu.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
-        mobileMenuClose.addEventListener('click', closeMobileMenu);
-        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+        }
+
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        }
 
         // Mobile menu "Ajouter une soirée" button
-        mobileMenuAddEvent.addEventListener('click', () => {
-            closeMobileMenu();
-            // Trigger the same function as desktop "Ajouter une soirée" button
-            document.getElementById('btn-add-event').click();
-        });
+        if (mobileMenuAddEvent) {
+            mobileMenuAddEvent.addEventListener('click', () => {
+                closeMobileMenu();
+                // Trigger the same function as desktop "Ajouter une soirée" button
+                document.getElementById('btn-add-event').click();
+            });
+        }
 
         // Notification bell mobile - open same dropdown as desktop
         const notificationBellMobile = document.getElementById('notification-bell-mobile');
         const notificationBadgeMobile = document.getElementById('notification-badge-mobile');
 
-        notificationBellMobile.addEventListener('click', () => {
-            // Trigger desktop notification bell
-            document.getElementById('notification-bell').click();
-        });
+        if (notificationBellMobile) {
+            notificationBellMobile.addEventListener('click', () => {
+                // Trigger desktop notification bell
+                const desktopBell = document.getElementById('notification-bell');
+                if (desktopBell) {
+                    desktopBell.click();
+                }
+            });
+        }
 
         // Sync auth state between desktop and mobile
         const authObserver = setInterval(() => {
             const navAuthConnected = document.getElementById('nav-auth-connected');
-            const mobileMenuSignup = document.getElementById('mobile-menu-signup');
+            const mobileMenuGuest = document.getElementById('mobile-menu-guest');
             const mobileMenuConnected = document.getElementById('mobile-menu-connected');
 
-            if (navAuthConnected) {
+            if (navAuthConnected && mobileMenuGuest && mobileMenuConnected) {
                 const isConnected = navAuthConnected.style.display !== 'none';
 
                 if (isConnected) {
-                    mobileMenuSignup.style.display = 'none';
+                    mobileMenuGuest.style.display = 'none';
                     mobileMenuConnected.style.display = 'block';
                 } else {
-                    mobileMenuSignup.style.display = 'block';
+                    mobileMenuGuest.style.display = 'block';
                     mobileMenuConnected.style.display = 'none';
                 }
             }
@@ -1800,13 +2127,29 @@
             }
         }, 500);
 
-        console.log('📱 Menu mobile initialisé');
+            console.log('📱 Menu mobile initialisé');
+        });
     </script>
 
     <!-- Script Suggestions -->
     <script type="module">
-        import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { auth, db } from './app.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY6S4OsO6iqrgY1EH1Z-cYLe_OWTnPxRg",
+            authDomain: "soirees-mons-6ce3e.firebaseapp.com",
+            projectId: "soirees-mons-6ce3e",
+            storageBucket: "soirees-mons-6ce3e.firebasestorage.app",
+            messagingSenderId: "3405335068",
+            appId: "1:3405335068:web:394c536d95a33069d66dd9",
+            measurementId: "G-526CPT4LQ8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // Bouton pour ouvrir le modal suggestions
         document.getElementById('btn-suggestions').addEventListener('click', (e) => {

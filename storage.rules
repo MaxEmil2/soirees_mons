@@ -1,0 +1,197 @@
+rules_version = '2';
+
+/**
+ * FIREBASE STORAGE RULES - NIVEAU NASA 🛡️
+ * Sécurité maximale pour tous les fichiers
+ * Principe: Deny by default, Allow avec validations strictes
+ */
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ============================================
+    // FONCTIONS HELPER
+    // ============================================
+
+    /**
+     * Vérifie si l'utilisateur est authentifié
+     */
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est admin
+     */
+    function isAdmin() {
+      return isAuthenticated() &&
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    /**
+     * Vérifie si le fichier est une image valide
+     */
+    function isValidImage() {
+      return request.resource.size < 5 * 1024 * 1024 && // Max 5MB
+             request.resource.contentType.matches('image/(jpeg|jpg|png|webp)');
+    }
+
+    /**
+     * Vérifie si le fichier est un PDF valide
+     */
+    function isValidPDF() {
+      return request.resource.size < 10 * 1024 * 1024 && // Max 10MB
+             request.resource.contentType == 'application/pdf';
+    }
+
+    // ============================================
+    // IMAGES D'ÉVÉNEMENTS
+    // ============================================
+
+    // Path: /events/{eventId}/{fileName}
+    // Ancien: /user_events/{fileName}
+    match /events/{eventId}/{fileName} {
+      // Lecture: public pour les événements approuvés
+      allow read: if true;
+
+      // Upload: utilisateur authentifié + validation image
+      allow create: if isAuthenticated() &&
+                      isValidImage() &&
+                      // Vérifie que l'événement existe et appartient à l'utilisateur
+                      firestore.exists(/databases/(default)/documents/events/$(eventId)) &&
+                      firestore.get(/databases/(default)/documents/events/$(eventId)).data.createdBy == request.auth.uid;
+
+      // Mise à jour: propriétaire ou admin
+      allow update: if isAuthenticated() &&
+                      isValidImage() &&
+                      (
+                        firestore.get(/databases/(default)/documents/events/$(eventId)).data.createdBy == request.auth.uid ||
+                        isAdmin()
+                      );
+
+      // Suppression: propriétaire ou admin
+      allow delete: if isAuthenticated() &&
+                      (
+                        firestore.get(/databases/(default)/documents/events/$(eventId)).data.createdBy == request.auth.uid ||
+                        isAdmin()
+                      );
+    }
+
+    // Ancien chemin (rétrocompatibilité)
+    match /user_events/{fileName} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isValidImage();
+      allow update: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated() || isAdmin();
+    }
+
+    // ============================================
+    // PHOTOS DE PROFIL
+    // ============================================
+
+    // Path: /profile_photos/{userId}/{fileName}
+    match /profile_photos/{userId}/{fileName} {
+      // Lecture: public
+      allow read: if true;
+
+      // Upload: seulement l'utilisateur lui-même
+      allow create: if isAuthenticated() &&
+                      request.auth.uid == userId &&
+                      isValidImage() &&
+                      // Limite stricte pour les avatars: 2MB
+                      request.resource.size < 2 * 1024 * 1024;
+
+      // Mise à jour: seulement l'utilisateur ou admin
+      allow update: if isAuthenticated() &&
+                      (request.auth.uid == userId || isAdmin()) &&
+                      isValidImage() &&
+                      request.resource.size < 2 * 1024 * 1024;
+
+      // Suppression: seulement l'utilisateur ou admin
+      allow delete: if isAuthenticated() &&
+                      (request.auth.uid == userId || isAdmin());
+    }
+
+    // Ancien chemin (rétrocompatibilité)
+    match /users/{userId}/{fileName} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.auth.uid == userId && isValidImage();
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin()) && isValidImage();
+      allow delete: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Ancien chemin sans sous-dossier
+    match /profile_photos/{userId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImage();
+    }
+
+    // ============================================
+    // LOGOS PARTENAIRES
+    // ============================================
+
+    // Path: /partners/{partnerId}/{fileName}
+    match /partners/{partnerId}/{fileName} {
+      // Lecture: public
+      allow read: if true;
+
+      // Upload/Mise à jour/Suppression: seulement admin
+      allow create, update, delete: if isAdmin() && isValidImage();
+    }
+
+    // ============================================
+    // QR CODES DES PRÉVENTES
+    // ============================================
+
+    // Path: /presales/{presaleId}/{fileName}
+    match /presales/{presaleId}/{fileName} {
+      // Lecture: propriétaire de la prévente, créateur de l'événement, ou admin
+      allow read: if isAuthenticated() && (
+                    firestore.get(/databases/(default)/documents/presales/$(presaleId)).data.userId == request.auth.uid ||
+                    firestore.get(/databases/(default)/documents/presales/$(presaleId)).data.createdBy == request.auth.uid ||
+                    isAdmin()
+                  );
+
+      // Création: UNIQUEMENT via Cloud Functions (Admin SDK)
+      // Interdit l'upload direct par les utilisateurs
+      allow create: if false;
+
+      // Mise à jour/Suppression: INTERDIT
+      allow update, delete: if false;
+    }
+
+    // ============================================
+    // DOCUMENTS (facultatif - pour futures fonctionnalités)
+    // ============================================
+
+    // Path: /documents/{userId}/{fileName}
+    match /documents/{userId}/{fileName} {
+      // Lecture: seulement l'utilisateur ou admin
+      allow read: if isAuthenticated() &&
+                    (request.auth.uid == userId || isAdmin());
+
+      // Upload: seulement l'utilisateur (PDF uniquement)
+      allow create: if isAuthenticated() &&
+                      request.auth.uid == userId &&
+                      isValidPDF();
+
+      // Mise à jour: seulement l'utilisateur ou admin
+      allow update: if isAuthenticated() &&
+                      (request.auth.uid == userId || isAdmin()) &&
+                      isValidPDF();
+
+      // Suppression: seulement l'utilisateur ou admin
+      allow delete: if isAuthenticated() &&
+                      (request.auth.uid == userId || isAdmin());
+    }
+
+    // ============================================
+    // RÈGLE PAR DÉFAUT
+    // ============================================
+
+    // Bloque tout accès non explicitement autorisé
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -269,19 +269,14 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <a href="index.html" class="logo">
-                <img src="assets/logo.svg" alt="Soirées Mons">
-            </a>
-            <div class="nav-links">
-                <a href="index.html">Accueil</a>
-                <a href="dashboard.html">Mon compte</a>
-            </div>
-        </div>
-    </nav>
-
     <main class="scanner-container">
+        <!-- Bouton Retour -->
+        <a href="mes-soirees.html" class="back-button" style="display: inline-flex; align-items: center; gap: 8px; color: #6c63ff; text-decoration: none; margin-bottom: 20px; font-weight: 500; transition: all 0.3s ease;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            Retour
+        </a>
         <div class="page-title">
             <h1>Scanner de Préventes</h1>
             <p>Scannez les QR codes pour valider les entrées</p>
@@ -296,10 +291,6 @@
 
         <div id="scannerSection" style="display: none;">
             <div class="stats-box" id="statsBox">
-                <div class="stat-card">
-                    <div class="stat-value" id="statTotal">0</div>
-                    <div class="stat-label">Total vendues</div>
-                </div>
                 <div class="stat-card">
                     <div class="stat-value" id="statUsed">0</div>
                     <div class="stat-label">Utilisées</div>
@@ -460,7 +451,6 @@
                     if (presale.status === 'valid') valid++;
                 });
 
-                document.getElementById('statTotal').textContent = total;
                 document.getElementById('statUsed').textContent = used;
                 document.getElementById('statValid').textContent = valid;
 
@@ -492,10 +482,13 @@
                     const presale = doc.data();
                     const item = document.createElement('div');
                     item.className = 'presale-item';
+                    const nom = presale.buyerNom || 'N/A';
+                    const prenom = presale.buyerPrenom || 'N/A';
+                    const age = presale.buyerAge ? `${presale.buyerAge} ans` : 'N/A';
                     item.innerHTML = `
                         <div class="presale-info">
-                            <div class="presale-name">${presale.userName}</div>
-                            <div class="presale-email">${presale.userEmail}</div>
+                            <div class="presale-name">${nom} ${prenom}</div>
+                            <div class="presale-email">${age} • ${presale.userEmail}</div>
                         </div>
                         <span class="presale-status ${presale.status}">${presale.status === 'valid' ? 'Valide' : presale.status === 'used' ? 'Utilisé' : presale.status}</span>
                     `;

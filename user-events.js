@@ -52,7 +52,9 @@ const userPresalesLabel = document.getElementById('user-presales-label');
 const userPresalesInput = document.getElementById('user-event-presales');
 const userPresalesEndContainer = document.getElementById('user-presales-end-container');
 const userPresalesEndDateInput = document.getElementById('user-presales-end-date');
-const userPresalesInfo = document.getElementById('user-presales-info');
+const userMaxPresalesContainer = document.getElementById('user-max-presales-container');
+const userMaxPresalesInput = document.getElementById('user-max-presales');
+const priceCommissionInfo = document.getElementById('price-commission-info');
 const userImageUploadArea = document.getElementById('user-image-upload-area');
 const userImageInput = document.getElementById('user-image-input');
 const userImagePreview = document.getElementById('user-image-preview');
@@ -116,8 +118,16 @@ userPresalesToggle.addEventListener('click', () => {
     if (userPresalesEndContainer) {
         userPresalesEndContainer.style.display = isActive ? 'block' : 'none';
     }
-    if (userPresalesInfo) {
-        userPresalesInfo.style.display = isActive ? 'block' : 'none';
+    if (userMaxPresalesContainer) {
+        userMaxPresalesContainer.style.display = isActive ? 'block' : 'none';
+        // Rendre le champ requis uniquement quand visible
+        if (userMaxPresalesInput) {
+            userMaxPresalesInput.required = isActive;
+        }
+    }
+    // Afficher l'info commission sous le prix
+    if (priceCommissionInfo) {
+        priceCommissionInfo.style.display = isActive ? 'block' : 'none';
     }
 });
 
@@ -129,16 +139,56 @@ userImageUploadArea.addEventListener('click', () => {
     userImageInput.click();
 });
 
-userImageInput.addEventListener('change', (e) => {
+// Fonction pour compresser l'image
+async function compressImage(file, maxWidth = 1200, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Redimensionner si nécessaire
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convertir en blob
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            resolve(new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            }));
+                        } else {
+                            reject(new Error('Erreur de compression'));
+                        }
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.onerror = () => reject(new Error('Erreur de chargement de l\'image'));
+        };
+        reader.onerror = () => reject(new Error('Erreur de lecture du fichier'));
+    });
+}
+
+userImageInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Vérifier la taille (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showError('L\'image ne doit pas dépasser 5MB.');
-        userImageInput.value = '';
-        return;
-    }
 
     // Vérifier le type
     if (!file.type.startsWith('image/')) {
@@ -147,16 +197,37 @@ userImageInput.addEventListener('change', (e) => {
         return;
     }
 
-    currentUserImageFile = file;
+    try {
+        // Compresser l'image si elle est trop grande (> 1MB)
+        let processedFile = file;
+        if (file.size > 1 * 1024 * 1024) {
+            console.log(`Compression de l'image (${(file.size / 1024 / 1024).toFixed(2)}MB)...`);
+            processedFile = await compressImage(file);
+            console.log(`Image compressée: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(processedFile.size / 1024 / 1024).toFixed(2)}MB`);
+        }
 
-    // Afficher l'aperçu
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        userPreviewImg.src = e.target.result;
-        userImagePreview.style.display = 'block';
-        userImageUploadArea.classList.add('active');
-    };
-    reader.readAsDataURL(file);
+        // Vérifier la taille finale (max 5MB)
+        if (processedFile.size > 5 * 1024 * 1024) {
+            showError('L\'image ne doit pas dépasser 5MB. Veuillez choisir une image plus petite.');
+            userImageInput.value = '';
+            return;
+        }
+
+        currentUserImageFile = processedFile;
+
+        // Afficher l'aperçu
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            userPreviewImg.src = e.target.result;
+            userImagePreview.style.display = 'block';
+            userImageUploadArea.classList.add('active');
+        };
+        reader.readAsDataURL(processedFile);
+    } catch (error) {
+        console.error('Erreur de traitement de l\'image:', error);
+        showError('Erreur lors du traitement de l\'image. Veuillez réessayer avec une autre image.');
+        userImageInput.value = '';
+    }
 });
 
 // ========================================
@@ -198,7 +269,9 @@ userEventForm.addEventListener('submit', async (e) => {
         link: document.getElementById('user-event-link').value.trim(),
         description: document.getElementById('user-event-description').value.trim(),
         presales: userPresalesInput.value === 'true',
-        presalesEndDate: userPresalesEndDateInput && userPresalesEndDateInput.value ? userPresalesEndDateInput.value : null
+        presalesEndDate: userPresalesEndDateInput && userPresalesEndDateInput.value ? userPresalesEndDateInput.value : null,
+        maxPresales: userMaxPresalesInput && userMaxPresalesInput.value ? parseInt(userMaxPresalesInput.value) : null,
+        presalesSold: 0 // Compteur de préventes vendues
     };
 
     // Le prix du ticket pour les préventes = le prix de l'événement (en centimes)
@@ -223,21 +296,36 @@ userEventForm.addEventListener('submit', async (e) => {
         return;
     }
 
+    // Validation du nombre max de préventes
+    if (eventData.presales && (!eventData.maxPresales || eventData.maxPresales < 1)) {
+        showError('Veuillez entrer le nombre maximum de préventes.');
+        return;
+    }
+
     // Désactiver le bouton pendant l'envoi
     const submitBtn = document.getElementById('user-submit-btn');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Envoi en cours...';
 
     try {
+        console.log('📸 Upload image événement - Début');
+        console.log('Événement:', eventData.name);
+        console.log('Fichier:', currentUserImageFile.name, `${(currentUserImageFile.size / 1024 / 1024).toFixed(2)}MB`);
+
         // 1. Upload de l'image
         const timestamp = Date.now();
         const sanitizedName = eventData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const fileName = `user_events/${sanitizedName}_${timestamp}.${currentUserImageFile.name.split('.').pop()}`;
+        const fileExtension = currentUserImageFile.name.split('.').pop() || 'jpg';
+        const fileName = `user_events/${sanitizedName}_${timestamp}.${fileExtension}`;
+
+        console.log('☁️ Upload vers:', fileName);
         const storageRef = ref(storage, fileName);
 
         const snapshot = await uploadBytes(storageRef, currentUserImageFile);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log('✅ Upload réussi');
 
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log('✅ URL obtenue:', downloadURL);
 
         // 2. Ajouter les métadonnées
         eventData.imageURL = downloadURL;
@@ -248,9 +336,12 @@ userEventForm.addEventListener('submit', async (e) => {
         eventData.createdAt = serverTimestamp();
 
         // 3. Enregistrer dans Firestore
+        console.log('💾 Enregistrement dans Firestore...');
         const docRef = await addDoc(collection(db, 'events'), eventData);
+        console.log('✅ Événement enregistré:', docRef.id);
 
         // 4. Créer une notification pour l'utilisateur
+        console.log('📬 Création de la notification...');
         await addDoc(collection(db, 'notifications'), {
             userId: currentUser.uid,
             type: 'event_submitted',
@@ -260,13 +351,34 @@ userEventForm.addEventListener('submit', async (e) => {
             read: false,
             createdAt: serverTimestamp()
         });
+        console.log('✅ Notification créée');
 
         // 5. Fermer le modal et afficher la confirmation
         closeAddEventModal();
         openConfirmationModal();
 
+        console.log('🎉 Événement créé avec succès !');
+
     } catch (error) {
-        showError('Erreur: ' + error.message);
+        console.error('❌ Erreur création événement:', error);
+        console.error('Code erreur:', error.code);
+        console.error('Message:', error.message);
+
+        let errorMessage = 'Erreur lors de la création de l\'événement.';
+
+        if (error.code === 'storage/unauthorized') {
+            errorMessage = 'Vous n\'êtes pas autorisé à uploader des images. Veuillez vous reconnecter.';
+        } else if (error.code === 'storage/canceled') {
+            errorMessage = 'Upload annulé.';
+        } else if (error.code === 'storage/unknown') {
+            errorMessage = 'Erreur inconnue. Vérifiez votre connexion internet et réessayez.';
+        } else if (error.message && error.message.includes('network')) {
+            errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
+        } else if (error.message) {
+            errorMessage = 'Erreur: ' + error.message;
+        }
+
+        showError(errorMessage);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Envoyer pour validation';
@@ -301,6 +413,11 @@ function resetUserForm() {
     userPresalesLabel.textContent = 'Désactivé';
     if (userPresalesEndContainer) userPresalesEndContainer.style.display = 'none';
     if (userPresalesEndDateInput) userPresalesEndDateInput.value = '';
-    if (userPresalesInfo) userPresalesInfo.style.display = 'none';
+    if (userMaxPresalesContainer) userMaxPresalesContainer.style.display = 'none';
+    if (userMaxPresalesInput) {
+        userMaxPresalesInput.value = '';
+        userMaxPresalesInput.required = false;
+    }
+    if (priceCommissionInfo) priceCommissionInfo.style.display = 'none';
 }
 
