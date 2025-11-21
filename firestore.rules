@@ -1,101 +1,340 @@
 rules_version = '2';
+
+/*
+ * SOIRÉES MONS - HARDENED FIRESTORE SECURITY RULES
+ * NASA-level security with role-based access control
+ *
+ * SECURITY PRINCIPLES:
+ * 1. Deny by default, allow explicitly
+ * 2. All critical writes go through Cloud Functions
+ * 3. Comprehensive input validation
+ * 4. Role-based permissions
+ * 5. Prevent privilege escalation
+ * 6. No client-side price/role modifications
+ */
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Fonction helper pour vérifier si l'utilisateur est admin
-    function isAdmin() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
-    }
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
 
-    // Fonction helper pour vérifier si l'utilisateur est authentifié
+    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Fonction helper pour vérifier si c'est le propriétaire
+    // Check if user is the owner of a resource
     function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Collection Users
+    // Get user data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && getUserData().isAdmin == true;
+    }
+
+    // Check if user has a specific role
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    // Check if user is organizer or admin
+    function isOrganizerOrAdmin() {
+      return isAuthenticated() && (getUserData().role == 'organizer' || isAdmin());
+    }
+
+    // Check if user is scanner or admin
+    function isScannerOrAdmin() {
+      return isAuthenticated() && (getUserData().role == 'scanner' || isAdmin());
+    }
+
+    // Check if user can manage an event
+    function canManageEvent(eventCreatorId) {
+      return isAuthenticated() && (isAdmin() || request.auth.uid == eventCreatorId);
+    }
+
+    // Validate string length
+    function isValidStringLength(str, minLen, maxLen) {
+      return str is string && str.size() >= minLen && str.size() <= maxLen;
+    }
+
+    // Validate URL format
+    function isValidUrl(url) {
+      return url is string && url.matches('^https?://.*');
+    }
+
+    // Validate email format
+    function isValidEmail(email) {
+      return email is string && email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+    }
+
+    // Validate number in range
+    function isNumberInRange(num, min, max) {
+      return num is number && num >= min && num <= max;
+    }
+
+    // Validate timestamp is in the future
+    function isFutureTimestamp(timestamp) {
+      return timestamp > request.time;
+    }
+
+    // Check if only specific fields were modified
+    function onlyFieldsChanged(allowedFields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedFields);
+    }
+
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+
     match /users/{userId} {
+      // Anyone authenticated can read user profiles
       allow read: if isAuthenticated();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+
+      // Users can create their own document during signup
+      allow create: if isOwner(userId) &&
+        // Validate required fields
+        request.resource.data.keys().hasAll(['uid', 'email', 'displayName', 'role', 'isAdmin', 'createdAt']) &&
+        // User cannot set themselves as admin
+        request.resource.data.isAdmin == false &&
+        // Default role must be 'user'
+        request.resource.data.role == 'user' &&
+        // UID must match auth UID
+        request.resource.data.uid == request.auth.uid &&
+        // Email must match auth email
+        request.resource.data.email == request.auth.token.email &&
+        // Validate field types and lengths
+        isValidStringLength(request.resource.data.displayName, 1, 50) &&
+        isValidEmail(request.resource.data.email);
+
+      // Users can update their own profile (except sensitive fields)
+      allow update: if isOwner(userId) &&
+        // Cannot change role or admin status
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.isAdmin == resource.data.isAdmin &&
+        // Cannot change UID
+        request.resource.data.uid == resource.data.uid &&
+        // Validate field lengths if changed
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['displayName']) ||
+          isValidStringLength(request.resource.data.displayName, 1, 50)) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['email']) ||
+          isValidEmail(request.resource.data.email));
+
+      // Only admins can delete users
       allow delete: if isAdmin();
     }
 
-    // Collection Events
+    // ==========================================
+    // EVENTS COLLECTION (CRITICAL - CLOUD FUNCTIONS ONLY)
+    // ==========================================
+
     match /events/{eventId} {
+      // Public read access for all events
       allow read: if true;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() &&
-        (resource.data.createdBy == request.auth.uid || isAdmin());
-      allow delete: if isAuthenticated() &&
-        (resource.data.createdBy == request.auth.uid || isAdmin());
-    }
 
-    // Collection Likes
-    match /likes/{likeId} {
-      allow read: if true;
-      allow create: if isAuthenticated();
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Collection Notifications
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Collection Partners
-    match /partners/{partnerId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Collection Presales - NOUVELLE COLLECTION
-    match /presales/{presaleId} {
-      // Lecture: tout utilisateur authentifié peut lire ses propres préventes
-      // Les Cloud Functions gèrent les autres cas (admin, créateur)
-      allow read: if isAuthenticated();
-
-      // Création uniquement par les Cloud Functions (via admin SDK)
+      // ALL WRITES MUST GO THROUGH CLOUD FUNCTIONS
+      // This prevents:
+      // - Price manipulation
+      // - Status manipulation (pending -> approved)
+      // - Unauthorized event creation
+      // - Data tampering
       allow create: if false;
+      allow update: if false;
+      allow delete: if false;
 
-      // Mise à jour: uniquement pour marquer comme utilisé (par le créateur ou admin)
-      allow update: if isAuthenticated() && (
-        isAdmin() ||
-        // Le créateur de l'événement peut marquer les tickets comme utilisés
-        get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.createdBy == request.auth.uid
-      ) && (
-        // Seuls ces champs peuvent être modifiés
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'usedAt', 'scannedBy'])
+      // Cloud Functions will use Admin SDK (bypasses these rules)
+    }
+
+    // ==========================================
+    // PRESALES COLLECTION (CRITICAL - 100% BACKEND)
+    // ==========================================
+
+    match /presales/{presaleId} {
+      // Users can only read their own presales
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
       );
 
-      // Suppression interdite (seul l'admin via SDK)
+      // NO CLIENT-SIDE WRITES ALLOWED
+      // All presale operations go through Cloud Functions to prevent:
+      // - Fake ticket generation
+      // - Price manipulation
+      // - Ticket duplication
+      // - Unauthorized refunds
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+
+      // Cloud Functions handle all presale operations via Admin SDK
+    }
+
+    // ==========================================
+    // STATS COLLECTION (CRITICAL - AGGREGATED BY BACKEND)
+    // ==========================================
+
+    match /stats/{statId} {
+      // Organizers can read their own stats, admins can read all
+      allow read: if isAuthenticated() && (
+        isOwner(statId) ||
+        isAdmin()
+      );
+
+      // NO CLIENT-SIDE WRITES
+      // Stats are aggregated by Cloud Functions to ensure accuracy
+      allow create: if false;
+      allow update: if false;
       allow delete: if false;
     }
 
-    // Collection Suggestions
+    // ==========================================
+    // LIKES COLLECTION
+    // ==========================================
+
+    match /likes/{likeId} {
+      // Public read for displaying like counts
+      allow read: if true;
+
+      // Authenticated users can like events
+      allow create: if isAuthenticated() &&
+        // Validate required fields
+        request.resource.data.keys().hasAll(['eventId', 'userId', 'userEmail', 'isPublic', 'createdAt']) &&
+        // User can only create likes with their own userId
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.userEmail == request.auth.token.email &&
+        // isPublic must be boolean
+        request.resource.data.isPublic is bool &&
+        // Validate eventId exists and is a string
+        request.resource.data.eventId is string &&
+        request.resource.data.eventId.size() > 0;
+
+      // No updates allowed - delete and recreate instead
+      allow update: if false;
+
+      // Users can only delete their own likes
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ==========================================
+    // NOTIFICATIONS COLLECTION
+    // ==========================================
+
+    match /notifications/{notificationId} {
+      // Users can only read their own notifications
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      // Cloud Functions create notifications
+      // Users cannot create their own notifications
+      allow create: if false;
+
+      // Users can mark notifications as read
+      allow update: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid &&
+        // Only allow updating the 'read' field
+        onlyFieldsChanged(['read']) &&
+        // read must be boolean
+        request.resource.data.read is bool;
+
+      // Users can delete their own notifications
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ==========================================
+    // PARTNERS COLLECTION
+    // ==========================================
+
+    match /partners/{partnerId} {
+      // Public read for displaying partner logos
+      allow read: if true;
+
+      // Only admins can manage partners
+      allow create: if isAdmin() &&
+        request.resource.data.keys().hasAll(['logoURL', 'logoPath', 'createdAt']) &&
+        isValidUrl(request.resource.data.logoURL);
+
+      allow update: if isAdmin() &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['logoURL']) ||
+          isValidUrl(request.resource.data.logoURL));
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // SUGGESTIONS COLLECTION
+    // ==========================================
+
     match /suggestions/{suggestionId} {
-      // Lecture: admin seulement ou l'auteur de la suggestion
+      // Users can read their own suggestions, admins can read all
       allow read: if isAuthenticated() && (
-        isAdmin() ||
-        resource.data.userId == request.auth.uid
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
       );
 
-      // Création: utilisateur authentifié
-      allow create: if isAuthenticated();
+      // Authenticated users can submit suggestions
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll(['title', 'description', 'category', 'userId', 'userEmail', 'userName', 'status', 'createdAt']) &&
+        // User can only create suggestions with their own userId
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.userEmail == request.auth.token.email &&
+        // Initial status must be 'pending'
+        request.resource.data.status == 'pending' &&
+        // Validate title and description
+        isValidStringLength(request.resource.data.title, 1, 100) &&
+        isValidStringLength(request.resource.data.description, 1, 1000) &&
+        // Validate category
+        request.resource.data.category in ['feature', 'bug', 'design', 'improvement', 'other'];
 
-      // Mise à jour: admin seulement (pour accepter/refuser)
-      allow update: if isAdmin();
+      // Only admins can update suggestions (to change status)
+      allow update: if isAdmin() &&
+        // Can only change status field
+        onlyFieldsChanged(['status']) &&
+        // Status must be valid
+        request.resource.data.status in ['pending', 'accepted', 'refused'];
 
-      // Suppression: admin seulement
+      // Only admins can delete suggestions
       allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // ROLES COLLECTION (ADMIN ONLY)
+    // ==========================================
+
+    match /roles/{roleId} {
+      // Only admins can read roles
+      allow read: if isAdmin();
+
+      // Only admins can manage roles
+      allow write: if isAdmin();
+    }
+
+    // ==========================================
+    // AUDIT LOG COLLECTION (ADMIN READ ONLY)
+    // ==========================================
+
+    match /audit_logs/{logId} {
+      // Only admins can read audit logs
+      allow read: if isAdmin();
+
+      // Cloud Functions write audit logs
+      // No client-side writes
+      allow write: if false;
+    }
+
+    // ==========================================
+    // DENY ALL OTHER COLLECTIONS
+    // ==========================================
+
+    // Block access to any undocumented collections
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
     }
   }
 }
