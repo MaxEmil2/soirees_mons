@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Découvrez les meilleures soirées et événements à Mons. Préventes, billetterie en ligne, et bien plus encore.">
+    <title>Soirées Mons - Événements & Soirées à Mons</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Preconnect to Firebase -->
+    <link rel="preconnect" href="https://firebasestorage.googleapis.com">
+    <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/css/design-system.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/pages/index.css">
+
+    <!-- Performance optimizations -->
+    <link rel="preload" href="/assets/css/design-system.css" as="style">
+</head>
+<body>
+
+    <!-- ==========================================
+         NAVBAR
+         ========================================== -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <!-- Logo -->
+            <div class="logo">
+                <a href="/index.html">
+                    <img src="/logo.png" alt="Soirées Mons" class="navbar-logo">
+                </a>
+            </div>
+
+            <!-- Desktop Menu -->
+            <nav class="nav-menu">
+                <a href="#evenements">Soirées</a>
+                <a href="/about.html">À propos</a>
+                <a href="#" id="btn-suggestions">Suggestions</a>
+            </nav>
+
+            <!-- Auth Section -->
+            <div class="nav-auth">
+                <!-- Not authenticated -->
+                <a href="/signup.html" class="btn-signup" id="btn-signup">S'enregistrer</a>
+
+                <!-- Authenticated -->
+                <div class="nav-auth-connected" id="nav-auth-connected" style="display: none;">
+                    <!-- Add Event Button (organizer/admin only) -->
+                    <button class="btn btn-primary btn-sm" id="btn-add-event" style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Ajouter
+                    </button>
+
+                    <!-- Notifications Bell -->
+                    <button class="notification-bell" id="btn-notifications" aria-label="Notifications">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge" id="notification-count" style="display: none;">0</span>
+                    </button>
+
+                    <!-- User Avatar -->
+                    <div class="user-avatar-wrapper">
+                        <button class="user-avatar-btn" aria-label="User menu">
+                            <img src="" alt="User" id="user-avatar">
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div class="dropdown-menu user-dropdown">
+                            <a href="/dashboard.html" class="dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Mon compte
+                            </a>
+                            <a href="/mes-preventes.html" class="dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                                </svg>
+                                Mes préventes
+                            </a>
+                            <a href="/mes-soirees.html" class="dropdown-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                Mes soirées
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" id="btn-logout">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                Déconnexion
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MOBILE MENU
+         ========================================== -->
+    <div class="mobile-menu-overlay"></div>
+    <div class="mobile-menu">
+        <div class="mobile-menu-header">
+            <h3>Menu</h3>
+            <button class="mobile-menu-close" aria-label="Close menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="mobile-menu-content">
+            <!-- User Info (if authenticated) -->
+            <div id="mobile-user-info" style="display: none; margin-bottom: var(--space-6);">
+                <div class="flex items-center gap-3 p-4 bg-secondary rounded-lg">
+                    <img src="" alt="User" id="user-avatar-mobile" class="avatar">
+                    <div>
+                        <div class="font-semibold" id="mobile-user-name">User Name</div>
+                        <div class="text-sm text-secondary" id="mobile-user-email">user@email.com</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Items -->
+            <a href="#evenements" class="mobile-menu-item">Soirées</a>
+            <a href="/about.html" class="mobile-menu-item">À propos</a>
+            <a href="/dashboard.html" class="mobile-menu-item" id="mobile-dashboard" style="display: none;">Mon compte</a>
+            <a href="/mes-preventes.html" class="mobile-menu-item" id="mobile-presales" style="display: none;">Mes préventes</a>
+            <a href="/mes-soirees.html" class="mobile-menu-item" id="mobile-events" style="display: none;">Mes soirées</a>
+
+            <div style="height: 1px; background: var(--border-primary); margin: var(--space-4) 0;"></div>
+
+            <!-- Auth Actions -->
+            <a href="/signup.html" class="mobile-menu-item primary" id="mobile-signup">S'enregistrer</a>
+            <a href="/login.html" class="mobile-menu-item" id="mobile-login">Se connecter</a>
+            <button class="mobile-menu-item" id="mobile-logout" style="display: none; border: none; width: 100%; text-align: center;">Déconnexion</button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         HERO SECTION
+         ========================================== -->
+    <section class="hero">
+        <div class="container">
+            <h1>Découvrez les Soirées à Mons</h1>
+            <p>Trouvez et réservez vos places pour les meilleurs événements de la région</p>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         FILTERS / TABS
+         ========================================== -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab active" data-filter="all">
+                Tous les événements
+            </button>
+            <button class="tab" data-filter="liked">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                Événements aimés
+            </button>
+            <button class="tab" data-filter="presales">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+                Avec préventes
+            </button>
+            <button class="tab" data-filter="free">
+                Gratuits
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         EVENTS SECTION
+         ========================================== -->
+    <section class="events-section" id="evenements">
+        <div class="events-container">
+            <!-- Header -->
+            <div class="events-header">
+                <h2>Événements</h2>
+                <div class="events-count" id="events-count">Chargement...</div>
+            </div>
+
+            <!-- Events Grid -->
+            <div class="events-grid" id="events-grid">
+                <!-- Events will be rendered here by JavaScript -->
+                <div class="loading-container" style="grid-column: 1 / -1;">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Soirées Mons</h4>
+                    <ul class="footer-links">
+                        <li><a href="#evenements">Événements</a></li>
+                        <li><a href="/about.html">À propos</a></li>
+                        <li><a href="#" id="footer-suggestions">Suggestions</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Compte</h4>
+                    <ul class="footer-links">
+                        <li><a href="/dashboard.html">Mon compte</a></li>
+                        <li><a href="/mes-preventes.html">Mes préventes</a></li>
+                        <li><a href="/mes-soirees.html">Mes soirées</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Suivez-nous</h4>
+                    <div class="footer-social">
+                        <a href="https://instagram.com/soireesmons" target="_blank" class="footer-social-link" aria-label="Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                        <a href="https://tiktok.com/@soireesmons" target="_blank" class="footer-social-link" aria-label="TikTok">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    &copy; 2025 Soirées Mons. Tous droits réservés.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         JAVASCRIPT - MODULE
+         ========================================== -->
+    <script type="module" src="/assets/js/pages/index.js"></script>
+
+</body>
+</html>
