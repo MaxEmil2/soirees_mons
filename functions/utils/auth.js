@@ -5,7 +5,7 @@
  * ╚═══════════════════════════════════════════════════════════════════╝
  */
 
-import { db } from '../index.js';
+import { db } from '../admin.js';
 import { https } from 'firebase-functions/v2';
 
 /**

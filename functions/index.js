@@ -12,21 +12,8 @@
  * - Logs complets pour audit
  */
 
-import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import { getStorage } from 'firebase-admin/storage';
-
-// Initialisation de Firebase Admin
-initializeApp();
-
-// Export des services Firebase
-export const db = getFirestore();
-export const auth = getAuth();
-export const storage = getStorage();
-
-// Configuration globale
-db.settings({ ignoreUndefinedProperties: true });
+// Import de l'initialisation Firebase Admin (fichier séparé pour éviter les imports circulaires)
+import './admin.js';
 
 // Import et export des Cloud Functions
 export { createEvent, updateEvent, deleteEvent, approveEvent } from './events/index.js';

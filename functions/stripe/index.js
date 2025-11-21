@@ -7,7 +7,7 @@
 
 import { https } from 'firebase-functions/v2';
 import Stripe from 'stripe';
-import { db } from '../index.js';
+import { db } from '../admin.js';
 import { requireAuth, logAudit } from '../utils/auth.js';
 import { validateCheckoutData } from '../utils/validators.js';
 import QRCode from 'qrcode';

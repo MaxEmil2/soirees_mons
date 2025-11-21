@@ -6,7 +6,7 @@
  */
 
 import { https } from 'firebase-functions/v2';
-import { db } from '../index.js';
+import { db } from '../admin.js';
 import { requireAuth, requireEventPermission, requireAdmin, logAudit } from '../utils/auth.js';
 import { validateEventData, sanitizeString } from '../utils/validators.js';
 
