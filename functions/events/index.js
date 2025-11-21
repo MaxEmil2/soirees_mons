@@ -14,7 +14,7 @@ import { validateEventData, sanitizeString } from '../utils/validators.js';
  * Crée un nouvel événement
  * Nécessite: Authentification + Rôle organisateur
  */
-export const createEvent = https.onCall(async (request) => {
+export const createEvent = https.onCall({ region: 'europe-west1' }, async (request) => {
   // Vérification authentification
   const auth = await requireAuth(request);
 
@@ -82,7 +82,7 @@ export const createEvent = https.onCall(async (request) => {
  * Met à jour un événement existant
  * Nécessite: Authentification + Propriétaire ou Admin
  */
-export const updateEvent = https.onCall(async (request) => {
+export const updateEvent = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {
@@ -162,7 +162,7 @@ export const updateEvent = https.onCall(async (request) => {
  * Supprime un événement
  * Nécessite: Authentification + Propriétaire ou Admin
  */
-export const deleteEvent = https.onCall(async (request) => {
+export const deleteEvent = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {
@@ -217,7 +217,7 @@ export const deleteEvent = https.onCall(async (request) => {
  * Approuve un événement (Admin seulement)
  * Change le statut de 'pending' à 'approved'
  */
-export const approveEvent = https.onCall(async (request) => {
+export const approveEvent = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {

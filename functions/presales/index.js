@@ -13,7 +13,7 @@ import { requireAuth, isEventOwner, isAdmin } from '../utils/auth.js';
  * Récupère les préventes d'un utilisateur
  * Nécessite: Authentification
  */
-export const getUserPresales = https.onCall(async (request) => {
+export const getUserPresales = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {
@@ -57,7 +57,7 @@ export const getUserPresales = https.onCall(async (request) => {
  * Récupère les préventes d'un événement
  * Nécessite: Authentification + Owner de l'événement ou Admin
  */
-export const getEventPresales = https.onCall(async (request) => {
+export const getEventPresales = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {

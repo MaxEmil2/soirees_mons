@@ -20,7 +20,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
  * Crée une session de paiement Stripe
  * Nécessite: Authentification
  */
-export const createCheckoutSession = https.onCall(async (request) => {
+export const createCheckoutSession = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {
@@ -113,7 +113,7 @@ export const createCheckoutSession = https.onCall(async (request) => {
  * Webhook Stripe pour traiter les paiements
  * Sécurisé avec signature Stripe
  */
-export const stripeWebhook = https.onRequest(async (request, response) => {
+export const stripeWebhook = https.onRequest({ region: 'europe-west1' }, async (request, response) => {
   const sig = request.headers['stripe-signature'];
 
   try {
@@ -238,7 +238,7 @@ async function handleCheckoutCompleted(session) {
  * Récupère le statut d'un paiement
  * Nécessite: Authentification
  */
-export const getPaymentStatus = https.onCall(async (request) => {
+export const getPaymentStatus = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {

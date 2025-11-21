@@ -14,7 +14,7 @@ import { validateTicketData } from '../utils/validators.js';
  * Vérifie la validité d'un ticket
  * Nécessite: Authentification + Rôle scanner ou owner de l'événement
  */
-export const verifyTicket = https.onCall(async (request) => {
+export const verifyTicket = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {
@@ -104,7 +104,7 @@ export const verifyTicket = https.onCall(async (request) => {
  * Nécessite: Authentification + Rôle scanner ou owner de l'événement
  * Protection anti-double-scan
  */
-export const markTicketUsed = https.onCall(async (request) => {
+export const markTicketUsed = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {
@@ -205,7 +205,7 @@ export const markTicketUsed = https.onCall(async (request) => {
  * Récupère tous les tickets d'un utilisateur
  * Nécessite: Authentification
  */
-export const getUserTickets = https.onCall(async (request) => {
+export const getUserTickets = https.onCall({ region: 'europe-west1' }, async (request) => {
   const auth = await requireAuth(request);
 
   try {
