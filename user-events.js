@@ -308,15 +308,24 @@ userEventForm.addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Envoi en cours...';
 
     try {
+        console.log('📸 Upload image événement - Début');
+        console.log('Événement:', eventData.name);
+        console.log('Fichier:', currentUserImageFile.name, `${(currentUserImageFile.size / 1024 / 1024).toFixed(2)}MB`);
+
         // 1. Upload de l'image
         const timestamp = Date.now();
         const sanitizedName = eventData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const fileName = `user_events/${sanitizedName}_${timestamp}.${currentUserImageFile.name.split('.').pop()}`;
+        const fileExtension = currentUserImageFile.name.split('.').pop() || 'jpg';
+        const fileName = `user_events/${sanitizedName}_${timestamp}.${fileExtension}`;
+
+        console.log('☁️ Upload vers:', fileName);
         const storageRef = ref(storage, fileName);
 
         const snapshot = await uploadBytes(storageRef, currentUserImageFile);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log('✅ Upload réussi');
 
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log('✅ URL obtenue:', downloadURL);
 
         // 2. Ajouter les métadonnées
         eventData.imageURL = downloadURL;
@@ -327,9 +336,12 @@ userEventForm.addEventListener('submit', async (e) => {
         eventData.createdAt = serverTimestamp();
 
         // 3. Enregistrer dans Firestore
+        console.log('💾 Enregistrement dans Firestore...');
         const docRef = await addDoc(collection(db, 'events'), eventData);
+        console.log('✅ Événement enregistré:', docRef.id);
 
         // 4. Créer une notification pour l'utilisateur
+        console.log('📬 Création de la notification...');
         await addDoc(collection(db, 'notifications'), {
             userId: currentUser.uid,
             type: 'event_submitted',
@@ -339,13 +351,34 @@ userEventForm.addEventListener('submit', async (e) => {
             read: false,
             createdAt: serverTimestamp()
         });
+        console.log('✅ Notification créée');
 
         // 5. Fermer le modal et afficher la confirmation
         closeAddEventModal();
         openConfirmationModal();
 
+        console.log('🎉 Événement créé avec succès !');
+
     } catch (error) {
-        showError('Erreur: ' + error.message);
+        console.error('❌ Erreur création événement:', error);
+        console.error('Code erreur:', error.code);
+        console.error('Message:', error.message);
+
+        let errorMessage = 'Erreur lors de la création de l\'événement.';
+
+        if (error.code === 'storage/unauthorized') {
+            errorMessage = 'Vous n\'êtes pas autorisé à uploader des images. Veuillez vous reconnecter.';
+        } else if (error.code === 'storage/canceled') {
+            errorMessage = 'Upload annulé.';
+        } else if (error.code === 'storage/unknown') {
+            errorMessage = 'Erreur inconnue. Vérifiez votre connexion internet et réessayez.';
+        } else if (error.message && error.message.includes('network')) {
+            errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
+        } else if (error.message) {
+            errorMessage = 'Erreur: ' + error.message;
+        }
+
+        showError(errorMessage);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Envoyer pour validation';

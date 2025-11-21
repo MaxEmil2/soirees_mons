@@ -416,31 +416,56 @@ if (photoContainer && photoInput) {
         }
 
         try {
+            console.log('📸 Upload photo de profil - Début');
+            console.log('Fichier original:', file.name, `${(file.size / 1024 / 1024).toFixed(2)}MB`);
+
+            let fileToUpload = file;
+
             // ========================================
             // COMPRESSION DE L'IMAGE (PHOTOS DE PROFIL UNIQUEMENT)
             // ========================================
+            if (typeof imageCompression !== 'undefined') {
+                try {
+                    // Options de compression
+                    const options = {
+                        maxSizeMB: 0.5,              // Taille max : 500 KB
+                        maxWidthOrHeight: 800,        // Dimensions max : 800x800 pixels
+                        useWebWorker: true,           // Utiliser un web worker (ne bloque pas l'UI)
+                        quality: 0.85,                // Qualité : 85% (excellent compromis)
+                        fileType: 'image/jpeg'        // Convertir en JPEG (meilleur compression que PNG)
+                    };
 
+                    console.log('🗜️ Compression de l\'image...');
+                    fileToUpload = await imageCompression(file, options);
+                    console.log('✅ Image compressée:', `${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`);
+                } catch (compressionError) {
+                    console.warn('⚠️ Compression échouée, utilisation du fichier original:', compressionError);
+                    fileToUpload = file;
+                }
+            } else {
+                console.warn('⚠️ Bibliothèque imageCompression non disponible, upload sans compression');
+            }
 
-            // Options de compression
-            const options = {
-                maxSizeMB: 0.5,              // Taille max : 500 KB
-                maxWidthOrHeight: 800,        // Dimensions max : 800x800 pixels
-                useWebWorker: true,           // Utiliser un web worker (ne bloque pas l'UI)
-                quality: 0.85,                // Qualité : 85% (excellent compromis)
-                fileType: 'image/jpeg'        // Convertir en JPEG (meilleur compression que PNG)
-            };
+            // Vérifier la taille finale
+            if (fileToUpload.size > 5 * 1024 * 1024) {
+                showError('L\'image est trop grande (max 5MB). Veuillez choisir une image plus petite.');
+                return;
+            }
 
-            // Compresser l'image
-            const compressedFile = await imageCompression(file, options);
-
-
-            // 1. Upload de la photo compressée et mise à jour du profil
+            // 1. Upload de la photo et mise à jour du profil
+            console.log('☁️ Upload vers Firebase Storage...');
             const storageRef = ref(storage, `profile_photos/${auth.currentUser.uid}`);
-            await uploadBytes(storageRef, compressedFile);
-            const photoURL = await getDownloadURL(storageRef);
+
+            const snapshot = await uploadBytes(storageRef, fileToUpload);
+            console.log('✅ Upload réussi');
+
+            const photoURL = await getDownloadURL(snapshot.ref);
+            console.log('✅ URL obtenue:', photoURL);
 
             // Mettre à jour le profil Firebase Auth
             await updateProfile(auth.currentUser, { photoURL });
+            console.log('✅ Profil Auth mis à jour');
+
             profilePhoto.innerHTML = `<img src="${photoURL}" style="width: 100%; height: 100%; object-fit: cover;">`;
 
             // Afficher le modal de succès
@@ -452,7 +477,9 @@ if (photoContainer && photoInput) {
                 await updateDoc(userDocRef, {
                     photoURL: photoURL
                 });
+                console.log('✅ Firestore users mis à jour');
             } catch (firestoreError) {
+                console.warn('⚠️ Erreur mise à jour Firestore users:', firestoreError);
             }
 
             // 3. Mettre à jour les likes en arrière-plan (ne pas bloquer l'utilisateur)
@@ -474,12 +501,31 @@ if (photoContainer && photoInput) {
                 });
 
                 await Promise.all(updatePromises);
+                console.log('✅ Likes mis à jour');
             } catch (likesError) {
-                // Si la mise à jour des likes échoue, ce n'est pas grave
+                console.warn('⚠️ Erreur mise à jour likes:', likesError);
             }
 
+            console.log('🎉 Photo de profil mise à jour avec succès !');
+
         } catch (error) {
-            showError('Impossible de télécharger la photo. Vérifiez votre connexion et réessayez.');
+            console.error('❌ Erreur upload photo:', error);
+            console.error('Code erreur:', error.code);
+            console.error('Message:', error.message);
+
+            let errorMessage = 'Impossible de télécharger la photo.';
+
+            if (error.code === 'storage/unauthorized') {
+                errorMessage = 'Vous n\'êtes pas autorisé à télécharger cette photo. Veuillez vous reconnecter.';
+            } else if (error.code === 'storage/canceled') {
+                errorMessage = 'Upload annulé.';
+            } else if (error.code === 'storage/unknown') {
+                errorMessage = 'Erreur inconnue. Vérifiez votre connexion internet et réessayez.';
+            } else if (error.message && error.message.includes('network')) {
+                errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
+            }
+
+            showError(errorMessage);
         }
     });
 }

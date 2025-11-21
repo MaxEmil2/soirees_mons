@@ -51,8 +51,19 @@ service firebase.storage {
       allow update, delete: if isAuthenticated();
     }
 
-    // Images de profil des utilisateurs
+    // Images de profil des utilisateurs (ancien chemin)
     match /users/{userId}/{fileName} {
+      // Lecture publique (pour afficher les avatars)
+      allow read: if true;
+
+      // Écriture: uniquement le propriétaire + image valide
+      allow write: if isOwner(userId)
+                   && isImage()
+                   && isValidSize();
+    }
+
+    // Images de profil des utilisateurs (nouveau chemin - sans sous-dossier)
+    match /profile_photos/{userId} {
       // Lecture publique (pour afficher les avatars)
       allow read: if true;
 
