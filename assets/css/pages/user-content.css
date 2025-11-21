@@ -1,0 +1,361 @@
+/*
+ * USER CONTENT PAGES - SHARED STYLES
+ * For mes-preventes.html and mes-soirees.html
+ */
+
+/* ==========================================
+   PAGE LAYOUT
+   ========================================== */
+
+.user-content-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: var(--space-8) var(--space-4);
+}
+
+.user-content-container {
+    max-width: 900px;
+    margin: 0 auto;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* ==========================================
+   PAGE HEADER
+   ========================================== */
+
+.page-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+    padding-top: var(--space-4);
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-2);
+}
+
+.page-header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* ==========================================
+   PRESALE CARDS
+   ========================================== */
+
+.prevente-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-4);
+    transition: all var(--transition-base);
+}
+
+.prevente-card:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.prevente-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.prevente-info-left {
+    flex: 1;
+}
+
+.prevente-event-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.prevente-date {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.prevente-status {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.prevente-status.valid {
+    background: rgba(82, 196, 26, 0.15);
+    color: var(--success);
+}
+
+.prevente-status.used {
+    background: rgba(250, 173, 20, 0.15);
+    color: var(--warning);
+}
+
+.prevente-status.refunded {
+    background: rgba(255, 77, 79, 0.15);
+    color: var(--danger);
+}
+
+.prevente-qr-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+}
+
+.prevente-qr {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+    flex-shrink: 0;
+}
+
+.prevente-qr img {
+    width: 100%;
+    height: 100%;
+}
+
+.prevente-info {
+    flex: 1;
+}
+
+.prevente-info-row {
+    display: flex;
+    margin-bottom: var(--space-2);
+}
+
+.prevente-info-label {
+    width: 100px;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.prevente-info-value {
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.prevente-id {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    word-break: break-all;
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-primary);
+}
+
+/* ==========================================
+   EVENT CARDS (FOR MES-SOIREES)
+   ========================================== */
+
+.event-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-4);
+    transition: all var(--transition-base);
+}
+
+.event-card:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.event-info-left {
+    flex: 1;
+}
+
+.event-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.event-date {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+}
+
+.event-location {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+.event-meta {
+    display: flex;
+    gap: var(--space-4);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-primary);
+}
+
+.event-meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.event-meta-label {
+    color: var(--text-tertiary);
+}
+
+.event-meta-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.event-actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+/* ==========================================
+   EMPTY STATE
+   ========================================== */
+
+.no-content {
+    text-align: center;
+    padding: var(--space-12) var(--space-4);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-primary);
+}
+
+.no-content-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+    opacity: 0.3;
+}
+
+.no-content-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.no-content-text {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+/* ==========================================
+   LOADING STATE
+   ========================================== */
+
+.loading-container {
+    text-align: center;
+    padding: var(--space-12);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-primary);
+    border-top-color: var(--primary-500);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--space-4);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+    .user-content-page {
+        padding: var(--space-4) var(--space-3);
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .prevente-card,
+    .event-card {
+        padding: var(--space-4);
+    }
+
+    .prevente-qr-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .prevente-info-row {
+        flex-direction: column;
+        gap: var(--space-1);
+    }
+
+    .prevente-info-label {
+        width: 100%;
+    }
+
+    .event-actions {
+        flex-direction: column;
+    }
+
+    .event-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .prevente-qr {
+        width: 100px;
+        height: 100px;
+    }
+
+    .event-meta {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+}
