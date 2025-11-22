@@ -40,26 +40,6 @@ service cloud.firestore {
       return isAuthenticated() && getUserData().isAdmin == true;
     }
 
-    // Check if user has a specific role
-    function hasRole(role) {
-      return isAuthenticated() && getUserData().role == role;
-    }
-
-    // Check if user is organizer or admin
-    function isOrganizerOrAdmin() {
-      return isAuthenticated() && (getUserData().role == 'organizer' || isAdmin());
-    }
-
-    // Check if user is scanner or admin
-    function isScannerOrAdmin() {
-      return isAuthenticated() && (getUserData().role == 'scanner' || isAdmin());
-    }
-
-    // Check if user can manage an event
-    function canManageEvent(eventCreatorId) {
-      return isAuthenticated() && (isAdmin() || request.auth.uid == eventCreatorId);
-    }
-
     // Validate string length
     function isValidStringLength(str, minLen, maxLen) {
       return str is string && str.size() >= minLen && str.size() <= maxLen;
@@ -73,16 +53,6 @@ service cloud.firestore {
     // Validate email format
     function isValidEmail(email) {
       return email is string && email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
-    }
-
-    // Validate number in range
-    function isNumberInRange(num, min, max) {
-      return num is number && num >= min && num <= max;
-    }
-
-    // Validate timestamp is in the future
-    function isFutureTimestamp(ts) {
-      return ts > request.time;
     }
 
     // Check if only specific fields were modified
