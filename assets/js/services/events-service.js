@@ -44,6 +44,27 @@ function clearCache() {
     eventsCache.timestamp = null;
 }
 
+// Helper function to convert various date formats to Date object
+function convertToDate(value) {
+    if (!value) return null;
+
+    // If it's already a Date object
+    if (value instanceof Date) return value;
+
+    // If it's a Firestore Timestamp
+    if (value && typeof value.toDate === 'function') {
+        return value.toDate();
+    }
+
+    // If it's a string or number, try to parse it
+    if (typeof value === 'string' || typeof value === 'number') {
+        const date = new Date(value);
+        return isNaN(date.getTime()) ? null : date;
+    }
+
+    return null;
+}
+
 // ==========================================
 // GET APPROVED EVENTS
 // ==========================================
@@ -79,14 +100,17 @@ export async function getApprovedEvents(options = {}) {
 
         const snapshot = await getDocs(eventsQuery);
 
-        const events = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            date: doc.data().date?.toDate(),
-            presalesEndDate: doc.data().presalesEndDate?.toDate(),
-            createdAt: doc.data().createdAt?.toDate(),
-            approvedAt: doc.data().approvedAt?.toDate()
-        }));
+        const events = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                date: convertToDate(data.date),
+                presalesEndDate: convertToDate(data.presalesEndDate),
+                createdAt: convertToDate(data.createdAt),
+                approvedAt: convertToDate(data.approvedAt)
+            };
+        });
 
         // Update cache
         updateCache(events);
@@ -129,10 +153,10 @@ export async function getEventById(eventId) {
             event: {
                 id: eventDoc.id,
                 ...eventData,
-                date: eventData.date?.toDate(),
-                presalesEndDate: eventData.presalesEndDate?.toDate(),
-                createdAt: eventData.createdAt?.toDate(),
-                approvedAt: eventData.approvedAt?.toDate()
+                date: convertToDate(eventData.date),
+                presalesEndDate: convertToDate(eventData.presalesEndDate),
+                createdAt: convertToDate(eventData.createdAt),
+                approvedAt: convertToDate(eventData.approvedAt)
             }
         };
 
@@ -166,14 +190,17 @@ export function listenToEvents(callback, options = {}) {
     const unsubscribe = onSnapshot(
         eventsQuery,
         (snapshot) => {
-            const events = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                date: doc.data().date?.toDate(),
-                presalesEndDate: doc.data().presalesEndDate?.toDate(),
-                createdAt: doc.data().createdAt?.toDate(),
-                approvedAt: doc.data().approvedAt?.toDate()
-            }));
+            const events = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    date: convertToDate(data.date),
+                    presalesEndDate: convertToDate(data.presalesEndDate),
+                    createdAt: convertToDate(data.createdAt),
+                    approvedAt: convertToDate(data.approvedAt)
+                };
+            });
 
             // Update cache
             updateCache(events);

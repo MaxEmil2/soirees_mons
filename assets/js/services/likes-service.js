@@ -17,6 +17,31 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // ==========================================
+// HELPER FUNCTIONS
+// ==========================================
+
+// Helper function to convert various date formats to Date object
+function convertToDate(value) {
+    if (!value) return null;
+
+    // If it's already a Date object
+    if (value instanceof Date) return value;
+
+    // If it's a Firestore Timestamp
+    if (value && typeof value.toDate === 'function') {
+        return value.toDate();
+    }
+
+    // If it's a string or number, try to parse it
+    if (typeof value === 'string' || typeof value === 'number') {
+        const date = new Date(value);
+        return isNaN(date.getTime()) ? null : date;
+    }
+
+    return null;
+}
+
+// ==========================================
 // CACHE FOR LIKES
 // ==========================================
 
@@ -35,11 +60,14 @@ export async function getEventLikes(eventId) {
 
         const snapshot = await getDocs(likesQuery);
 
-        const likes = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate()
-        }));
+        const likes = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: convertToDate(data.createdAt)
+            };
+        });
 
         // Update cache
         likesCache.set(eventId, likes);
@@ -265,11 +293,14 @@ export function listenToEventLikes(eventId, callback) {
     const unsubscribe = onSnapshot(
         likesQuery,
         (snapshot) => {
-            const likes = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAt: doc.data().createdAt?.toDate()
-            }));
+            const likes = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    createdAt: convertToDate(data.createdAt)
+                };
+            });
 
             // Update cache
             likesCache.set(eventId, likes);
