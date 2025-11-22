@@ -81,8 +81,8 @@ service cloud.firestore {
     }
 
     // Validate timestamp is in the future
-    function isFutureTimestamp(timestamp) {
-      return timestamp > request.time;
+    function isFutureTimestamp(ts) {
+      return ts > request.time;
     }
 
     // Check if only specific fields were modified
