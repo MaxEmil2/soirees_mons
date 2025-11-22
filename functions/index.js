@@ -16,6 +16,16 @@ const approveEvent = require('./events/approveEvent');
 const deleteEvent = require('./events/deleteEvent');
 
 // ==========================================
+// RUNTIME OPTIONS
+// ==========================================
+
+// Runtime options for callable functions (Gen 1)
+const runtimeOpts = {
+    timeoutSeconds: 300,
+    memory: '256MB'
+};
+
+// ==========================================
 // EVENT FUNCTIONS
 // ==========================================
 
@@ -27,6 +37,7 @@ const deleteEvent = require('./events/deleteEvent');
  */
 exports.createEvent = functions
     .region('europe-west1')
+    .runWith(runtimeOpts)
     .https.onCall(createEvent);
 
 /**
@@ -36,6 +47,7 @@ exports.createEvent = functions
  */
 exports.updateEvent = functions
     .region('europe-west1')
+    .runWith(runtimeOpts)
     .https.onCall(updateEvent);
 
 /**
@@ -44,6 +56,7 @@ exports.updateEvent = functions
  */
 exports.approveEvent = functions
     .region('europe-west1')
+    .runWith(runtimeOpts)
     .https.onCall(approveEvent);
 
 /**
@@ -53,6 +66,7 @@ exports.approveEvent = functions
  */
 exports.deleteEvent = functions
     .region('europe-west1')
+    .runWith(runtimeOpts)
     .https.onCall(deleteEvent);
 
 // ==========================================
