@@ -62,7 +62,7 @@ function setupAuthListener() {
         console.log('👤 User authenticated:', user.email);
 
         // Hide loading, show content
-        hideLoading();
+        hideDashboardLoading();
 
         // Load user data
         await loadUserData();
@@ -563,7 +563,7 @@ function getDefaultAvatar(email) {
     `)}`;
 }
 
-function showLoading() {
+function showDashboardLoading() {
     const loadingElement = document.getElementById('dashboard-loading');
     const contentElement = document.getElementById('dashboard-content');
 
@@ -571,7 +571,7 @@ function showLoading() {
     if (contentElement) contentElement.style.display = 'none';
 }
 
-function hideLoading() {
+function hideDashboardLoading() {
     const loadingElement = document.getElementById('dashboard-loading');
     const contentElement = document.getElementById('dashboard-content');
 
